@@ -1,0 +1,42 @@
+# Users
+
+# Libraries
+id
+name
+
+# LibraryUsers
+id
+user_id
+library_id
+
+# Setlists
+id
+library_id
+name
+description
+
+# SetlistSongs
+id
+setlist_id
+song_id
+position
+
+# Songs
+id
+library_id
+title
+artist
+album
+genre
+tune_key
+bpm
+duration
+content
+type_content
+
+# MediaReferences
+id
+song_id
+type
+url
+description
