@@ -28,7 +28,7 @@ title
 artist
 album
 genre
-tune_key
+key # tom da musica
 bpm
 duration
 content
