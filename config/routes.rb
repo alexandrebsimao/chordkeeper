@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :songs
   resources :libraries
   # devise_for :users
   devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }

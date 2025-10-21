@@ -1,0 +1,98 @@
+<%= form_with(model: song, class: "space-y-6") do |form| %>
+  <% if song.errors.any? %>
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">
+            <%= pluralize(song.errors.count, "erro") %> impediram que esta música fosse salva:
+          </h3>
+          <div class="mt-2 text-sm text-red-700">
+            <ul class="list-disc pl-5 space-y-1">
+              <% song.errors.each do |error| %>
+                <li><%= error.full_message %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="space-y-2">
+      <%= form.label :title, "Título", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o título da música" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :artist, "Artista", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :artist, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o nome do artista" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :album, "Álbum", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :album, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o nome do álbum" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :genre, "Gênero", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :genre, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o gênero musical" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :key, "Tom", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :key, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o tom da música" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :bpm, "BPM", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.number_field :bpm, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o BPM da música" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :duration, "Duração", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :duration, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite a duração da música" %>
+    </div>
+  </div>
+
+  <div class="space-y-2">
+    <%= form.label :content, "Letra e Acordes", class: "block text-sm font-medium text-gray-700" %>
+    <%= form.text_area :content, rows: 10, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm font-mono", placeholder: "Digite a letra e os acordes da música" %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="space-y-2">
+      <%= form.label :content_type, "Tipo de Conteúdo", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.select :content_type,
+          [['Cifra', 'chord'], ['Tablatura', 'tab'], ['Partitura', 'sheet']],
+          { include_blank: 'Selecione o tipo de conteúdo' },
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :attachment, "Anexo", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.file_field :attachment, class: "mt-1 block w-full text-sm text-gray-500
+        file:mr-4 file:py-2 file:px-4
+        file:rounded-md file:border-0
+        file:text-sm file:font-medium
+        file:bg-blue-50 file:text-blue-700
+        hover:file:bg-blue-100" %>
+    </div>
+
+    <div class="space-y-2">
+      <%= form.label :library_id, "Biblioteca", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.collection_select :library_id, Library.all, :id, :name,
+          { include_blank: 'Selecione uma biblioteca' },
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+    </div>
+  </div>
+
+  <div class="pt-4">
+    <%= form.submit "Salvar", class: "w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200" %>
+  </div>
+<% end %>

@@ -1,0 +1,28 @@
+<% content_for :title, "Editar Música" %>
+
+<div class="p-8">
+  <div class="mb-6">
+    <%= link_to songs_path, class: "text-blue-600 hover:text-blue-800 font-medium flex items-center mb-4" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      <span>Voltar para músicas</span>
+    <% end %>
+    
+    <h1 class="text-2xl font-bold text-gray-800">Editar Música</h1>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <%= render "form", song: @song %>
+
+    <div class="mt-6 flex items-center space-x-4">
+      <%= link_to @song, class: "text-blue-600 hover:text-blue-800 font-medium flex items-center" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+        <span>Visualizar música</span>
+      <% end %>
+    </div>
+  </div>
+</div>
