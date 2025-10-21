@@ -1,0 +1,43 @@
+<div class="mt-6 space-y-4">
+  <%- if controller_name != 'sessions' %>
+    <%= link_to "Entrar", new_session_path(resource_name), 
+        class: "w-full flex justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+  <% end %>
+
+  <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+    <div class="relative">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-gray-300"></div>
+      </div>
+      <div class="relative flex justify-center text-sm">
+        <span class="px-2 bg-white text-gray-500">Ou</span>
+      </div>
+    </div>
+    <%= link_to "Criar nova conta", new_registration_path(resource_name), 
+        class: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+  <% end %>
+
+  <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+    <%= link_to "Esqueceu sua senha?", new_password_path(resource_name), 
+        class: "w-full flex justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+  <% end %>
+
+  <%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
+    <%= link_to "Não recebeu as instruções de confirmação?", new_confirmation_path(resource_name), 
+        class: "w-full flex justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+  <% end %>
+
+  <%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'unlocks' %>
+    <%= link_to "Não recebeu as instruções de desbloqueio?", new_unlock_path(resource_name), 
+        class: "w-full flex justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+  <% end %>
+
+  <%- if devise_mapping.omniauthable? %>
+    <%- resource_class.omniauth_providers.each do |provider| %>
+      <%= button_to "Entrar com #{OmniAuth::Utils.camelize(provider)}", 
+          omniauth_authorize_path(resource_name, provider), 
+          data: { turbo: false },
+          class: "w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+    <% end %>
+  <% end %>
+</div>

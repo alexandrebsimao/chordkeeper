@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
   <head>
-    <title><%= content_for(:title) || "Myapp" %></title>
+    <title><%= content_for(:title) || "Planapê" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -10,19 +10,70 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
-  </head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- Select2 CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-  <body>
-    <%= yield %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-clifford: #da373d;
+      }
+
+      input[type=text], input[type=number], input[type=file], input[type=datetime-local], textarea, select {
+        background-color: white;
+      }
+    </style>
+
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex min-h-screen">
+      <%= render 'layouts/sidebar' %>
+      <main class="flex-1 ml-64 bg-gray-100"> <!-- ml-64 should match sidebar width -->
+        <%= yield %>
+      </main>
+    </div>
+
+    <!-- Select2 JS via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const dropdownButton = document.getElementById('dropdownButton');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+
+        dropdownButton.addEventListener('click', function() {
+          dropdownMenu.classList.toggle('hidden');
+        });
+      });
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const dropdownButton = document.getElementById('userDropdownButton');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+
+        dropdownButton.addEventListener('click', function() {
+          dropdownMenu.classList.toggle('hidden');
+          dropdownMenu.style.bottom = `${dropdownMenu.offsetHeight - 30}px`;
+        });
+      });
+
+
+        // Initialize Select2
+        $(document).ready(function() {
+          $('.select2').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            placeholder: 'Selecione ou crie',
+            allowClear: true
+          });
+        });
+
+    </script>
   </body>
 </html>
