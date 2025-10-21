@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_21_202524) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_21_204331) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -49,6 +49,34 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_202524) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "library_users", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "library_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["library_id"], name: "index_library_users_on_library_id"
+    t.index ["user_id"], name: "index_library_users_on_user_id"
+  end
+
+  create_table "setlist_songs", force: :cascade do |t|
+    t.integer "position"
+    t.bigint "setlist_id", null: false
+    t.bigint "song_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["setlist_id"], name: "index_setlist_songs_on_setlist_id"
+    t.index ["song_id"], name: "index_setlist_songs_on_song_id"
+  end
+
+  create_table "setlists", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.bigint "library_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["library_id"], name: "index_setlists_on_library_id"
+  end
+
   create_table "songs", force: :cascade do |t|
     t.string "title"
     t.string "artist"
@@ -80,5 +108,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_202524) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "library_users", "libraries"
+  add_foreign_key "library_users", "users"
+  add_foreign_key "setlist_songs", "setlists"
+  add_foreign_key "setlist_songs", "songs"
+  add_foreign_key "setlists", "libraries"
   add_foreign_key "songs", "libraries"
 end
