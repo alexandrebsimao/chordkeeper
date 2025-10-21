@@ -25,7 +25,7 @@ class SongsController < ApplicationController
 
     respond_to do |format|
       if @song.save
-        format.html { redirect_to @song, notice: "Song was successfully created." }
+        format.html { redirect_to @song, notice: "Música criada com sucesso." }
         format.json { render :show, status: :created, location: @song }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -38,7 +38,7 @@ class SongsController < ApplicationController
   def update
     respond_to do |format|
       if @song.update(song_params)
-        format.html { redirect_to @song, notice: "Song was successfully updated." }
+        format.html { redirect_to @song, notice: "Música atualizada com sucesso." }
         format.json { render :show, status: :ok, location: @song }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -52,7 +52,7 @@ class SongsController < ApplicationController
     @song.destroy!
 
     respond_to do |format|
-      format.html { redirect_to songs_path, status: :see_other, notice: "Song was successfully destroyed." }
+      format.html { redirect_to songs_path, status: :see_other, notice: "Música excluída com sucesso." }
       format.json { head :no_content }
     end
   end
@@ -65,6 +65,7 @@ class SongsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def song_params
-      params.expect(song: [ :title, :artist, :album, :genre, :key, :bpm, :duration, :content, :content_type, :attachment, :library_id ])
+      params.require(:song).permit(:title, :artist, :album, :genre, :key, :bpm, :duration, 
+                                 :content, :content_type, :attachment, :library_id)
     end
 end

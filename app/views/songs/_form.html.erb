@@ -76,12 +76,28 @@
 
     <div class="space-y-2">
       <%= form.label :attachment, "Anexo", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.file_field :attachment, class: "mt-1 block w-full text-sm text-gray-500
-        file:mr-4 file:py-2 file:px-4
-        file:rounded-md file:border-0
-        file:text-sm file:font-medium
-        file:bg-blue-50 file:text-blue-700
-        hover:file:bg-blue-100" %>
+      <div class="mt-1 flex items-center">
+        <%= form.file_field :attachment,
+            accept: ".pdf,.doc,.docx,.txt",
+            class: "block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-md file:border-0
+              file:text-sm file:font-medium
+              file:bg-blue-50 file:text-blue-700
+              hover:file:bg-blue-100
+              focus:outline-none" %>
+        <% if song.attachment.attached? %>
+          <div class="ml-4 flex items-center text-sm text-gray-500">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+            </svg>
+            <span>Arquivo atual: <%= song.attachment.filename %></span>
+          </div>
+        <% end %>
+      </div>
+      <p class="mt-1 text-sm text-gray-500">
+        Formatos aceitos: PDF, DOC, DOCX, TXT
+      </p>
     </div>
 
     <div class="space-y-2">

@@ -49,7 +49,7 @@
     </div>
 
     <div class="space-y-4">
-      <% if song.content.present? %>
+      <% if song.content.present? && params['action'] != 'index' %>
         <div>
           <h4 class="text-sm font-medium text-gray-500 uppercase">
             <%= song.content_type == 'chord' ? 'Cifra' : 
