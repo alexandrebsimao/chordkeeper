@@ -1,11 +1,18 @@
-<% content_for :title, "New setlist" %>
+<% content_for :title, "Nova Setlist" %>
 
-<h1>New setlist</h1>
+<div class="p-8">
+  <div class="mb-6">
+    <%= link_to setlists_path, class: "text-blue-600 hover:text-blue-800 font-medium flex items-center mb-4" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      <span>Voltar para setlists</span>
+    <% end %>
+    
+    <h1 class="text-2xl font-bold text-gray-800">Nova Setlist</h1>
+  </div>
 
-<%= render "form", setlist: @setlist %>
-
-<br>
-
-<div>
-  <%= link_to "Back to setlists", setlists_path %>
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <%= render "form", setlist: @setlist %>
+  </div>
 </div>

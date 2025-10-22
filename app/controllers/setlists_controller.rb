@@ -1,5 +1,5 @@
 class SetlistsController < ApplicationController
-  before_action :set_setlist, only: %i[ show edit update destroy ]
+  before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song ]
 
   # GET /setlists or /setlists.json
   def index
@@ -8,6 +8,54 @@ class SetlistsController < ApplicationController
 
   # GET /setlists/1 or /setlists/1.json
   def show
+  end
+
+  # GET /setlists/1/manage_songs
+  def manage_songs
+    @library = @setlist.library
+  end
+
+  # GET /setlists/1/print
+  def print
+  end
+
+  # POST /setlists/1/save_songs
+  def save_songs
+    song_order = params[:song_order]
+    if song_order
+      @setlist.setlist_songs.destroy_all
+      song_order.each_with_index do |song_id, index|
+        @setlist.setlist_songs.create(song_id: song_id, position: index + 1)
+      end
+      head :ok
+    else
+      head :unprocessable_entity
+    end
+  end
+
+  # POST /setlists/1/add_song
+  def add_song
+    begin
+      song = Song.find(params[:song_id])
+      position = @setlist.setlist_songs.count + 1
+      @setlist.setlist_songs.create!(song: song, position: position)
+      render json: { song_id: song.id, title: song.title }, status: :created
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
+      Rails.logger.error("Erro ao adicionar música: #{e.message}")
+      head :unprocessable_entity
+    end
+  end
+
+  # DELETE /setlists/1/remove_song
+  def remove_song
+    begin
+      song = Song.find(params[:song_id])
+      @setlist.songs.delete(song)
+      head :ok
+    rescue ActiveRecord::RecordNotFound => e
+      Rails.logger.error("Erro ao remover música: #{e.message}")
+      head :not_found
+    end
   end
 
   # GET /setlists/new

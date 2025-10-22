@@ -1,17 +1,40 @@
-<div id="<%= dom_id setlist %>">
-  <p>
-    <strong>Name:</strong>
-    <%= setlist.name %>
-  </p>
+<div id="<%= dom_id setlist %>" class="space-y-4">
+  <div>
+    <h3 class="text-lg font-semibold text-gray-900">
+      <%= setlist.name %>
+    </h3>
+  </div>
 
-  <p>
-    <strong>Description:</strong>
-    <%= setlist.description %>
-  </p>
+  <div class="mt-2">
+    <p class="text-gray-600 text-sm">
+      <% if setlist.description.present? %>
+        <%= setlist.description %>
+      <% else %>
+        <span class="text-gray-400 italic">Sem descrição</span>
+      <% end %>
+    </p>
+  </div>
 
-  <p>
-    <strong>Library:</strong>
-    <%= setlist.library_id %>
-  </p>
+  <div class="flex items-center space-x-4 text-sm text-gray-500 mt-4">
+    <div class="flex items-center">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+      <span>Biblioteca: <%= setlist.library.name %></span>
+    </div>
 
+    <div class="flex items-center">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>Atualizada em <%= setlist.updated_at.strftime("%d/%m/%Y") %></span>
+    </div>
+  </div>
+
+  <div class="mt-2 flex items-center text-sm text-gray-500">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+    </svg>
+    <span>0 músicas</span>
+  </div>
 </div>

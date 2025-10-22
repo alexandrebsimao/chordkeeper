@@ -17,6 +17,8 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <!-- Select2 CSS via CDN -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Sortable.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
 
@@ -44,15 +46,6 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const dropdownButton = document.getElementById('dropdownButton');
-        const dropdownMenu = document.getElementById('dropdownMenu');
-
-        dropdownButton.addEventListener('click', function() {
-          dropdownMenu.classList.toggle('hidden');
-        });
-      });
-
       document.addEventListener('DOMContentLoaded', function() {
         const dropdownButton = document.getElementById('userDropdownButton');
         const dropdownMenu = document.getElementById('userDropdownMenu');

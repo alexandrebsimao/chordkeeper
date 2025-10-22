@@ -1,0 +1,220 @@
+<% content_for :title, "Gerenciar Músicas - #{@setlist.name}" %>
+
+<div class="p-8">
+  <div class="mb-6">
+    <%= link_to setlist_path(@setlist), class: "text-blue-600 hover:text-blue-800 font-medium flex items-center mb-4" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      <span>Voltar para setlist</span>
+    <% end %>
+    
+    <h1 class="text-2xl font-bold text-gray-800">Gerenciar Músicas - <%= @setlist.name %></h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Coluna da Esquerda: Lista de Músicas Disponíveis -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Músicas Disponíveis</h2>
+        <div class="relative">
+          <input type="text" 
+                 id="song-search" 
+                 placeholder="Buscar música..." 
+                 class="pl-8 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+          <svg class="w-5 h-5 text-gray-400 absolute left-2 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="overflow-y-auto max-h-96 border rounded-md">
+        <div id="available-songs" class="divide-y divide-gray-200">
+          <% @library.songs.each do |song| %>
+            <%= render 'song_item', song: song, draggable: false %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna da Direita: Músicas Selecionadas -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Músicas da Setlist</h2>
+        <div class="space-x-2">
+          <%= button_to print_setlist_path(@setlist), method: :get, class: "inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" do %>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            Imprimir Setlist
+          <% end %>
+          <%= button_to save_songs_setlist_path(@setlist), method: :post, class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" do %>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Salvar Ordem
+          <% end %>
+        </div>
+      </div>
+
+      <div class="overflow-y-auto max-h-96 border rounded-md">
+        <div id="selected-songs" class="divide-y divide-gray-200" data-sortable-list>
+          <% @setlist.songs.each do |song| %>
+            <%= render 'song_item', song: song, draggable: true %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= javascript_tag do %>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script carregado'); // Debug
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const setlistId = '<%= @setlist.id %>';
+
+    // Implementar busca de músicas
+    const searchInput = document.getElementById('song-search');
+    searchInput.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      document.querySelectorAll('#available-songs .song-item').forEach(item => {
+        const title = item.querySelector('h3').textContent.toLowerCase();
+        const artist = item.querySelector('p').textContent.toLowerCase();
+        if (title.includes(searchTerm) || artist.includes(searchTerm)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // Implementar ordenação das músicas
+    if (document.querySelector('[data-sortable-list]')) {
+      new Sortable(document.querySelector('[data-sortable-list]'), {
+        animation: 150,
+        handle: '.drag-handle',
+        onEnd: function() {
+          const songOrder = Array.from(this.el.children).map(item => item.dataset.songId);
+          saveSongOrder(songOrder);
+        }
+      });
+    }
+
+    // Função para adicionar música à setlist
+    async function addSongToSetlist(songId) {
+      console.log('Adicionando música:', songId); // Debug
+      try {
+        const response = await fetch(`/setlists/${setlistId}/add_song`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({ song_id: songId })
+        });
+
+        console.log('Resposta:', response.status); // Debug
+
+        if (response.ok) {
+
+          const html = await response.text();
+          const selectedSongs = document.querySelector('#selected-songs');
+          selectedSongs.insertAdjacentHTML('beforeend', html);
+          
+          // Atualizar os listeners após adicionar novo elemento
+        //attachEventListeners();
+          
+          // Recarregar a página para atualizar a lista
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao adicionar música');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Não foi possível adicionar a música à setlist');
+      }
+    }
+
+    // Função para remover música da setlist
+    async function removeSongFromSetlist(songId, element) {
+      console.log('Removendo música:', songId); // Debug
+      try {
+        const response = await fetch(`/setlists/${setlistId}/remove_song`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({ song_id: songId })
+        });
+
+        console.log('Resposta:', response.status); // Debug
+
+        if (response.ok) {
+          element.remove();
+          // Recarregar a página para atualizar a lista
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao remover música');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Não foi possível remover a música da setlist');
+      }
+    }
+
+    // Função para salvar a ordem das músicas
+    async function saveSongOrder(songOrder) {
+      console.log('Salvando ordem:', songOrder); // Debug
+      try {
+        const response = await fetch(`/setlists/${setlistId}/save_songs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({ song_order: songOrder })
+        });
+
+        console.log('Resposta:', response.status); // Debug
+
+        if (!response.ok) {
+          throw new Error('Erro ao salvar ordem das músicas');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Não foi possível salvar a ordem das músicas');
+      }
+    }
+
+    // Event delegation para os botões de adicionar e remover
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('[data-action="add-song"]')) {
+        const songItem = e.target.closest('.song-item');
+        const songId = songItem.dataset.songId;
+        console.log('Clique no botão adicionar:', songId); // Debug
+        addSongToSetlist(songId);
+      } else if (e.target.closest('[data-action="remove-song"]')) {
+        const songItem = e.target.closest('.song-item');
+        const songId = songItem.dataset.songId;
+        console.log('Clique no botão remover:', songId); // Debug
+        removeSongFromSetlist(songId, songItem);
+      }
+    });
+
+    // Adicionar handler para o botão de salvar ordem
+    const saveForm = document.querySelector('form[action*="save_songs"]');
+    if (saveForm) {
+      saveForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const songOrder = Array.from(document.querySelector('[data-sortable-list]').children)
+          .map(item => item.dataset.songId);
+        saveSongOrder(songOrder);
+      });
+    }
+
+    console.log('Event listeners anexados'); // Debug
+  });
+<% end %>

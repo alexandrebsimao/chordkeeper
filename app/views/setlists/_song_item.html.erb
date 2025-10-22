@@ -1,0 +1,30 @@
+<div class="p-4 hover:bg-gray-50 flex items-center justify-between song-item" data-song-id="<%= song.id %>">
+  <% if local_assigns[:draggable] %>
+    <div class="flex items-center flex-1">
+      <button class="drag-handle mr-3 cursor-move text-gray-400 hover:text-gray-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+        </svg>
+      </button>
+      <div>
+        <h3 class="font-medium text-gray-900"><%= song.title %></h3>
+        <p class="text-sm text-gray-500"><%= song.artist %></p>
+      </div>
+    </div>
+    <button class="remove-song-btn text-red-600 hover:text-red-800" data-action="remove-song">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  <% else %>
+    <div>
+      <h3 class="font-medium text-gray-900"><%= song.title %></h3>
+      <p class="text-sm text-gray-500"><%= song.artist %></p>
+    </div>
+    <button class="add-song-btn text-blue-600 hover:text-blue-800" data-action="add-song">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+    </button>
+  <% end %>
+</div>

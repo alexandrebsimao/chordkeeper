@@ -1,5 +1,13 @@
 Rails.application.routes.draw do
-  resources :setlists
+  resources :setlists do
+    member do
+      get :manage_songs
+      get :print
+      post :save_songs
+      post :add_song
+      delete :remove_song
+    end
+  end
   resources :songs
   resources :libraries
   # devise_for :users

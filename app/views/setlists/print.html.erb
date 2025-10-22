@@ -1,0 +1,73 @@
+<% content_for :title, "Imprimir Setlist - #{@setlist.name}" %>
+
+<div class="p-8 print:p-0">
+  <!-- Cabeçalho - apenas visível na tela -->
+  <div class="mb-6 print:hidden">
+    <%= link_to manage_songs_setlist_path(@setlist), class: "text-blue-600 hover:text-blue-800 font-medium flex items-center mb-4" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      <span>Voltar para gerenciar músicas</span>
+    <% end %>
+
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-800">Imprimir Setlist</h1>
+      <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+        </svg>
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <!-- Conteúdo da Setlist -->
+  <div class="bg-white rounded-lg shadow-md p-6 print:shadow-none print:p-0">
+    <!-- Cabeçalho da Setlist -->
+    <div class="text-center mb-8 print:mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= @setlist.name %></h1>
+      <% if @setlist.description.present? %>
+        <p class="text-gray-600"><%= @setlist.description %></p>
+      <% end %>
+      <p class="text-sm text-gray-500 mt-2">
+        <%= @setlist.library.name %> | <%= l(@setlist.updated_at, format: :long) %>
+      </p>
+    </div>
+
+    <!-- Lista de Músicas -->
+    <div class="space-y-6">
+      <% @setlist.songs.each_with_index do |song, index| %>
+        <div class="border-b border-gray-200 pb-4 last:border-b-0">
+          <div class="flex items-start">
+            <span class="text-2xl font-bold text-gray-400 mr-4"><%= index + 1 %></span>
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900"><%= song.title %></h2>
+              <p class="text-gray-600"><%= song.artist %></p>
+              <% if song.key.present? %>
+                <p class="text-sm text-gray-500 mt-1">Tom: <%= song.key %></p>
+              <% end %>
+              <% if song.bpm.present? %>
+                <p class="text-sm text-gray-500">BPM: <%= song.bpm %></p>
+              <% end %>
+              <% if song.notes.present? %>
+                <div class="mt-2 text-sm text-gray-600">
+                  <%= simple_format(song.notes) %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= javascript_tag do %>
+  // Adicionar classe ao body quando estiver imprimindo
+  window.onbeforeprint = function() {
+    document.body.classList.add('printing');
+  };
+  window.onafterprint = function() {
+    document.body.classList.remove('printing');
+  };
+<% end %>
