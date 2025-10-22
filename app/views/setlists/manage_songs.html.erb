@@ -13,26 +13,28 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Coluna da Esquerda: Lista de Músicas Disponíveis -->
+    <!-- Campo de Seleção de Músicas -->
     <div class="bg-white rounded-lg shadow-md p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">Músicas Disponíveis</h2>
-        <div class="relative">
-          <input type="text" 
-                 id="song-search" 
-                 placeholder="Buscar música..." 
-                 class="pl-8 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-          <svg class="w-5 h-5 text-gray-400 absolute left-2 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-        </div>
-      </div>
-
-      <div class="overflow-y-auto max-h-96 border rounded-md">
-        <div id="available-songs" class="divide-y divide-gray-200">
-          <% @library.songs.each do |song| %>
-            <%= render 'song_item', song: song, draggable: false %>
-          <% end %>
+      <div class="space-y-4">
+        <h2 class="text-lg font-semibold text-gray-800">Adicionar Músicas</h2>
+        <div class="flex items-end space-x-2">
+          <div class="flex-1">
+            <label for="song-select" class="block text-sm font-medium text-gray-700 mb-1">
+              Selecione uma música
+            </label>
+            <!-- Debug info -->
+            <div class="mb-2 text-sm text-gray-500">
+              Total de músicas disponíveis: <%= @library.songs.count %>
+            </div>
+            <select id="song-select" class="w-full song-select">
+              <option disable>Selecione uma música</option>
+              <% @library.songs.each do |song| %>
+                <option value="<%= song.id %>" data-artist="<%= song.artist %>">
+                  <%= song.title %> - <%= song.artist %>
+                </option>
+              <% end %>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -48,18 +50,12 @@
             </svg>
             Imprimir Setlist
           <% end %>
-          <%= button_to save_songs_setlist_path(@setlist), method: :post, class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" do %>
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-            Salvar Ordem
-          <% end %>
         </div>
       </div>
 
       <div class="overflow-y-auto max-h-96 border rounded-md">
         <div id="selected-songs" class="divide-y divide-gray-200" data-sortable-list>
-          <% @setlist.songs.each do |song| %>
+          <% @setlist.songs.order(:position).each do |song| %>
             <%= render 'song_item', song: song, draggable: true %>
           <% end %>
         </div>
@@ -75,19 +71,10 @@
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     const setlistId = '<%= @setlist.id %>';
 
-    // Implementar busca de músicas
-    const searchInput = document.getElementById('song-search');
-    searchInput.addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      document.querySelectorAll('#available-songs .song-item').forEach(item => {
-        const title = item.querySelector('h3').textContent.toLowerCase();
-        const artist = item.querySelector('p').textContent.toLowerCase();
-        if (title.includes(searchTerm) || artist.includes(searchTerm)) {
-          item.style.display = '';
-        } else {
-          item.style.display = 'none';
-        }
-      });
+    // Adicionar handler para tecla Enter no select
+    $('.song-select').on('select2:select', function(e) {
+      addSongToSetlist(e.params.data.id);
+      $(this).val(null).trigger('change'); // Limpar seleção
     });
 
     // Implementar ordenação das músicas

@@ -1,0 +1,9 @@
+### TODO
+
+- [ ] Melhorar a seleção de musicas para setlist
+- [ ] Gerar PDF de musicas em txt ou conteúdo puro
+- [ ] Gerar PDF de setlist compilado
+- [ ] Adicionar media de referencia nas musicas
+- [ ] Adicionar transposição
+- [ ] Verificar formatos (acordes, cifras, tablaturas e partituras)
+- [ ] Adicionar dicionario de acordes
