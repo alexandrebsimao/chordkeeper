@@ -53,59 +53,136 @@
       <%= form.label :bpm, "BPM", class: "block text-sm font-medium text-gray-700" %>
       <%= form.number_field :bpm, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o BPM da música" %>
     </div>
-
-    <div class="space-y-2">
-      <%= form.label :duration, "Duração", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :duration, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite a duração da música" %>
-    </div>
   </div>
 
-  <div class="space-y-2">
-    <%= form.label :content, "Letra e Acordes", class: "block text-sm font-medium text-gray-700" %>
-    <%= form.text_area :content, rows: 10, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm font-mono", placeholder: "Digite a letra e os acordes da música" %>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="space-y-2">
-      <%= form.label :content_type, "Tipo de Conteúdo", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.select :content_type,
-          [['Cifra', 'chord'], ['Tablatura', 'tab'], ['Partitura', 'sheet']],
-          { include_blank: 'Selecione o tipo de conteúdo' },
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+  <div class="mt-6">
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex" aria-label="Tabs">
+        <button type="button" data-tab="content" class="tab-button w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm cursor-pointer">
+          <svg class="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Inserir Cifra
+        </button>
+        <button type="button" data-tab="attachment" class="tab-button w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm cursor-pointer">
+          <svg class="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+          Anexar Arquivo
+        </button>
+      </nav>
     </div>
 
-    <div class="space-y-2">
-      <%= form.label :attachment, "Anexo", class: "block text-sm font-medium text-gray-700" %>
-      <div class="mt-1 flex items-center">
-        <%= form.file_field :attachment,
-            accept: ".pdf,.doc,.docx,.txt",
-            class: "block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-medium
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100
-              focus:outline-none" %>
-        <% if song.attachment.attached? %>
-          <div class="ml-4 flex items-center text-sm text-gray-500">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
-            </svg>
-            <span>Arquivo atual: <%= song.attachment.filename %></span>
-          </div>
-        <% end %>
+    <div class="mt-6">
+      <div id="content-tab" class="tab-content">
+        <div class="space-y-2">
+          <%= form.label :content, "Cifra", class: "block text-sm font-medium text-gray-700" %>
+          <%= form.text_area :content, rows: 20, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm font-mono", placeholder: "Digite a letra e cifra da música" %>
+        </div>
       </div>
-      <p class="mt-1 text-sm text-gray-500">
-        Formatos aceitos: PDF, DOC, DOCX, TXT
-      </p>
-    </div>
 
-    <div class="space-y-2">
-      <%= form.label :library_id, "Biblioteca", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.collection_select :library_id, Library.all, :id, :name,
-          { include_blank: 'Selecione uma biblioteca' },
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+      <div id="attachment-tab" class="tab-content hidden">
+        <div class="space-y-2">
+          <%= form.label :attachment, "Arquivo", class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <div class="space-y-1 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <div class="flex text-sm text-gray-600">
+                <label for="song_attachment" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                  <span>Envie um arquivo</span>
+                  <%= form.file_field :attachment, class: "sr-only" %>
+                </label>
+                <p class="pl-1">ou arraste e solte</p>
+              </div>
+              <p class="text-xs text-gray-500">PDF até 10MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <%= form.hidden_field :library_id %>
+
+<%= javascript_tag do %>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const contentTextarea = document.querySelector('#song_content');
+    const attachmentInput = document.querySelector('#song_attachment');
+    let activeTab = 'content';
+
+    // Função para atualizar a aparência dos botões
+    function updateTabButtons() {
+      tabButtons.forEach(button => {
+        const tabName = button.dataset.tab;
+        if (tabName === activeTab) {
+          button.classList.add('border-blue-500', 'text-blue-600');
+          button.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        } else {
+          button.classList.remove('border-blue-500', 'text-blue-600');
+          button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        }
+      });
+    }
+
+    // Função para mostrar/esconder conteúdo das abas
+    function updateTabContents() {
+      tabContents.forEach(content => {
+        if (content.id === `${activeTab}-tab`) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    // Função para limpar campos não ativos
+    function clearInactiveFields() {
+      if (activeTab === 'content') {
+        attachmentInput.value = '';
+      } else {
+        contentTextarea.value = '';
+      }
+    }
+
+    // Inicializar estado das abas
+    updateTabButtons();
+
+    // Event listeners para os botões das abas
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const newTab = button.dataset.tab;
+        if (newTab !== activeTab) {
+          if (confirm('Mudar de aba irá limpar o conteúdo da aba atual. Deseja continuar?')) {
+            activeTab = newTab;
+            updateTabButtons();
+            updateTabContents();
+            clearInactiveFields();
+          }
+        }
+      });
+    });
+
+    // Event listener para o formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+      const hasContent = contentTextarea.value.trim().length > 0;
+      const hasAttachment = attachmentInput.files.length > 0;
+
+      if (hasContent && hasAttachment) {
+        e.preventDefault();
+        alert('Por favor, escolha apenas uma opção: inserir conteúdo ou anexar arquivo.');
+      } else if (!hasContent && !hasAttachment) {
+        e.preventDefault();
+        alert('Por favor, insira o conteúdo ou anexe um arquivo.');
+      }
+    });
+  });
+<% end %>
+
   </div>
 
   <div class="pt-4">

@@ -136,7 +136,8 @@ class SetlistsController < ApplicationController
 
     pdf = CombinePDF.new
     pdf << CombinePDF.parse(pdfkit.to_pdf)
-    pdf << CombinePDF.parse(pdfkit.to_pdf)
+    song = Song.last
+    pdf << CombinePDF.parse(song.attachment.download)
     # pdf << CombinePDF.load('path/load/url')
     
     send_data pdf.to_pdf,

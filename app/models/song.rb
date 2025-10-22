@@ -3,7 +3,6 @@ class Song < ApplicationRecord
   has_one_attached :attachment
   
   validates :title, presence: true
-  validates :artist, presence: true
   validate :acceptable_attachment, if: -> { attachment.attached? }
 
   private

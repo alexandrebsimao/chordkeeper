@@ -1,6 +1,6 @@
 ### TODO
 
-- [ ] Melhorar a seleção de musicas para setlist
+- [x] Melhorar a seleção de musicas para setlist
 - [ ] Gerar PDF de musicas em txt ou conteúdo puro
 - [ ] Gerar PDF de setlist compilado
 - [ ] Adicionar media de referencia nas musicas
