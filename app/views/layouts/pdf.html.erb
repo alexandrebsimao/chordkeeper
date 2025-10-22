@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      @font-face {
+        font-family: 'DejaVu Sans Mono';
+        src: url('https://cdn.jsdelivr.net/npm/@fontsource/dejavu-sans-mono@4.5.4/files/dejavu-sans-mono-latin-400-normal.woff2') format('woff2');
+      }
+      
+      body {
+        margin: 30px;
+        background: white;
+        font-family: 'DejaVu Sans Mono', monospace;
+      }
+
+      .header {
+        margin-bottom: 30px;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-family: Arial, sans-serif;
+      }
+
+      .subtitle {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 5px;
+        font-family: Arial, sans-serif;
+      }
+
+      .metadata {
+        font-size: 14px;
+        color: #888;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+      }
+
+      pre {
+        font-family: 'DejaVu Sans Mono', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+        letter-spacing: 0;
+        color: #000;
+        white-space: pre;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        tab-size: 8;
+        padding: 20px;
+        background-color: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+      }
+
+      .chord-line {
+        color: #2563eb;
+        font-weight: bold;
+        padding: 0;
+        margin: 0;
+      }
+
+      .tab-line {
+        color: #000;
+        font-size: 13px;
+        line-height: 1.2;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 20px;
+        }
+
+        pre {
+          border: none;
+          padding: 0;
+          background: none;
+        }
+
+        .page-break {
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>

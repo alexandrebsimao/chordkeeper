@@ -1,0 +1,10 @@
+<div class="header">
+  <div class="title"><%= ERB::Util.html_escape(song.title) %></div>
+  <div class="subtitle"><%= ERB::Util.html_escape(song.artist) %></div>
+  <div class="metadata">
+    <%= song.key.present? ? "Tom: #{ERB::Util.html_escape(song.key)}" : "" %>
+    <%= song.bpm.present? ? "&nbsp;&nbsp;|&nbsp;&nbsp;BPM: #{ERB::Util.html_escape(song.bpm.to_s)}".html_safe : "" %>
+  </div>
+</div>
+
+<pre><%= format_song_content(song.content) %></pre>
