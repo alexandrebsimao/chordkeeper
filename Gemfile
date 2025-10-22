@@ -63,3 +63,8 @@ group :test do
 end
 
 gem 'devise'
+
+gem 'pdfkit'
+gem 'wkhtmltopdf-binary'
+
+gem 'combine_pdf'

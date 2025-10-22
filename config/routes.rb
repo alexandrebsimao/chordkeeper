@@ -8,7 +8,11 @@ Rails.application.routes.draw do
       delete :remove_song
     end
   end
-  resources :songs
+  resources :songs do
+    member do
+      get :generate_pdf
+    end
+  end
   resources :libraries
   # devise_for :users
   devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
