@@ -3,7 +3,7 @@ class SetlistsController < ApplicationController
 
   # GET /setlists or /setlists.json
   def index
-    @setlists = Setlist.all
+    @setlists = Setlist.where(library_id: current_library.id)
   end
 
   # GET /setlists/1 or /setlists/1.json
@@ -85,6 +85,7 @@ class SetlistsController < ApplicationController
   # POST /setlists or /setlists.json
   def create
     @setlist = Setlist.new(setlist_params)
+    @setlist.library = current_library
 
     respond_to do |format|
       if @setlist.save

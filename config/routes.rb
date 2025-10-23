@@ -13,7 +13,11 @@ Rails.application.routes.draw do
       get :generate_pdf
     end
   end
-  resources :libraries
+  resources :libraries do
+    member do
+      get :define_scope
+    end
+  end
   # devise_for :users
   devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
 
@@ -28,5 +32,5 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "songs#index"
 end

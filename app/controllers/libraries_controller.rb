@@ -3,7 +3,7 @@ class LibrariesController < ApplicationController
 
   # GET /libraries or /libraries.json
   def index
-    @libraries = Library.all
+    @libraries = Library.joins(:library_users).where(library_users: { user_id: current_user.id })
   end
 
   # GET /libraries/1 or /libraries/1.json
@@ -22,6 +22,7 @@ class LibrariesController < ApplicationController
   # POST /libraries or /libraries.json
   def create
     @library = Library.new(library_params)
+    @library.users << current_user
 
     respond_to do |format|
       if @library.save
@@ -54,6 +55,16 @@ class LibrariesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to libraries_path, status: :see_other, notice: "Library was successfully destroyed." }
       format.json { head :no_content }
+    end
+  end
+
+  def define_scope
+    library = Library.joins(:library_users).where(libraries: { id: params[:id] }, library_users: { user_id: current_user.id }).first
+    if library.present?
+      session[:current_library_id] = library.id
+      redirect_to songs_path, notice: "Biblioteca alterada para #{library.name}."
+    else
+      redirect_to songs_path, alert: "Você não tem acesso a essa biblioteca."
     end
   end
 

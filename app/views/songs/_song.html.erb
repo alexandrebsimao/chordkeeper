@@ -1,48 +1,29 @@
 <div id="<%= dom_id song %>" class="space-y-6">
   <div class="border-b border-gray-200 pb-4">
-    <h3 class="text-2xl font-bold text-gray-900 mb-1">
+    <h3 class="text-lg font-semibold text-gray-900">
       <%= song.title %>
     </h3>
-    <p class="text-lg text-gray-600">
+    <p class="text-sm text-gray-600">
       <%= song.artist %>
     </p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
     <div class="space-y-4">
-      <div>
-        <h4 class="text-sm font-medium text-gray-500 uppercase">Informações do Álbum</h4>
-        <div class="mt-2 space-y-2">
-          <% if song.album.present? %>
-            <p class="text-gray-800">
-              <span class="font-medium">Álbum:</span> <%= song.album %>
-            </p>
-          <% end %>
-          <% if song.genre.present? %>
-            <p class="text-gray-800">
-              <span class="font-medium">Gênero:</span> <%= song.genre %>
-            </p>
-          <% end %>
-        </div>
-      </div>
-
       <div>
         <h4 class="text-sm font-medium text-gray-500 uppercase">Informações Técnicas</h4>
         <div class="mt-2 space-y-2">
+          <% unless song.key.present? || song.bpm.present? || song.genre.present? %>
+            <span class="text-gray-400 italic">Sem detalhamento</span>
+          <% end %>
           <% if song.key.present? %>
-            <p class="text-gray-800">
-              <span class="font-medium">Tom:</span> <%= song.key %>
-            </p>
+            <span class="font-medium">Tom:</span> <%= song.key %>
           <% end %>
           <% if song.bpm.present? %>
-            <p class="text-gray-800">
-              <span class="font-medium">BPM:</span> <%= song.bpm %>
-            </p>
+            <span class="font-medium">BPM:</span> <%= song.bpm %>
           <% end %>
-          <% if song.duration.present? %>
-            <p class="text-gray-800">
-              <span class="font-medium">Duração:</span> <%= song.duration %>
-            </p>
+          <% if song.genre.present? %>
+            <span class="font-medium">Gênero:</span> <%= song.genre %>
           <% end %>
         </div>
       </div>
@@ -52,10 +33,7 @@
       <% if song.content.present? && params['action'] != 'index' %>
         <div>
           <h4 class="text-sm font-medium text-gray-500 uppercase">
-            <%= song.content_type == 'chord' ? 'Cifra' : 
-                song.content_type == 'tab' ? 'Tablatura' : 
-                song.content_type == 'sheet' ? 'Partitura' : 
-                'Conteúdo' %>
+            Conteúdo
           </h4>
           <div class="mt-2 p-4 bg-gray-50 rounded-lg font-mono text-sm">
             <pre class="whitespace-pre-wrap"><%= song.content %></pre>
@@ -63,7 +41,7 @@
         </div>
       <% end %>
 
-      <% if song.attachment.present? %>
+      <% if song.attachment.present? && params['action'] != 'index' %>
         <div>
           <h4 class="text-sm font-medium text-gray-500 uppercase">Anexo</h4>
           <div class="mt-2">
@@ -81,14 +59,18 @@
 
   <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-500">
     <div class="flex items-center space-x-4">
-      <% if song.library.present? %>
+      <%
+=begin%>
+ <% if song.library.present? %>
         <div class="flex items-center">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
           </svg>
           <span>Biblioteca: <%= song.library.name %></span>
         </div>
-      <% end %>
+      <% end %> 
+<%
+=end%>
       
       <div class="flex items-center">
         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

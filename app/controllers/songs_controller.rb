@@ -3,7 +3,7 @@ class SongsController < ApplicationController
 
   # GET /songs or /songs.json
   def index
-    @songs = Song.all
+    @songs = Song.where(library_id: current_library.id)
   end
 
   # GET /songs/1 or /songs/1.json
@@ -76,8 +76,8 @@ class SongsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def song_params
-      params.require(:song).permit(:title, :artist, :album, :genre, :key, :bpm, :duration, 
-                                 :content, :content_type, :attachment, :library_id)
+      params.require(:song).permit(:title, :artist, :genre, :key, :bpm, 
+                                 :content, :library_id)
     end
 
 end
