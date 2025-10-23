@@ -19,7 +19,7 @@ class SetlistsController < ApplicationController
   def print
     pdf = CombinePDF.new
 
-    @setlist.songs.each do |song|
+    @setlist.songs.order(:position).each do |song|
       if song.attachment.attached?
         pdf << CombinePDF.parse(song.attachment.download)
       else
@@ -86,6 +86,7 @@ class SetlistsController < ApplicationController
   def create
     @setlist = Setlist.new(setlist_params)
     @setlist.library = current_library
+    @setlist.owner = current_user
 
     respond_to do |format|
       if @setlist.save

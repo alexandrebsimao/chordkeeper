@@ -29,15 +29,15 @@ export default class extends Controller {
   }
 
   closeMenusOnClickOutside(event) {
-    if(this.containerTarget !== undefined) {
-      if (!this.containerTarget.contains(event.target) && 
-          !this.actionsTarget.contains(event.target)) {
-        this.dropdownTarget.classList.add("hidden")
-        if (this.hasActionMenuTarget) {
-          this.actionMenuTarget.classList.add("hidden")
-        }
-      }
-    }
+    // if(this.containerTarget !== undefined) {
+    //   if (!this.containerTarget.contains(event.target) && 
+    //       !this.actionsTarget.contains(event.target)) {
+    //     this.dropdownTarget.classList.add("hidden")
+    //     if (this.hasActionMenuTarget) {
+    //       this.actionMenuTarget.classList.add("hidden")
+    //     }
+    //   }
+    // }
   }
 
   async deleteLibrary(event) {

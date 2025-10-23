@@ -45,13 +45,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_204331) do
   create_table "libraries", force: :cascade do |t|
     t.string "name"
     t.text "description"
+    t.bigint "owner_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["owner_id"], name: "index_libraries_on_owner_id"
   end
 
   create_table "library_users", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "library_id", null: false
+    t.string "role", default: "admin", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["library_id"], name: "index_library_users_on_library_id"
@@ -72,22 +75,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_204331) do
     t.string "name"
     t.text "description"
     t.bigint "library_id", null: false
+    t.bigint "owner_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["library_id"], name: "index_setlists_on_library_id"
+    t.index ["owner_id"], name: "index_setlists_on_owner_id"
   end
 
   create_table "songs", force: :cascade do |t|
     t.string "title"
     t.string "artist"
-    t.string "album"
     t.string "genre"
     t.string "key"
     t.integer "bpm"
-    t.string "duration"
     t.text "content"
-    t.string "content_type"
-    t.string "attachment"
     t.bigint "library_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -108,10 +109,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_204331) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "libraries", "users", column: "owner_id"
   add_foreign_key "library_users", "libraries"
   add_foreign_key "library_users", "users"
   add_foreign_key "setlist_songs", "setlists"
   add_foreign_key "setlist_songs", "songs"
   add_foreign_key "setlists", "libraries"
+  add_foreign_key "setlists", "users", column: "owner_id"
   add_foreign_key "songs", "libraries"
 end

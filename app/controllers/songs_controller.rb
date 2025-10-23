@@ -22,6 +22,7 @@ class SongsController < ApplicationController
   # POST /songs or /songs.json
   def create
     @song = Song.new(song_params)
+    @song.library = current_library
 
     respond_to do |format|
       if @song.save
@@ -76,8 +77,8 @@ class SongsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def song_params
-      params.require(:song).permit(:title, :artist, :genre, :key, :bpm, 
-                                 :content, :library_id)
+      params.require(:song).permit(:title, :artist, :genre, :key, :bpm, :attachment,
+                                 :content)
     end
 
 end

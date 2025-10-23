@@ -23,6 +23,7 @@ class LibrariesController < ApplicationController
   def create
     @library = Library.new(library_params)
     @library.users << current_user
+    @library.owner = current_user
 
     respond_to do |format|
       if @library.save
