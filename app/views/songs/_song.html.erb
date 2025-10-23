@@ -14,7 +14,7 @@
         <h4 class="text-sm font-medium text-gray-500 uppercase">Informações Técnicas</h4>
         <div class="mt-2 space-y-2">
           <% unless song.key.present? || song.bpm.present? || song.genre.present? %>
-            <span class="text-gray-400 italic">Sem detalhamento</span>
+            <span class="text-gray-400 italic">Sem informações</span>
           <% end %>
           <% if song.key.present? %>
             <span class="font-medium">Tom:</span> <%= song.key %>

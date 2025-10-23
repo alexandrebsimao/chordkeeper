@@ -1,8 +1,8 @@
 ### TODO
 
 - [x] Melhorar a seleção de musicas para setlist
-- [ ] Gerar PDF de musicas em txt ou conteúdo puro
-- [ ] Gerar PDF de setlist compilado
+- [x] Gerar PDF de musicas em txt ou conteúdo puro
+- [x] Gerar PDF de setlist compilado
 - [ ] Refatoração
 - [ ] Revisar colunas
 - [ ] Compartilhar biblioteca
