@@ -17,7 +17,10 @@
             <span class="text-gray-400 italic">Sem informações</span>
           <% end %>
           <% if song.key.present? %>
-            <span class="font-medium">Tom:</span> <%= song.key %>
+            <span class="font-medium">Tom original:</span> <%= song.original_key %>
+          <% end %>
+          <% if song.transpose_key.present? %>
+            <span class="font-medium">Tansposição de tom:</span> <%= song.transpose_key %>
           <% end %>
           <% if song.bpm.present? %>
             <span class="font-medium">BPM:</span> <%= song.bpm %>
@@ -36,7 +39,9 @@
             Conteúdo
           </h4>
           <div class="mt-2 p-4 bg-gray-50 rounded-lg font-mono text-sm">
-            <pre class="whitespace-pre-wrap"><%= song.content %></pre>
+            <pre class="whitespace-pre-wrap">
+              <%= song.transpose_key.present? ? song.transposed_content(song.transpose_key) : song.content %>
+            </pre>
           </div>
         </div>
       <% end %>

@@ -40,9 +40,19 @@
     </div>
 
     <div class="space-y-2">
-      <%= form.label :key, "Tom", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :key, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "Digite o tom da música" %>
+      <%= form.label :original_key, "Tom original", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.select :original_key,
+          Song::NOTES,
+          { include_blank: 'Selecione o tom' },
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
     </div>
+
+    <div class="space-y-2">
+      <%= form.label :transpose_key, "Transpor Tom", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.select :transpose_key,
+          Song::NOTES,
+          { include_blank: 'Selecione o tom' },
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>    </div>
 
     <div class="space-y-2">
       <%= form.label :bpm, "BPM", class: "block text-sm font-medium text-gray-700" %>

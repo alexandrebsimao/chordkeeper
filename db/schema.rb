@@ -86,7 +86,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_204331) do
     t.string "title"
     t.string "artist"
     t.string "genre"
-    t.string "key"
+    t.string "original_key"
+    t.string "transpose_key"
     t.integer "bpm"
     t.text "content"
     t.bigint "library_id", null: false

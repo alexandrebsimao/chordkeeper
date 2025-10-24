@@ -1,9 +1,30 @@
 class Song < ApplicationRecord
+  include ChordTransposer
+
+  NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].freeze
+
   belongs_to :library
   has_one_attached :attachment
   
   validates :title, presence: true
   validate :acceptable_attachment, if: -> { attachment.attached? }
+
+  def transposed_content(to_key)
+    semitones = calculate_interval(self.original_key, to_key)
+    return content unless semitones != 0
+    transposed_lines = content.lines.map do |line|
+      if chord_line?(line)
+        transpose_chord_line(line, semitones)
+      else
+        line
+      end
+    end
+    transposed_lines.join
+  end
+
+  def key
+    transpose_key.present? ? transpose_key : original_key
+  end
 
   private
 
