@@ -4,6 +4,7 @@
 - [x] Gerar PDF de musicas em txt ou conteúdo puro
 - [x] Gerar PDF de setlist compilado
 - [ ] Refatoração
+- [ ] Melhorar a transposição
 - [x] Revisar colunas
 - [ ] Compartilhar biblioteca
 - [ ] Compartilhar setlist de modo publico (link publico e QR Code)

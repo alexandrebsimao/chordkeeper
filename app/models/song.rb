@@ -9,6 +9,16 @@ class Song < ApplicationRecord
   validates :title, presence: true
   validate :acceptable_attachment, if: -> { attachment.attached? }
 
+  before_save :set_original_key_if_missing
+
+  def set_original_key_if_missing
+    if self.original_key.blank? && self.content.present?
+      detector = KeyDetector.new(self.content)
+      detected_key = detector.detect
+      self.original_key = detected_key unless detected_key.start_with?("Não foi possível")
+    end
+  end
+
   def transposed_content(to_key)
     semitones = calculate_interval(self.original_key, to_key)
     return content unless semitones != 0
