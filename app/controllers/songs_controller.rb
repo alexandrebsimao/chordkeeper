@@ -69,6 +69,18 @@ class SongsController < ApplicationController
               disposition: "inline" # ou "attachment" para download
   end
 
+  def transpose
+    song = Song.find(params[:id])
+    to_key = params[:transpose_key]
+
+    song.transpose_key = song.original_key == to_key ? nil : to_key
+    if song.save
+      redirect_to song, notice: "Música transposta para #{to_key} com sucesso."
+    else
+      redirect_to song, alert: "Erro ao transpor a música."
+    end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_song

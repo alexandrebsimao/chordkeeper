@@ -81,7 +81,7 @@
     <div class="mt-6">
       <div id="content-tab" class="tab-content">
         <div class="space-y-2">
-          <%= form.label :content, "Cifra", class: "block text-sm font-medium text-gray-700" %>
+          <%= form.label :content, "Cifra <span class='text-gray-400 italic'>A edição da cifra será no tom original quando foi salvo a música</span>".html_safe, class: "block text-sm font-medium text-gray-700" %>
           <%= 
             form.text_area :content, rows: 20, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm font-mono", placeholder: 
             "Digite a letra e cifra da música. Ex.:

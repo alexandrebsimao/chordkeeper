@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :songs do
     member do
       get :generate_pdf
+      post :transpose
     end
   end
   resources :libraries do

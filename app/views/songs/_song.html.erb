@@ -17,11 +17,24 @@
             <span class="text-gray-400 italic">Sem informações</span>
           <% end %>
           <% if song.key.present? %>
-            <span class="font-medium">Tom original:</span> <%= song.original_key %>
+            <span class="font-medium">Tom:</span>
+            <% if song.attachment.present? %>
+              <%= song.key %>
+            <% else %>
+              <select onchange="onTransposeKeyChange(this, <%= song.id %>)" class="">
+                <option value="">Transpor Tom</option>
+                <% Song::NOTES.each do |note| %>
+                  <option value="<%= note %>" <%= 'selected' if song.key == note %>>
+                    <%= note %>
+                    <% if song.original_key == note %>
+                      (Original)
+                    <% end %>
+                  </option>
+                <% end %>
+              </select>
+            <% end %>
           <% end %>
-          <% if song.transpose_key.present? %>
-            <span class="font-medium">Tansposição de tom:</span> <%= song.transpose_key %>
-          <% end %>
+
           <% if song.bpm.present? %>
             <span class="font-medium">BPM:</span> <%= song.bpm %>
           <% end %>
@@ -64,19 +77,6 @@
 
   <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-500">
     <div class="flex items-center space-x-4">
-      <%
-=begin%>
- <% if song.library.present? %>
-        <div class="flex items-center">
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-          </svg>
-          <span>Biblioteca: <%= song.library.name %></span>
-        </div>
-      <% end %> 
-<%
-=end%>
-      
       <div class="flex items-center">
         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -87,3 +87,24 @@
   </div>
 </div>
 
+<script>
+  function onTransposeKeyChange(selectElement, id) {
+    const selectedKey = selectElement.value;
+    const url = new URL(`/songs/${id}/transpose`, window.location.origin);
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ transpose_key: selectedKey })
+    }).then(response => {
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Erro ao transpor a música.');
+      }
+    });
+  }
+</script>
