@@ -28,9 +28,9 @@
             </div>
             <select id="song-select" class="w-full song-select">
               <option disable>Selecione uma música</option>
-              <% @library.songs.each do |song| %>
+              <% @setlist.songs_not_in_setlist.each do |song| %>
                 <option value="<%= song.id %>" data-artist="<%= song.artist %>">
-                  <%= song.title %> - <%= song.artist %>
+                  <%= [song.title, song.artist].select(&:present?).join(' - ') %>
                 </option>
               <% end %>
             </select>

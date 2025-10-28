@@ -11,4 +11,8 @@ class Setlist < ApplicationRecord
       self.public_setlist.save
     end
   end
+
+  def songs_not_in_setlist
+    library.songs.where.not(id: songs.select(:id))
+  end
 end
