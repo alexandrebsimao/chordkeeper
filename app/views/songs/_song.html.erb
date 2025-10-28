@@ -18,7 +18,7 @@
           <% end %>
           <% if song.key.present? %>
             <span class="font-medium">Tom:</span>
-            <% if song.attachment.present? %>
+            <% if song.attachment.present? && !song.convert_pdf %>
               <%= song.key %>
             <% else %>
               <select onchange="onTransposeKeyChange(this, <%= song.id %>)" class="">
