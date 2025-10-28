@@ -68,3 +68,5 @@ gem 'pdfkit'
 gem 'wkhtmltopdf-binary'
 
 gem 'combine_pdf'
+
+gem "rqrcode", "~> 3.0"

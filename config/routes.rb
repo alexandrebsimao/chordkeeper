@@ -6,8 +6,11 @@ Rails.application.routes.draw do
       post :save_songs
       post :add_song
       delete :remove_song
+      get :public_link_generator
+      delete :public_link_destroyer
     end
   end
+  get 'public_setlist/:public_token', to: 'public_setlist#show', as: 'public_setlist'
   resources :songs do
     member do
       get :generate_pdf

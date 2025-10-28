@@ -1,5 +1,5 @@
 class SetlistsController < ApplicationController
-  before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song ]
+  before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song public_link_generator public_link_destroyer ]
 
   # GET /setlists or /setlists.json
   def index
@@ -13,6 +13,19 @@ class SetlistsController < ApplicationController
   # GET /setlists/1/manage_songs
   def manage_songs
     @library = @setlist.library
+  end
+
+  def public_link_generator
+    @setlist.generate_public_setlist!
+    public_setlist = @setlist.public_setlist
+    
+    redirect_to @setlist, notice: "Link público gerado: #{public_setlist_url(public_setlist.uuid)}"
+  end
+
+  def public_link_destroyer
+    @setlist.public_setlist.destroy if @setlist.public_setlist.present?
+
+    redirect_to @setlist, notice: "Link público removido."
   end
 
   # GET /setlists/1/print

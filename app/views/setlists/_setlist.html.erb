@@ -15,6 +15,23 @@
     </p>
   </div>
 
+  <% if params[:action] != "index" %>
+
+    <div class="mt-2">
+      <% if setlist.public_setlist.present? %>
+        <% url = public_setlist_url(setlist.public_setlist.uuid) %>
+        <div class="mb-2">
+          <a href="<%= url %>" target="_blank" class="text-blue-600 hover:underline break-all"><%= url %></a>
+        </div>
+
+        <div class="qr-code-container">
+          <%= raw gerar_qr_code_svg(url) %>
+        </div>
+      <% end %>
+    </div>
+
+  <% end %>
+
   <div class="flex items-center space-x-4 text-sm text-gray-500 mt-4">
     <%
 =begin%>
