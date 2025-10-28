@@ -6,7 +6,7 @@ O ChordKeeper é um sistema de gestão de cifras, onde você pode salvar as cifr
 - [x] Salvar cifra em texto
 - [x] Salvar cifra em PDF
 - [x] Transpor cifra salvo em texto
-- [ ] Leitura de cifra em PDF e salvar em texto
+- [x] Leitura de cifra em PDF e salvar em texto
 - [x] Montar setlist
 - [x] Baixar cifra individual em PDF
 - [x] Baixar cifras compiladas do setlist
@@ -32,6 +32,6 @@ O ChordKeeper é um sistema de gestão de cifras, onde você pode salvar as cifr
 - [x] Compartilhar setlist de modo publico (link publico e QR Code)
 - [ ] Adicionar midia de referência nas músicas
 - [ ] Refatoração
-- [ ] Interpretação de PDF e salvar no conteúdo (facilitar transposição)
+- [x] Interpretação de PDF e salvar no conteúdo (facilitar transposição)
 - [ ] Verificar formatos (acordes, cifras, tablaturas e partituras)
 - [ ] Adicionar dicionario de acordes

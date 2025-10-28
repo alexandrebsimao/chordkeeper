@@ -10,6 +10,7 @@ class Song < ApplicationRecord
   validate :acceptable_attachment, if: -> { attachment.attached? }
 
   before_save :set_original_key_if_missing
+  before_save :pdf_to_text!, if: -> { convert_pdf? }
 
   def set_original_key_if_missing
     if self.original_key.blank? && self.content.present?
@@ -36,7 +37,25 @@ class Song < ApplicationRecord
     transpose_key.present? ? transpose_key : original_key
   end
 
+  def pdf_to_text!
+    return nil unless attachment.attached? && attachment.blob.content_type == 'application/pdf'
+
+    pdf_content = ''
+    reader = PDF::Reader.new(StringIO.new(attachment.download))
+    reader.pages.each do |page|
+      pdf_content += page.text + "\n"
+    end
+    pdf_content.strip
+
+    self.content = pdf_content
+    self.save!
+  end
+
   private
+
+  def convert_pdf?
+    attachment.attached? && attachment.blob.content_type == 'application/pdf' && content.blank? && self.convert_pdf
+  end
 
   def acceptable_attachment
     return unless attachment.attached?

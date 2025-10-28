@@ -30,16 +30,7 @@ class SetlistsController < ApplicationController
 
   # GET /setlists/1/print
   def print
-    pdf = CombinePDF.new
-
-    @setlist.songs.order(:position).each do |song|
-      if song.attachment.attached?
-        pdf << CombinePDF.parse(song.attachment.download)
-      else
-        pdfkit = Songs::GeneratePdf.call(song)
-        pdf << CombinePDF.parse(pdfkit.to_pdf)
-      end
-    end
+    pdf = Setlists::MergePdf.call(@setlist)
     
     send_data pdf.to_pdf,
             filename: "#{@setlist.name}.pdf",
