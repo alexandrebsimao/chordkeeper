@@ -4,6 +4,10 @@ class Song < ApplicationRecord
   NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].freeze
 
   belongs_to :library
+
+  has_many :setlist_songs, dependent: :destroy
+  has_many :setlists, through: :setlist_songs
+
   has_one_attached :attachment
   
   validates :title, presence: true

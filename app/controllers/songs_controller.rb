@@ -50,6 +50,14 @@ class SongsController < ApplicationController
 
   # DELETE /songs/1 or /songs/1.json
   def destroy
+    if @song.setlists.any?
+      respond_to do |format|
+        format.html { redirect_to songs_path, status: :see_other, alert: "Não é possível excluir a música pois ela está associada a um ou mais setlists." }
+        format.json { head :no_content }
+      end
+      return
+    end
+
     @song.destroy!
 
     respond_to do |format|
