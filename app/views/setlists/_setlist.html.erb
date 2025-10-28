@@ -15,35 +15,46 @@
     </p>
   </div>
 
-  <% if params[:action] != "index" %>
+  <% if params[:action] != "index" && setlist.public_setlist.present? %>
+    <!-- Componente de Compartilhamento -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 class="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Compartilhar</h2>
+        
+        <div class="flex flex-col sm:flex-row gap-6 items-center">
+            <!-- Seção de Link -->
+            <div class="flex-1 w-full">
+                <p class="text-xs text-gray-500 mb-2 uppercase tracking-wide">Link de Compartilhamento</p>
+                <div class="flex gap-2">
+                    <input 
+                        type="text" 
+                        id="shareLink"
+                        value="<%= public_setlist_url(setlist.public_setlist.uuid) %>" 
+                        readonly
+                        class="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded text-gray-700 focus:outline-none"
+                    >
+                    <button 
+                        onclick="copiarLink()"
+                        class="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition-colors"
+                    >
+                        Copiar
+                    </button>
+                </div>
+            </div>
 
-    <div class="mt-2">
-      <% if setlist.public_setlist.present? %>
-        <% url = public_setlist_url(setlist.public_setlist.uuid) %>
-        <div class="mb-2">
-          <a href="<%= url %>" target="_blank" class="text-blue-600 hover:underline break-all"><%= url %></a>
-        </div>
+            <!-- Divisor -->
+            <div class="hidden sm:block w-px h-20 bg-gray-200"></div>
 
-        <div class="qr-code-container">
-          <%= raw gerar_qr_code_svg(url) %>
+            <!-- Seção de QR Code -->
+            <div class="flex flex-col items-center">
+                <p class="text-xs text-gray-500 mb-3 uppercase tracking-wide">QR Code</p>
+                <%= raw gerar_qr_code_svg(public_setlist_url(setlist.public_setlist.uuid)) %>
+            </div>
         </div>
-      <% end %>
     </div>
 
   <% end %>
 
   <div class="flex items-center space-x-4 text-sm text-gray-500 mt-4">
-    <%
-=begin%>
- <div class="flex items-center">
-      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-      </svg>
-      <span>Biblioteca: <%= setlist.library.name %></span>
-    </div> 
-<%
-=end%>
-
     <div class="flex items-center">
       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
