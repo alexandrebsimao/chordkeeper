@@ -4,6 +4,11 @@ class SongsController < ApplicationController
   # GET /songs or /songs.json
   def index
     @songs = Song.where(library_id: current_library.id)
+    if params[:search].present?
+      search_term = params[:search].downcase
+      @songs = @songs.where("LOWER(title) LIKE ?", "%#{search_term}%")
+    end
+    @songs = @songs.paginate(page: params[:page], per_page: 9).order(:title)
   end
 
   # GET /songs/1 or /songs/1.json

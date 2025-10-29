@@ -16,4 +16,8 @@ module ApplicationHelper
     # Retorna o código SVG como uma string
     return svg
   end
+
+  def paginate(collection)
+    will_paginate collection, renderer: TailwindPaginationRenderer, previous_label: 'Voltar', next_label: 'Próxima'
+  end
 end

@@ -4,6 +4,11 @@ class SetlistsController < ApplicationController
   # GET /setlists or /setlists.json
   def index
     @setlists = Setlist.where(library_id: current_library.id)
+    if params[:search].present?
+      search_term = params[:search].downcase
+      @setlists = @setlists.where("LOWER(title) LIKE ?", "%#{search_term}%")
+    end
+    @setlists = @setlists.paginate(page: params[:page], per_page: 9).order(:title)
   end
 
   # GET /setlists/1 or /setlists/1.json
@@ -33,7 +38,7 @@ class SetlistsController < ApplicationController
     pdf = Setlists::MergePdf.call(@setlist)
     
     send_data pdf.to_pdf,
-            filename: "#{@setlist.name}.pdf",
+            filename: "#{@setlist.title}.pdf",
             type: "application/pdf",
             disposition: "inline"
   end
@@ -94,7 +99,7 @@ class SetlistsController < ApplicationController
 
     respond_to do |format|
       if @setlist.save
-        format.html { redirect_to @setlist, notice: "Setlist was successfully created." }
+        format.html { redirect_to manage_songs_setlist_path(@setlist), notice: "Setlist criado com sucesso. Agora selecione as músicas ao setlist" }
         format.json { render :show, status: :created, location: @setlist }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -107,7 +112,7 @@ class SetlistsController < ApplicationController
   def update
     respond_to do |format|
       if @setlist.update(setlist_params)
-        format.html { redirect_to @setlist, notice: "Setlist was successfully updated." }
+        format.html { redirect_to @setlist, notice: "Setlist atualizado com sucesso." }
         format.json { render :show, status: :ok, location: @setlist }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -121,7 +126,7 @@ class SetlistsController < ApplicationController
     @setlist.destroy!
 
     respond_to do |format|
-      format.html { redirect_to setlists_path, status: :see_other, notice: "Setlist was successfully destroyed." }
+      format.html { redirect_to setlists_path, status: :see_other, notice: "Setlist removido com sucesso." }
       format.json { head :no_content }
     end
   end
@@ -134,6 +139,6 @@ class SetlistsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def setlist_params
-      params.expect(setlist: [ :name, :description, :library_id ])
+      params.expect(setlist: [ :title, :description, :library_id ])
     end
 end

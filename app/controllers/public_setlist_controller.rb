@@ -11,7 +11,7 @@ class PublicSetlistController < ApplicationController
     pdf = Setlists::MergePdf.call(@setlist)
     
     send_data pdf.to_pdf,
-            filename: "#{@setlist.name}.pdf",
+            filename: "#{@setlist.title}.pdf",
             type: "application/pdf",
             disposition: "inline"
   end

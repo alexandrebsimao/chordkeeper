@@ -80,7 +80,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_28_171213) do
   end
 
   create_table "setlists", force: :cascade do |t|
-    t.string "name"
+    t.string "title"
     t.text "description"
     t.bigint "library_id", null: false
     t.bigint "owner_id", null: false

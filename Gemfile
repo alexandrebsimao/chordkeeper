@@ -72,3 +72,5 @@ gem 'combine_pdf'
 gem "rqrcode", "~> 3.0"
 
 gem 'pdf-reader'
+
+gem 'will_paginate', '~> 4.0'
