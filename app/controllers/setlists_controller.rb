@@ -35,9 +35,9 @@ class SetlistsController < ApplicationController
 
   # GET /setlists/1/print
   def print
-    pdf = Setlists::MergePdf.call(@setlist)
+    pdf = Setlists::MergePdfService.call(@setlist)
     
-    send_data pdf.to_pdf,
+    send_data pdf,
             filename: "#{@setlist.title}.pdf",
             type: "application/pdf",
             disposition: "inline"

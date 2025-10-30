@@ -1,21 +1,20 @@
 module Setlists
-  class MergePdf < ApplicationService
+  class MergePdfService < ApplicationService
     def initialize(setlist)
       @setlist = setlist
     end
 
     def call
-      pdf = CombinePDF.new
-
+      files = []
       @setlist.songs.order(:position).each do |song|
         if song.attachment.attached? && !song.convert_pdf
-          pdf << CombinePDF.parse(song.attachment.download)
+          files << song.attachment.download
         else
-          pdfkit = Songs::GeneratePdf.call(song)
-          pdf << CombinePDF.parse(pdfkit.to_pdf)
+          pdfkit = Songs::GeneratePdfService.call(song)
+          files << pdfkit
         end
       end
-
+      pdf = PdfProvider.merge(files)
       pdf
     end
   end

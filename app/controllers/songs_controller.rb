@@ -74,9 +74,9 @@ class SongsController < ApplicationController
   def generate_pdf
     @song = Song.find(params[:id])
 
-    pdf = Songs::GeneratePdf.call(@song)
+    pdf = Songs::GeneratePdfService.call(@song)
   
-    send_data pdf.to_pdf,
+    send_data pdf,
               filename: "#{@song.title}.pdf",
               type: "application/pdf",
               disposition: "inline" # ou "attachment" para download
