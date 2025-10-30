@@ -1,6 +1,4 @@
 class Song < ApplicationRecord
-  include ChordTransposer
-
   NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].freeze
 
   belongs_to :library
@@ -22,19 +20,6 @@ class Song < ApplicationRecord
       detected_key = detector.detect
       self.original_key = detected_key unless detected_key.start_with?("Não foi possível")
     end
-  end
-
-  def transposed_content(to_key)
-    semitones = calculate_interval(self.original_key, to_key)
-    return content unless semitones != 0
-    transposed_lines = content.lines.map do |line|
-      if chord_line?(line)
-        transpose_chord_line(line, semitones)
-      else
-        line
-      end
-    end
-    transposed_lines.join
   end
 
   def key
