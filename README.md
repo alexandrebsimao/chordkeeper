@@ -37,3 +37,5 @@ O ChordKeeper é um sistema de gestão de cifras, onde você pode salvar as cifr
 - [x] Interpretação de PDF e salvar no conteúdo (facilitar transposição)
 - [ ] Verificar formatos (acordes, cifras, tablaturas e partituras)
 - [ ] Adicionar dicionario de acordes (???)
+- [ ] Verificar desempenho da geração de PDF setlist
+- [ ] Adicionar campo de capotraste em músicas
