@@ -3,12 +3,18 @@ class SetlistsController < ApplicationController
 
   # GET /setlists or /setlists.json
   def index
-    @setlists = Setlist.where(library_id: current_library.id)
-    if params[:search].present?
-      search_term = params[:search].downcase
-      @setlists = @setlists.where("LOWER(title) LIKE ?", "%#{search_term}%")
-    end
-    @setlists = @setlists.paginate(page: params[:page], per_page: 9).order(:title)
+    @setlists = Setlists::ListSetlistsService.new(
+      conditions: { 
+        equal: {
+          library_id: current_library.id
+        },
+        like: {
+          title: params[:search].present? ? params[:search].downcase : nil
+        }
+      },
+      page: params[:page],
+      per_page: 9
+    ).call
   end
 
   # GET /setlists/1 or /setlists/1.json
