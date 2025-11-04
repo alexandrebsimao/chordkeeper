@@ -1,8 +1,6 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  config.hosts << "innapses.com"
-  config.hosts << "www.innapses.com"
   config.hosts << /.*\.innapses\.com/
 
   config.hosts << "web"
