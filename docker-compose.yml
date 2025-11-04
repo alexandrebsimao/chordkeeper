@@ -28,7 +28,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whoami.entrypoints=https"
-      - "traefik.http.routers.whoami.rule=Host(`whoami.seudominio.com`)"
+      - "traefik.http.routers.whoami.rule=Host(`chordkeeper.innapses.com`)"
       - "traefik.http.routers.whoami.tls=true"
       - "traefik.http.routers.whoami.tls.certresolver=cloudflare"
       - "traefik.http.services.whoami.loadbalancer.server.port=80"
