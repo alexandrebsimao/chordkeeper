@@ -24,3 +24,8 @@ jobs:
           docker-compose -f docker-compose-production.yml up -d
           docker-compose exec -T web rails db:migrate
           docker system prune -f
+
+    - name: Debug secrets
+      run: |
+        echo "Host configurado: ${{ secrets.VPS_HOST != '' }}"
+        echo "Username configurado: ${{ secrets.VPS_USERNAME != '' }}"
