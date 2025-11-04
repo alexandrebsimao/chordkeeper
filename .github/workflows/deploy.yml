@@ -20,8 +20,8 @@ jobs:
         password: ${{ secrets.VPS_PASSWORD }}
         port: 22
         script: |
-          git pull origin main
           cd ~/chordkeeper/
+          git pull origin main
           docker compose -f docker-compose-production.yml stop
           docker compose -f docker-compose-production.yml up -d
           docker compose exec -T web rails db:migrate
