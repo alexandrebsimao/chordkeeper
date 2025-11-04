@@ -12,6 +12,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Debug secrets
+      run: |
+        echo "Host configurado: ${{ secrets.VPS_HOST != '' }}"
+        echo "Username configurado: ${{ secrets.VPS_USERNAME != '' }}"
+
     - name: Deploy to VPS
       uses: appleboy/ssh-action@master
       with:
@@ -24,8 +29,3 @@ jobs:
           docker-compose -f docker-compose-production.yml up -d
           docker-compose exec -T web rails db:migrate
           docker system prune -f
-
-    - name: Debug secrets
-      run: |
-        echo "Host configurado: ${{ secrets.VPS_HOST != '' }}"
-        echo "Username configurado: ${{ secrets.VPS_USERNAME != '' }}"
