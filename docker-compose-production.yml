@@ -3,6 +3,8 @@ services:
   db:
     image: postgres:13.15-bullseye
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_PASSWORD: chordkeeper
     volumes:
