@@ -16,7 +16,7 @@ services:
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     environment:
       - RAILS_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-chordkeeper}@db:5432/${DB_NAME:-chordkeeper}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-chordkeeper}@0.0.0.0:5432/${DB_NAME:-chordkeeper}
     volumes:
       - .:/myapp
     ports:
