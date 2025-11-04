@@ -20,18 +20,3 @@ services:
       - "3000:3000"
     depends_on:
       - db
-    networks:
-      - proxy
-      - internal
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.meu-app.entrypoints=https"
-      - "traefik.http.routers.meu-app.rule=Host(`chordkeeper.innapses.com`)"
-      - "traefik.http.routers.meu-app.tls=true"
-      - "traefik.http.routers.meu-app.tls.certresolver=cloudflare"
-      - "traefik.http.services.meu-app.loadbalancer.server.port=3000"
-networks:
-  proxy:
-    external: true
-  internal:
-    driver: bridge

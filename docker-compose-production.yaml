@@ -1,0 +1,37 @@
+version: '3'
+services:
+  db:
+    image: postgres:13.15-bullseye
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: chordkeeper
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+  web:
+    stdin_open: true
+    tty: true # Enables debugging capabilities when attached to this container.
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    environment:
+      - RAILS_ENV=development
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - proxy
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.meu-app.entrypoints=https"
+      - "traefik.http.routers.meu-app.rule=Host(`chordkeeper.innapses.com`)"
+      - "traefik.http.routers.meu-app.tls=true"
+      - "traefik.http.routers.meu-app.tls.certresolver=cloudflare"
+      - "traefik.http.services.meu-app.loadbalancer.server.port=3000"
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge
