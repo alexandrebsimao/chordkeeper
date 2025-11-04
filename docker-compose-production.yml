@@ -9,6 +9,9 @@ services:
       POSTGRES_PASSWORD: chordkeeper
     volumes:
       - ./tmp/db:/var/lib/postgresql/data
+    networks:
+      - proxy
+      - internal
   web:
     stdin_open: true
     tty: true # Enables debugging capabilities when attached to this container.
