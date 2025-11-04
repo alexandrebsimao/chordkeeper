@@ -16,6 +16,7 @@ jobs:
       run: |
         echo "Host configurado: ${{ secrets.VPS_HOST != '' }}"
         echo "Username configurado: ${{ secrets.VPS_USERNAME != '' }}"
+        echo "Key configurado: ${{ secrets.VPS_SSH_KEY != '' }}"
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@master
