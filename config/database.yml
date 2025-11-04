@@ -83,8 +83,15 @@ test:
 #
 production:
   primary: &primary_production
-    production:
-      url: <%= ENV['DATABASE_URL'] %>
+    adapter: postgresql
+    encoding: unicode
+    host: db
+    username: postgres
+    password: chordkeeper
+    database: chordkeeper
+    # For details on connection pooling, see Rails configuration guide
+    # http://guides.rubyonrails.org/configuring.html#database-pooling
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   cache:
     <<: *primary_production
     # database: chordkeeper
