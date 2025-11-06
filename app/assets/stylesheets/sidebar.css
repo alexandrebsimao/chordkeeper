@@ -1,0 +1,50 @@
+/* Estilos específicos para o sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+}
+
+/* Garante que o conteúdo rolável tenha altura apropriada */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+/* Estiliza a barra de rolagem */
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+}
+
+/* Garante que o footer do usuário fique sempre visível */
+.sidebar-footer {
+  border-top: 1px solid rgba(75, 85, 99, 0.4);
+  background-color: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(4px);
+}
+
+/* Melhora a visibilidade do dropdown em dispositivos móveis */
+@media (max-width: 768px) {
+  .sidebar-dropdown {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+  
+  .sidebar-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+}
