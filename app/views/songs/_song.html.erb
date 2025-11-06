@@ -72,16 +72,53 @@
           </div>
         </div>
       <% end %>
-    </div>
-  </div>
 
-  <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-500">
-    <div class="flex items-center space-x-4">
-      <div class="flex items-center">
-        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span>Atualizada em <%= song.updated_at.strftime("%d/%m/%Y") %></span>
+      <% if params['action'] != 'index' %>
+        <div>
+          <h4 class="text-sm font-medium text-gray-500 uppercase">Referências de Mídia</h4>
+          <div class="mt-2 space-y-2">
+            <% if song.media_references.any? %>
+              <% song.media_references.each do |media| %>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <% if media.media_type == 'url' %>
+                    <div>
+                      <h5 class="font-medium text-gray-700">Link:</h5>
+                      <a href="<%= media.url %>" target="_blank" class="text-blue-600 hover:text-blue-800">
+                        <%= media.url %>
+                      </a>
+                    </div>
+                  <% elsif media.media_type == 'file' && media.attachment.attached? %>
+                    <div>
+                      <h5 class="font-medium text-gray-700">Arquivo:</h5>
+                      <a href="<%= rails_blob_url(media.attachment) %>" target="_blank" class="text-blue-600 hover:text-blue-800">
+                        <%= media.attachment.filename.to_s %>
+                      </a>
+                    </div>
+                  <% end %>
+                  <% if media.description.present? %>
+                    <div class="mt-1">
+                      <h5 class="font-medium text-gray-700">Descrição:</h5>
+                      <p class="text-gray-600"><%= media.description %></p>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            <% else %>
+              <span class="text-gray-400 italic">Sem referências de mídia</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-500">
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Atualizada em <%= song.updated_at.strftime("%d/%m/%Y") %></span>
+        </div>
       </div>
     </div>
   </div>

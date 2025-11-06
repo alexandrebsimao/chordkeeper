@@ -5,8 +5,13 @@ class Song < ApplicationRecord
 
   has_many :setlist_songs, dependent: :destroy
   has_many :setlists, through: :setlist_songs
+  has_many :media_references, dependent: :destroy
 
   has_one_attached :attachment
+
+  accepts_nested_attributes_for :media_references, 
+    allow_destroy: true, 
+    reject_if: :all_blank
   
   validates :title, presence: true
   validate :acceptable_attachment, if: -> { attachment.attached? }

@@ -144,6 +144,120 @@ E               A9
         <%= form.label :convert_pdf, "Converter PDF para texto ao salvar", class: "ml-2 text-sm text-gray-700" %>
 
       </div>
+  </div>
+
+  <div class="mt-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Referências de Mídia</h3>
+    
+    <div class="media-references" data-controller="nested-form">
+      <template data-nested-form-target="template">
+        <%= form.fields_for :media_references, MediaReference.new, child_index: 'NEW_RECORD' do |media_form| %>
+          <div class="nested-fields bg-gray-50 p-4 rounded-lg mb-4" data-new-record="true" data-controller="media-form">
+            <%= media_form.hidden_field :_destroy %>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <%= media_form.label :media_type, "Tipo de Referência", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.select :media_type,
+                    [['Link', 'url'],
+                     ['Arquivo', 'file']],
+                    { prompt: "Selecione o tipo de referência" },
+                    class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                    data: { action: "change->media-form#toggleReferenceType" } %>
+              </div>
+
+              <div data-media-form-target="urlField" class="hidden">
+                <%= media_form.label :url, "URL", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.text_field :url, 
+                    class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", 
+                    placeholder: "https://" %>
+              </div>
+
+              <div data-media-form-target="fileField" class="hidden">
+                <%= media_form.label :attachment, "Arquivo", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.file_field :attachment,
+                    class: "mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100",
+                    accept: ".mp3,.wav,.ogg,audio/*,video/*" %>
+              </div>
+
+              <div>
+                <%= media_form.label :description, "Descrição", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.text_field :description, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Descreva esta referência..." %>
+              </div>
+
+              <div class="text-right">
+                <button type="button" data-action="nested-form#remove" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  Remover
+                </button>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </template>
+
+      <div data-nested-form-target="target">
+        <%= form.fields_for :media_references do |media_form| %>
+          <div class="nested-fields bg-gray-50 p-4 rounded-lg mb-4" data-controller="media-form">
+            <%= media_form.hidden_field :_destroy %>
+            <%= media_form.hidden_field :id if media_form.object.persisted? %>
+            
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <%= media_form.label :media_type, "Tipo de Referência", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.select :media_type,
+                    [['Link', 'url'],
+                     ['Arquivo', 'file']],
+                    { prompt: "Selecione o tipo de referência" },
+                    class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                    data: { 
+                      action: "change->media-form#toggleReferenceType",
+                      'media-form-reference-type-param': media_form.object.attachment.attached? ? 'file' : 'url'
+                    } %>
+              </div>
+
+              <div data-media-form-target="urlField" class="<%= media_form.object.attachment.attached? ? 'hidden' : '' %>">
+                <%= media_form.label :url, "URL", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.text_field :url, 
+                    class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", 
+                    placeholder: "https://" %>
+              </div>
+
+              <div data-media-form-target="fileField" class="<%= media_form.object.attachment.attached? ? '' : 'hidden' %>">
+                <%= media_form.label :attachment, "Arquivo", class: "block text-sm font-medium text-gray-700" %>
+                <% if media_form.object.attachment.attached? %>
+                  <div class="mb-2 text-sm text-gray-600">
+                    Arquivo atual: <%= media_form.object.attachment.filename %>
+                  </div>
+                <% end %>
+                <%= media_form.file_field :attachment,
+                    class: "mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100",
+                    accept: ".mp3,.wav,.ogg,audio/*,video/*" %>
+              </div>
+
+              <div>
+                <%= media_form.label :description, "Descrição", class: "block text-sm font-medium text-gray-700" %>
+                <%= media_form.text_field :description, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Descreva esta referência..." %>
+              </div>
+
+              <div class="text-right">
+                <button type="button" data-action="nested-form#remove" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  Remover
+                </button>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="mt-4">
+        <button type="button" 
+                data-action="click->nested-form#add" 
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Adicionar Nova Referência
+        </button>
+      </div>
     </div>
   </div>
 

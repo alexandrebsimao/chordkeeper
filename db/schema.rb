@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_28_171213) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_06_165701) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,6 +59,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_28_171213) do
     t.datetime "updated_at", null: false
     t.index ["library_id"], name: "index_library_users_on_library_id"
     t.index ["user_id"], name: "index_library_users_on_user_id"
+  end
+
+  create_table "media_references", force: :cascade do |t|
+    t.string "media_type"
+    t.string "url"
+    t.string "description"
+    t.bigint "song_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["song_id"], name: "index_media_references_on_song_id"
   end
 
   create_table "public_setlists", force: :cascade do |t|
@@ -122,6 +132,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_28_171213) do
   add_foreign_key "libraries", "users", column: "owner_id"
   add_foreign_key "library_users", "libraries"
   add_foreign_key "library_users", "users"
+  add_foreign_key "media_references", "songs"
   add_foreign_key "public_setlists", "setlists"
   add_foreign_key "setlist_songs", "setlists"
   add_foreign_key "setlist_songs", "songs"
