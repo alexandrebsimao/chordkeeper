@@ -9,7 +9,8 @@ class SongsController < ApplicationController
           library_id: current_library.id
         },
         like: {
-          title: params[:search].present? ? params[:search].downcase : nil
+          title: params[:search].present? ? params[:search].downcase : nil,
+          artist: params[:search].present? ? params[:search].downcase : nil
         }
       },
       page: params[:page],

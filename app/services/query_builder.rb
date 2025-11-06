@@ -4,12 +4,15 @@ module QueryBuilder
   def apply_like_filter(instance)
     return instance if @conditions[:like].blank?
 
-    @conditions[:like].each do |key, value|
+    conditions = @conditions[:like].map do |key, value|
       next if value.blank?
-
       sanitized_value = instance.sanitize_sql_like(value)
-      instance = instance.where("LOWER(#{key.to_s}) LIKE LOWER(?)", "%#{sanitized_value}%")
-    end
+      "LOWER(#{key}) LIKE LOWER(?)"
+    end.compact
+
+    values = @conditions[:like].values.reject(&:blank?).map { |v| "%#{v}%" }
+    
+    instance = instance.where(conditions.join(' OR '), *values) if conditions.any?
 
     instance
   end
