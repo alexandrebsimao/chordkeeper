@@ -23,6 +23,7 @@ jobs:
           cd ~/chordkeeper/
           git pull origin main
           docker compose -f docker-compose-production.yml stop
-          docker compose -f docker-compose-production.yml up -d
+          docker compose -f docker-compose-production.yml up --build -d
           docker compose exec -T web rails db:migrate
+          docker compose exec web rake assets:precompile
           docker system prune -f
