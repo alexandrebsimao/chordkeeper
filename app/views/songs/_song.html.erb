@@ -90,9 +90,10 @@
                   <% elsif media.media_type == 'file' && media.attachment.attached? %>
                     <div>
                       <h5 class="font-medium text-gray-700">Arquivo:</h5>
-                      <a href="<%= rails_blob_url(media.attachment) %>" target="_blank" class="text-blue-600 hover:text-blue-800">
-                        <%= media.attachment.filename.to_s %>
-                      </a>
+                      <audio controls>
+                        <source src="<%= rails_blob_url(media.attachment) %>" type="audio/mpeg">
+                      Your browser does not support the audio element.
+                      </audio>
                     </div>
                   <% end %>
                   <% if media.description.present? %>
