@@ -40,3 +40,13 @@ song_id
 type
 url
 description
+
+Settings
+- library_id
+- name
+- cast
+
+LibrarySettings
+- library_id
+- setting_id
+- value
