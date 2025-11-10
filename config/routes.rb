@@ -37,4 +37,15 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "songs#index"
+
+
+  # API routes
+  namespace :api do
+    resources :songs do
+      member do
+        get :generate_pdf
+        post :transpose
+      end
+    end
+  end
 end
