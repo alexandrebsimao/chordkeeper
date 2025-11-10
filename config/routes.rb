@@ -47,5 +47,18 @@ Rails.application.routes.draw do
         post :transpose
       end
     end
+
+    resources :setlists do
+      member do
+        get :manage_songs
+        get :print
+        post :save_songs
+        post :add_song
+        delete :remove_song
+        patch :reorder_songs
+        get :public_link_generator
+        delete :public_link_destroyer
+      end
+    end
   end
 end
