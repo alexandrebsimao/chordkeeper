@@ -38,6 +38,9 @@
           <% if song.bpm.present? %>
             <span class="font-medium">BPM:</span> <%= song.bpm %>
           <% end %>
+          <% if song.capo.present? %>
+            <span class="font-medium">Capotraste:</span> <%= song.capo %>ª casa
+          <% end %>
           <% if song.genre.present? %>
             <span class="font-medium">Gênero:</span> <%= song.genre %>
           <% end %>

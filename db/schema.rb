@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_06_165701) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_10_180010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,6 +112,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_06_165701) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "convert_pdf", default: false, null: false
+    t.integer "capo", default: 0, null: false
     t.index ["library_id"], name: "index_songs_on_library_id"
   end
 

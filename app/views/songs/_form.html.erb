@@ -48,11 +48,23 @@
     </div>
 
     <div class="space-y-2">
+      <%= form.label :capo, "Capotraste", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.select :capo,
+          [].concat((1..12).map { |n| [n.to_s, n] }),
+          { include_blank: 'Sem capo' },
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+    </div>
+
+    <%
+=begin%>
+ <div class="space-y-2">
       <%= form.label :transpose_key, "Transpor Tom", class: "block text-sm font-medium text-gray-700" %>
       <%= form.select :transpose_key,
           Song::NOTES,
           { include_blank: 'Selecione o tom' },
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>    </div>
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>    </div> 
+<%
+=end%>
 
     <div class="space-y-2">
       <%= form.label :bpm, "BPM", class: "block text-sm font-medium text-gray-700" %>
