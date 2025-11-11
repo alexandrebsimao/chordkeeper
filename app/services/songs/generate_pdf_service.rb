@@ -1,11 +1,12 @@
 module Songs
   class GeneratePdfService < ApplicationService
-    def initialize(song)
+    def initialize(song, font_size = 16)
       @song = song
+      @font_size = font_size
     end
 
     def call
-      html_content = render_template('songs/pdf', layout: 'pdf', locals: { song: @song })
+      html_content = render_template('songs/pdf', layout: 'pdf', locals: { song: @song, font_size: @font_size })
       pdfkit = PdfProvider.generate_from_html(html_content)
       pdfkit
     end

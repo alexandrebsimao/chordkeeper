@@ -61,7 +61,8 @@ module Api
 
     # GET /setlists/1/print
     def print
-      pdf = Setlists::MergePdfService.call(@setlist)
+      font_size = params[:font_size]&.to_i || 16
+      pdf = Setlists::MergePdfService.call(@setlist, font_size)
       
       send_data pdf,
               filename: "#{@setlist.title}.pdf",

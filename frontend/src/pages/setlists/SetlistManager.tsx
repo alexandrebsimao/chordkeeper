@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
+import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 
 type Song = {
   id: number;
@@ -46,18 +47,19 @@ const SetlistManager = () => {
   const [loading, setLoading] = useState(true);
   const [loadingSongs, setLoadingSongs] = useState(false);
   const [printingPdf, setPrintingPdf] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
-  const handlePrintSetlist = async () => {
+  const handlePrintSetlist = async (fontSize: number = 16) => {
     if (!id) return;
     
     setPrintingPdf(true);
     try {
-      const response = await fetchWithAuth(`/api/setlists/${id}/print`);
+      const response = await fetchWithAuth(`/api/setlists/${id}/print?font_size=${fontSize}`);
 
       if (response.status === 401) {
         navigate("/auth/login");
@@ -81,6 +83,9 @@ const SetlistManager = () => {
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
       }, 500);
+
+      // Fechar o dialog após sucesso
+      setPrintDialogOpen(false);
     } catch (err: any) {
       console.error('Failed to print setlist', err);
       toast({
@@ -446,7 +451,7 @@ const SetlistManager = () => {
             <Button
               variant="outline"
               size="icon"
-              onClick={handlePrintSetlist}
+              onClick={() => setPrintDialogOpen(true)}
               disabled={printingPdf}
               title="Imprimir setlist"
             >
@@ -594,6 +599,13 @@ const SetlistManager = () => {
           </Card>
         </div>
       </div>
+
+      <PrintOptionsDialog
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+        onPrint={handlePrintSetlist}
+        isPrinting={printingPdf}
+      />
     </div>
   );
 };

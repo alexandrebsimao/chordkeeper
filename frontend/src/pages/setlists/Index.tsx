@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 
 type ApiSetlist = {
   id: number;
@@ -32,6 +33,9 @@ const Setlists = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [printingPdf, setPrintingPdf] = useState(false);
+  const [selectedSetlistId, setSelectedSetlistId] = useState<number | null>(null);
   const [newSetlist, setNewSetlist] = useState({ title: "", description: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -39,9 +43,10 @@ const Setlists = () => {
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const handlePrintSetlist = async (setlistId: number) => {
+  const handlePrintSetlist = async (setlistId: number, fontSize: number = 16) => {
+    setPrintingPdf(true);
     try {
-      const response = await fetchWithAuth(`/api/setlists/${setlistId}/print`);
+      const response = await fetchWithAuth(`/api/setlists/${setlistId}/print?font_size=${fontSize}`);
 
       if (response.status === 401) {
         navigate("/auth/login");
@@ -65,6 +70,9 @@ const Setlists = () => {
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
       }, 500);
+
+      // Fechar o dialog após sucesso
+      setPrintDialogOpen(false);
     } catch (err: any) {
       console.error('Failed to print setlist', err);
       toast({
@@ -72,6 +80,8 @@ const Setlists = () => {
         description: err.message || 'Erro ao gerar PDF',
         variant: "destructive",
       });
+    } finally {
+      setPrintingPdf(false);
     }
   };
 
@@ -369,7 +379,10 @@ const Setlists = () => {
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9 hover:bg-muted"
-                        onClick={() => handlePrintSetlist(setlist.id)}
+                        onClick={() => {
+                          setSelectedSetlistId(setlist.id);
+                          setPrintDialogOpen(true);
+                        }}
                         title="Imprimir setlist"
                       >
                         <Printer className="h-4 w-4" />
@@ -403,6 +416,13 @@ const Setlists = () => {
           </div>
         )}
       </div>
+
+      <PrintOptionsDialog
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+        onPrint={(fontSize) => selectedSetlistId && handlePrintSetlist(selectedSetlistId, fontSize)}
+        isPrinting={printingPdf}
+      />
     </div>
   );
 };

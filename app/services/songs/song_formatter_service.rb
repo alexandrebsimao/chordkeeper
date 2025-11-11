@@ -10,10 +10,10 @@ module Songs
       # Escapa o HTML
       content = ERB::Util.html_escape(@song.content)
 
-      # Padrão de acorde - captura acordes completos incluindo inversões com # e b
-      # Aceita: A, Am, A7, A#m, Abm, Asus4, Amaj7, A/G, D9, E11/G#, etc.
-      # Nota: Não usa \b no final para permitir capturar # e b após a barra
-      chord_pattern = /(?<![a-zA-Z0-9])([A-G][#b]?(?:maj|dim|aug|sus|add|M|m|min|°|\+)?(?:2|4|5|6|7|9|11|13)?(?:\/[A-G][#b]?)?)(?![a-z])/
+      # Padrão de acorde - captura acordes completos incluindo inversões
+      # Aceita: A, Am, A7, A7M, F7M/C, A#m7, Abm, Asus4, Amaj7, A/G, D9, E11/G#, etc.
+      # Importante: a inversão /[nota] deve estar DENTRO do grupo de captura
+      chord_pattern = /(?<![a-zA-Z0-9])([A-G][#b]?(?:M|m|maj|min|dim|aug|sus|add|°|\+)?(?:[0-9]+)?(?:\([^)]*\))?(?:[#b0-9\-]*)?(?:\/[A-G][#b]?)?)(?![a-z])/
 
       # Processa o conteúdo linha por linha
       formatted_lines = content.split("\n").map do |line|

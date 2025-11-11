@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 
 type MediaRef = {
   id?: number;
@@ -43,6 +44,7 @@ const CifraView = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [transposing, setTransposing] = useState(false);
 
   // Lista de tons musicais
@@ -94,12 +96,12 @@ const CifraView = () => {
     }
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (fontSize: number = 16) => {
     if (!cifra) return;
     
     setDownloadingPdf(true);
     try {
-      const response = await fetchWithAuth(`/api/songs/${cifra.id}/generate_pdf`);
+      const response = await fetchWithAuth(`/api/songs/${cifra.id}/generate_pdf?font_size=${fontSize}`);
 
       if (response.status === 401) {
         navigate("/auth/login");
@@ -123,6 +125,9 @@ const CifraView = () => {
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
       }, 100);
+
+      // Fechar o dialog após sucesso
+      setPrintDialogOpen(false);
     } catch (err: any) {
       console.error('Failed to download PDF', err);
       alert(err.message || 'Erro ao gerar PDF');
@@ -302,7 +307,7 @@ const CifraView = () => {
           <Button 
             variant="outline" 
             size="icon" 
-            onClick={handleDownloadPdf}
+            onClick={() => setPrintDialogOpen(true)}
             disabled={downloadingPdf}
             className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
           >
@@ -501,6 +506,13 @@ const CifraView = () => {
           </Card>
         )}
       </div>
+
+      <PrintOptionsDialog
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+        onPrint={handleDownloadPdf}
+        isPrinting={downloadingPdf}
+      />
     </div>
   );
 };

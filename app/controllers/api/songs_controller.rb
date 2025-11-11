@@ -71,7 +71,8 @@ module Api
   def generate_pdf
     @song = Song.find(params[:id])
 
-    pdf = Songs::GeneratePdfService.call(@song)
+    font_size = params[:font_size]&.to_i || 16
+    pdf = Songs::GeneratePdfService.call(@song, font_size)
 
     send_data pdf,
             filename: "#{@song.title}.pdf",

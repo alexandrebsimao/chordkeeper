@@ -4,7 +4,7 @@
   <div class="metadata">
     <%= song.key.present? ? "Tom: #{ERB::Util.html_escape(song.key)}" : "" %>
     <%= song.bpm.present? ? "&nbsp;&nbsp;|&nbsp;&nbsp;BPM: #{ERB::Util.html_escape(song.bpm.to_s)}".html_safe : "" %>
-    <%= song.capo.positive? ? "&nbsp;&nbsp;|&nbsp;&nbsp;Capotraste: #{ERB::Util.html_escape(song.capo.to_s)}ª casa".html_safe : "" %>
+    <%= song.capo.to_i.positive? ? "&nbsp;&nbsp;|&nbsp;&nbsp;Capotraste: #{ERB::Util.html_escape(song.capo.to_s)}ª casa".html_safe : "" %>
   </div>
 </div>
 
