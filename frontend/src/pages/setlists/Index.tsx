@@ -64,7 +64,7 @@ const Setlists = () => {
       // Limpar URL após um pequeno delay
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
-      }, 100);
+      }, 500);
     } catch (err: any) {
       console.error('Failed to print setlist', err);
       toast({

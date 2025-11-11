@@ -62,7 +62,7 @@ Rails.application.routes.draw do
         post :add_song
         delete :remove_song
         patch :reorder_songs
-        get :public_link_generator
+        post :public_link_generator
         delete :public_link_destroyer
       end
     end

@@ -22,7 +22,17 @@ module Api
 
     # GET /setlists/1 or /setlists/1.json
     def show
-      render json: SetlistSerializer.new(@setlist).serializable_hash
+      serialized = SetlistSerializer.new(@setlist).serializable_hash
+      
+      # Adicionar informações do link público se existir
+      if @setlist.public_setlist.present?
+        serialized[:data][:attributes][:public_link] = {
+          uuid: @setlist.public_setlist.uuid,
+          url: "#{request.base_url}/public_setlist/#{@setlist.public_setlist.uuid}"
+        }
+      end
+      
+      render json: serialized
     end
 
     # GET /setlists/1/manage_songs
@@ -34,13 +44,19 @@ module Api
       @setlist.generate_public_setlist!
       public_setlist = @setlist.public_setlist
       
-      redirect_to @setlist, notice: "Link público gerado: #{public_setlist_url(public_setlist.uuid)}"
+      render json: { 
+        uuid: public_setlist.uuid,
+        url: "#{request.base_url}/public_setlists/#{public_setlist.uuid}"
+      }, status: :ok
     end
 
     def public_link_destroyer
-      @setlist.public_setlist.destroy if @setlist.public_setlist.present?
-
-      redirect_to @setlist, notice: "Link público removido."
+      if @setlist.public_setlist.present?
+        @setlist.public_setlist.destroy
+        render json: { message: "Link público removido" }, status: :ok
+      else
+        render json: { error: "Nenhum link público encontrado" }, status: :not_found
+      end
     end
 
     # GET /setlists/1/print

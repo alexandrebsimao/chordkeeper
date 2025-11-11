@@ -1,12 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Plus, X, GripVertical, Music2, Printer } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Plus, 
+  X, 
+  GripVertical, 
+  Music2, 
+  Printer,
+  Share2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 
 type Song = {
   id: number;
@@ -21,6 +30,10 @@ type Setlist = {
   description?: string;
   songs: Song[];
   total_songs: number;
+  public_link?: {
+    uuid: string;
+    url: string;
+  };
 };
 
 const SetlistManager = () => {
@@ -66,7 +79,7 @@ const SetlistManager = () => {
       // Limpar URL após um pequeno delay
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
-      }, 100);
+      }, 500);
     } catch (err: any) {
       console.error('Failed to print setlist', err);
       toast({
@@ -380,15 +393,23 @@ const SetlistManager = () => {
               )}
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handlePrintSetlist}
-            disabled={printingPdf}
-            title="Imprimir setlist"
-          >
-            <Printer className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ShareSetlistDialog
+              setlistId={setlist.id}
+              setlistTitle={setlist.title}
+              publicLink={setlist.public_link}
+              onLinkGenerated={fetchSetlist}
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handlePrintSetlist}
+              disabled={printingPdf}
+              title="Imprimir setlist"
+            >
+              <Printer className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Two Column Layout */}
