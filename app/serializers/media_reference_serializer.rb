@@ -10,4 +10,12 @@ class MediaReferenceSerializer
       nil
     end
   end
+
+	attribute :file_name do |object|
+		if object.attachment.attached?
+			object.attachment.filename.to_s
+		else
+			nil
+		end
+	end
 end

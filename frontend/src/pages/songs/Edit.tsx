@@ -553,15 +553,19 @@ const EditSong = () => {
                         <div className="space-y-2">
                           <Label>Arquivo</Label>
                           {media.file_url && !media.attachment && (
-                            <div className="mb-2 p-2 bg-muted/50 rounded text-sm">
-                              <a 
-                                href={media.file_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
+                            <div
+                              key={media.id}
+                              className="p-2 sm:p-3 bg-muted/50 rounded-lg border border-border/50"
                               >
-                                📎 Ver arquivo atual
-                              </a>
+                                <p className="text-xs sm:text-sm font-medium mb-2 truncate" title={media.file_name}>{media.file_name}</p>
+                                <audio
+                                  controls
+                                  className="w-full h-8 sm:h-10"
+                                  controlsList="nodownload"
+                                >
+                                  <source src={media.file_url} type="audio/mpeg" />
+                                  Seu navegador não suporta o elemento de áudio.
+                                </audio>
                             </div>
                           )}
                           <Input

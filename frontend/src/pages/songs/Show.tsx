@@ -13,6 +13,7 @@ type MediaRef = {
   url?: string | null;
   description?: string | null;
   file_url?: string | null;
+  file_name?: string | null;
 };
 
 type ApiSong = {
@@ -34,6 +35,44 @@ const CifraView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!cifra) return;
+    
+    setDownloadingPdf(true);
+    try {
+      const response = await fetchWithAuth(`http://localhost:3000/api/songs/${cifra.id}/generate_pdf`);
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar PDF');
+      }
+
+      // Obter o blob do PDF
+      const blob = await response.blob();
+      
+      // Criar URL temporária para o blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Abrir PDF em nova aba
+      window.open(url, '_blank');
+      
+      // Limpar URL após um pequeno delay para garantir que abriu
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (err: any) {
+      console.error('Failed to download PDF', err);
+      alert(err.message || 'Erro ao gerar PDF');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!cifra) return;
@@ -136,7 +175,7 @@ const CifraView = () => {
         <div className="text-center">
           <Music2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-red-500">{error}</p>
-          <Button onClick={() => navigate("/")} className="mt-4">
+          <Button onClick={() => navigate("/songs")} className="mt-4">
             Voltar
           </Button>
         </div>
@@ -150,7 +189,7 @@ const CifraView = () => {
         <div className="text-center">
           <Music2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">Cifra não encontrada</p>
-          <Button onClick={() => navigate("/")} className="mt-4">
+          <Button onClick={() => navigate("/songs")} className="mt-4">
             Voltar
           </Button>
         </div>
@@ -164,7 +203,8 @@ const CifraView = () => {
     .map(m => ({
       id: String(m.id),
       url: m.file_url || '',
-      name: m.file_url?.split('/').pop()?.split('?')[0] || 'Arquivo de Áudio'
+      name: m.file_url?.split('/').pop()?.split('?')[0] || 'Arquivo de Áudio',
+      file_name: m.file_name || 'Arquivo de Áudio'
     }));
 
   const youtubeLinks: { id: string; url: string }[] = (cifra.media_references || [])
@@ -191,7 +231,7 @@ const CifraView = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/songs")}
               className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
             >
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -205,7 +245,8 @@ const CifraView = () => {
           <Button 
             variant="outline" 
             size="icon" 
-            onClick={() => window.open(cifra.print_pdf, '_blank')} 
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
             className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
           >
             <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -241,9 +282,23 @@ const CifraView = () => {
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-8">
-            <pre className="font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto">
-              {cifra.content || 'Nenhum conteúdo disponível.'}
-            </pre>
+            <div 
+              className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
+              dangerouslySetInnerHTML={{ __html: cifra.content || 'Nenhum conteúdo disponível.' }}
+            />
+            <style>{`
+              .cifra-content .chord-line, .chord {
+                color: #2563eb;
+                font-weight: bold;
+                padding: 0;
+                margin: 0;
+              }
+
+              .cifra-content .notation {
+                color: #d97706;
+                font-style: italic;
+              }
+            `}</style>
           </CardContent>
         </Card>
 
@@ -290,7 +345,7 @@ const CifraView = () => {
                           key={file.id}
                           className="p-2 sm:p-3 bg-muted/50 rounded-lg border border-border/50"
                         >
-                          <p className="text-xs sm:text-sm font-medium mb-2 truncate" title={file.name}>{file.name}</p>
+                          <p className="text-xs sm:text-sm font-medium mb-2 truncate" title={file.file_name}>{file.file_name}</p>
                           <audio
                             controls
                             className="w-full h-8 sm:h-10"

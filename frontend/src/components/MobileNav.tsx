@@ -3,7 +3,7 @@ import { NavLink } from "@/components/NavLink";
 
 const navItems = [
   { title: "Minhas Cifras", url: "/songs", icon: Home },
-  { title: "Adicionar Cifra", url: "/songs/add", icon: Plus },
+  { title: "Adicionar Cifra", url: "/songs/create", icon: Plus },
   { title: "Setlists", url: "/setlists", icon: ListMusic },
   { title: "Config", url: "/settings", icon: Settings },
 ];

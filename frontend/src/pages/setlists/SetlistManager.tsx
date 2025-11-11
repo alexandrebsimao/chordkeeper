@@ -32,10 +32,52 @@ const SetlistManager = () => {
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingSongs, setLoadingSongs] = useState(false);
+  const [printingPdf, setPrintingPdf] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
+
+  const handlePrintSetlist = async () => {
+    if (!id) return;
+    
+    setPrintingPdf(true);
+    try {
+      const response = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/print`);
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar PDF do setlist');
+      }
+
+      // Obter o blob do PDF
+      const blob = await response.blob();
+      
+      // Criar URL temporária para o blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Abrir PDF em nova aba
+      window.open(url, '_blank');
+      
+      // Limpar URL após um pequeno delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (err: any) {
+      console.error('Failed to print setlist', err);
+      toast({
+        title: "Erro",
+        description: err.message || 'Erro ao gerar PDF',
+        variant: "destructive",
+      });
+    } finally {
+      setPrintingPdf(false);
+    }
+  };
 
   useEffect(() => {
     // Verificar autenticação
@@ -341,7 +383,8 @@ const SetlistManager = () => {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => window.open(`http://localhost:3000/api/setlists/${id}/print`, '_blank')}
+            onClick={handlePrintSetlist}
+            disabled={printingPdf}
             title="Imprimir setlist"
           >
             <Printer className="h-5 w-5" />

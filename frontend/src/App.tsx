@@ -48,7 +48,7 @@ const App = () => (
                   <main className="flex-1 flex flex-col">
                     <Routes>
                       <Route path="/songs/" element={<Index />} />  
-                      <Route path="/songs/add" element={<AddCifra />} />
+                      <Route path="/songs/create" element={<AddCifra />} />
                       <Route path="/songs/:id/edit" element={<EditSong />} />
                       <Route path="/songs/:id" element={<CifraView />} />
                       <Route path="/setlists" element={<Setlists />} />

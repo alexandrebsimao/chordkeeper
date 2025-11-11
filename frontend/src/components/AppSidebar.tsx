@@ -14,7 +14,7 @@ import {
 
 const menuItems = [
   { title: "Minhas Cifras", url: "/songs", icon: Home },
-  { title: "Adicionar Cifra", url: "/songs/add", icon: Plus },
+  { title: "Adicionar Cifra", url: "/songs/create", icon: Plus },
   { title: "Setlists", url: "/setlists", icon: ListMusic },
 ];
 

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Music, Search as SearchIcon } from "lucide-react";
+import { Music, Search as SearchIcon, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
@@ -122,9 +123,15 @@ const Index = () => {
   return (
     <div className="flex-1 p-6 pb-20 md:pb-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Cifras</h1>
-          <p className="text-muted-foreground">Gerencie e acesse suas cifras favoritas</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Cifras</h1>
+            <p className="text-muted-foreground">Gerencie e acesse suas cifras favoritas</p>
+          </div>
+          <Button onClick={() => navigate("/songs/create")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Cifra
+          </Button>
         </div>
 
         <div className="relative">

@@ -39,6 +39,42 @@ const Setlists = () => {
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  const handlePrintSetlist = async (setlistId: number) => {
+    try {
+      const response = await fetchWithAuth(`http://localhost:3000/api/setlists/${setlistId}/print`);
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar PDF do setlist');
+      }
+
+      // Obter o blob do PDF
+      const blob = await response.blob();
+      
+      // Criar URL temporária para o blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Abrir PDF em nova aba
+      window.open(url, '_blank');
+      
+      // Limpar URL após um pequeno delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (err: any) {
+      console.error('Failed to print setlist', err);
+      toast({
+        title: "Erro",
+        description: err.message || 'Erro ao gerar PDF',
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     // Verificar autenticação
     if (!isAuthenticated()) {
@@ -333,7 +369,7 @@ const Setlists = () => {
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9 hover:bg-muted"
-                        onClick={() => window.open(`http://localhost:3000/api/setlists/${setlist.id}/print`, '_blank')}
+                        onClick={() => handlePrintSetlist(setlist.id)}
                         title="Imprimir setlist"
                       >
                         <Printer className="h-4 w-4" />

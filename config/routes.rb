@@ -43,6 +43,10 @@ Rails.application.routes.draw do
   namespace :api do
     devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
 
+    # User endpoints
+    get 'users/me', to: 'users#me'
+    patch 'users/update_password', to: 'users#update_password'
+
     resources :songs do
       member do
         get :generate_pdf
