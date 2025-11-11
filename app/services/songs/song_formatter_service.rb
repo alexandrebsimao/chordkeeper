@@ -13,7 +13,7 @@ module Songs
       # Padrão de acorde - captura acordes completos incluindo inversões com # e b
       # Aceita: A, Am, A7, A#m, Abm, Asus4, Amaj7, A/G, D9, E11/G#, etc.
       # Nota: Não usa \b no final para permitir capturar # e b após a barra
-      chord_pattern = /(?<![a-zA-Z0-9])([A-G][#b]?(?:m|maj|dim|aug|sus|add|M|min|°|\+)?(?:2|4|5|6|7|9|11|13)?(?:\/[A-G][#b]?)?)(?![a-z])/
+      chord_pattern = /(?<![a-zA-Z0-9])([A-G][#b]?(?:maj|dim|aug|sus|add|M|m|min|°|\+)?(?:2|4|5|6|7|9|11|13)?(?:\/[A-G][#b]?)?)(?![a-z])/
 
       # Processa o conteúdo linha por linha
       formatted_lines = content.split("\n").map do |line|
@@ -28,13 +28,17 @@ module Songs
           line.gsub(chord_pattern) do |match|
             word = match.strip
             
-            # Lista de palavras comuns que NÃO são acordes
-            non_chords = %w[
+            # Lista de palavras comuns que NÃO são acordes (case-sensitive agora)
+            # Notas: "Em" é acorde (Mi menor), mas "em" minúsculo é preposição
+            non_chords_lowercase = %w[
               as o os de da do das dos em na no nas nos
-              que com por para se te me tu és eu ele ela
+              que com por para se te me tu eu ele ela
               ai ei ou ah oh bem mal si la sol cor som tom
-              Di Ti
+              di ti
             ]
+            
+            # Palavras que nunca são acordes, independente de maiúscula/minúscula
+            non_chords_any_case = %w[És]
             
             # Pega a posição do match na linha original (antes de qualquer substituição)
             match_index = line.index(match)
@@ -70,8 +74,11 @@ module Songs
             # Se tem letra minúscula antes ou depois (colada), não é acorde
             elsif has_lowercase_before || has_lowercase_after
               match
-            # Se está na lista de não-acordes, não formata
-            elsif non_chords.any? { |nc| nc.casecmp?(word) }
+            # Se está na lista de não-acordes (case-insensitive para palavras específicas)
+            elsif non_chords_any_case.any? { |nc| nc.casecmp?(word) }
+              match
+            # Se está na lista de não-acordes em minúscula E o match é minúsculo
+            elsif word.downcase == word && non_chords_lowercase.include?(word)
               match
             else
               # É um acorde válido, formata
