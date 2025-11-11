@@ -1,5 +1,7 @@
 // Helper para fazer requisições autenticadas com JWT
 
+import { API_BASE_URL } from "@/config/api";
+
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = localStorage.getItem("authToken");
   
@@ -12,7 +14,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     headers["Authorization"] = token;
   }
 
-  return fetch(url, {
+  return fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers,
   });
