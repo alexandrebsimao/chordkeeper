@@ -42,9 +42,6 @@ services:
       dockerfile: Dockerfile
     container_name: frontend
     restart: always
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://api-chordkeeper.innapses.com
