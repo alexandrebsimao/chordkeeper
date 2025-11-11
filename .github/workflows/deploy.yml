@@ -23,9 +23,15 @@ jobs:
           cd ~/chordkeeper/
           git pull origin main
           
-          # Build e restart dos containers
+          # Parar containers
           docker compose -f docker-compose-production.yml stop
-          docker compose -f docker-compose-production.yml build --no-cache
+          
+          # Remover volumes antigos do frontend para forçar reinstalação
+          docker compose -f docker-compose-production.yml rm -f frontend
+          docker volume prune -f
+          
+          # Build e restart dos containers
+          docker compose -f docker-compose-production.yml build --no-cache frontend
           docker compose -f docker-compose-production.yml up -d
           
           # Aguardar containers iniciarem
