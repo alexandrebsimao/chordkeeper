@@ -41,7 +41,7 @@ const Setlists = () => {
 
   const handlePrintSetlist = async (setlistId: number) => {
     try {
-      const response = await fetchWithAuth(`http://localhost:3000/api/setlists/${setlistId}/print`);
+      const response = await fetchWithAuth(`/api/setlists/${setlistId}/print`);
 
       if (response.status === 401) {
         navigate("/auth/login");
@@ -85,7 +85,7 @@ const Setlists = () => {
     let mounted = true;
 
     const fetchSetlists = async (pageToLoad: number) => {
-      const url = `http://localhost:3000/api/setlists?page=${pageToLoad}&per_page=${perPage}`;
+      const url = `/api/setlists?page=${pageToLoad}&per_page=${perPage}`;
       try {
         if (pageToLoad === 1) setLoading(true);
         else setLoadingMore(true);
@@ -171,7 +171,7 @@ const Setlists = () => {
     }
 
     try {
-      const res = await fetchWithAuth("http://localhost:3000/api/setlists", {
+      const res = await fetchWithAuth("/api/setlists", {
         method: "POST",
         body: JSON.stringify({
           setlist: {
@@ -209,7 +209,7 @@ const Setlists = () => {
     }
 
     try {
-      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}`, {
+      const res = await fetchWithAuth(`/api/setlists/${id}`, {
         method: "DELETE",
       });
 

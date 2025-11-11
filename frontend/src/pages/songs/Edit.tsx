@@ -66,7 +66,7 @@ const EditSong = () => {
       
       setLoadingData(true);
       try {
-        const res = await fetchWithAuth(`http://localhost:3000/api/songs/${id}`);
+        const res = await fetchWithAuth(`/api/songs/${id}`);
 
         if (res.status === 401) {
           navigate("/auth/login");
@@ -226,7 +226,7 @@ const EditSong = () => {
       });
 
       // Enviar para API com PATCH
-      const response = await fetchWithAuth(`http://localhost:3000/api/songs/${id}`, {
+      const response = await fetchWithAuth(`/api/songs/${id}`, {
         method: "PATCH",
         body: formDataToSend,
       });

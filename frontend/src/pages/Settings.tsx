@@ -36,7 +36,7 @@ const Settings = () => {
     // Buscar dados do usuário
     const fetchUserData = async () => {
       try {
-        const res = await fetchWithAuth("http://localhost:3000/api/users/me");
+        const res = await fetchWithAuth("/api/users/me");
         
         if (res.status === 401) {
           navigate("/auth/login");
@@ -89,7 +89,7 @@ const Settings = () => {
     setChangingPassword(true);
 
     try {
-      const res = await fetchWithAuth("http://localhost:3000/api/users/update_password", {
+      const res = await fetchWithAuth("/api/users/update_password", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

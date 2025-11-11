@@ -42,7 +42,7 @@ const CifraView = () => {
     
     setDownloadingPdf(true);
     try {
-      const response = await fetchWithAuth(`http://localhost:3000/api/songs/${cifra.id}/generate_pdf`);
+      const response = await fetchWithAuth(`/api/songs/${cifra.id}/generate_pdf`);
 
       if (response.status === 401) {
         navigate("/auth/login");
@@ -83,7 +83,7 @@ const CifraView = () => {
 
     setDeleting(true);
     try {
-      const response = await fetchWithAuth(`http://localhost:3000/api/songs/${cifra.id}`, {
+      const response = await fetchWithAuth(`/api/songs/${cifra.id}`, {
         method: 'DELETE',
       });
 
@@ -117,7 +117,7 @@ const CifraView = () => {
       if (!songId) return;
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`http://localhost:3000/api/songs/${songId}`);
+        const res = await fetchWithAuth(`/api/songs/${songId}`);
 
         if (res.status === 401) {
           navigate("/auth/login");

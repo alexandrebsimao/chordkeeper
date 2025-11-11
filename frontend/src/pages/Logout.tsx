@@ -10,7 +10,7 @@ const Logout = () => {
     const handleLogout = async () => {
       try {
         // Chamar endpoint de logout do backend (revoga o token JWT)
-        await fetchWithAuth("http://localhost:3000/users/sign_out", {
+        await fetchWithAuth("/users/sign_out", {
           method: "DELETE",
         });
       } catch (error) {

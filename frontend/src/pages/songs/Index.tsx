@@ -37,7 +37,7 @@ const Index = () => {
     let mounted = true;
 
     const fetchSongs = async (pageToLoad: number) => {
-      const url = `http://localhost:3000/api/songs?page=${pageToLoad}&per_page=${perPage}`;
+      const url = `/api/songs?page=${pageToLoad}&per_page=${perPage}`;
       try {
         if (pageToLoad === 1) setLoading(true);
         else setLoadingMore(true);

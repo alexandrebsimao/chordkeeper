@@ -43,7 +43,7 @@ const SetlistManager = () => {
     
     setPrintingPdf(true);
     try {
-      const response = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/print`);
+      const response = await fetchWithAuth(`/api/setlists/${id}/print`);
 
       if (response.status === 401) {
         navigate("/auth/login");
@@ -107,7 +107,7 @@ const SetlistManager = () => {
     
     setLoading(true);
     try {
-      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}`);
+      const res = await fetchWithAuth(`/api/setlists/${id}`);
 
       if (res.status === 401) {
         navigate("/auth/login");
@@ -147,7 +147,7 @@ const SetlistManager = () => {
   const fetchAllSongs = async () => {
     setLoadingSongs(true);
     try {
-      const res = await fetchWithAuth(`http://localhost:3000/api/songs?search=${encodeURIComponent(searchQuery)}&per_page=1000`);
+      const res = await fetchWithAuth(`/api/songs?search=${encodeURIComponent(searchQuery)}&per_page=1000`);
 
       if (res.status === 401) {
         navigate("/auth/login");
@@ -182,7 +182,7 @@ const SetlistManager = () => {
 
   const handleAddSong = async (song: Song) => {
     try {
-      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/add_song`, {
+      const res = await fetchWithAuth(`/api/setlists/${id}/add_song`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ const SetlistManager = () => {
 
   const handleRemoveSong = async (songId: number) => {
     try {
-      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/remove_song`, {
+      const res = await fetchWithAuth(`/api/setlists/${id}/remove_song`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -289,7 +289,7 @@ const SetlistManager = () => {
 
     // Send update to backend
     try {
-      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/reorder_songs`, {
+      const res = await fetchWithAuth(`/api/setlists/${id}/reorder_songs`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

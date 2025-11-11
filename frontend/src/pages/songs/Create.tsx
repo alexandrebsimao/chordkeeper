@@ -160,7 +160,7 @@ const CreateSong = () => {
       });
 
       // Enviar para API
-      const response = await fetchWithAuth("http://localhost:3000/api/songs", {
+      const response = await fetchWithAuth("/api/songs", {
         method: "POST",
         body: formDataToSend,
       });

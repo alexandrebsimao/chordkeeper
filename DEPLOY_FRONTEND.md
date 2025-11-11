@@ -43,7 +43,7 @@ Substituir todas as 40+ ocorrências de `http://localhost:3000` por `apiUrl('/ca
 Exemplo:
 ```typescript
 // ANTES:
-const response = await fetchWithAuth("http://localhost:3000/api/songs", {
+const response = await fetchWithAuth("/api/songs", {
 
 // DEPOIS:
 import { apiUrl } from '@/config/api';
