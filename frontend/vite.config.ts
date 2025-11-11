@@ -18,7 +18,13 @@ export default defineConfig(({ mode }) => ({
       '/api': {
         // se Vite roda no host (local), use http://localhost:3000
         // se Vite roda no container e Rails está em outro container use http://web:3000
-        target: 'http://localhost:3000',
+        target: 'http://web:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+      // encaminha /users (autenticação Devise) para o serviço Rails
+      '/users': {
+        target: 'http://web:3000',
         changeOrigin: true,
         secure: false,
       },

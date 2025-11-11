@@ -5,7 +5,7 @@ class MediaReferenceSerializer
 
   attribute :file_url do |object|
     if object.attachment.attached?
-      Rails.application.routes.url_helpers.rails_blob_url(object.attachment, only_path: false, host: 'http://localhost:3000')
+      Rails.application.routes.url_helpers.rails_blob_url(object.attachment, only_path: false, host: domain)
     else
       nil
     end

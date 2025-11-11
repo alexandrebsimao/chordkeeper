@@ -19,6 +19,7 @@ services:
     environment:
       - RAILS_ENV=production
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-chordkeeper}@db:5432/${DB_NAME:-chordkeeper}
+      - DOMAIN_NAME=chordkeeper.innapses.com
     volumes:
       - .:/myapp
     ports:

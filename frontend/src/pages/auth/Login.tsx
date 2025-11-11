@@ -19,7 +19,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/users/sign_in", {
+      const response = await fetch("/users/sign_in", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
