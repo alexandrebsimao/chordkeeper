@@ -15,7 +15,7 @@ module Api
         }
     },
     page: params[:page],
-    per_page: 6
+    per_page: params[:per_page] || 6
     ).call
 
     render json: SongSerializer.new(@songs, { include: [:media_references] }).serializable_hash
