@@ -27,3 +27,8 @@ jobs:
           docker compose exec -T web rails db:migrate
           docker compose exec web rake assets:precompile
           docker system prune -f
+    - name: Build Frontend
+      script: |
+        cd ~/chordkeeper/frontend
+        npm ci
+        npm run build
