@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: [
+      'chordkeeper.innapses.com',
+      'localhost',
+      '.innapses.com', // permite todos subdomínios
+    ],
     proxy: {
       // encaminha /api para o serviço Rails
       '/api': {
