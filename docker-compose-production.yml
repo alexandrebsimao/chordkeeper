@@ -31,10 +31,30 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.chordkeeper-app.entrypoints=https"
-      - "traefik.http.routers.chordkeeper-app.rule=Host(`chordkeeper.innapses.com`)"
+      - "traefik.http.routers.chordkeeper-app.rule=Host(`api.chordkeeper.innapses.com`)"
       - "traefik.http.routers.chordkeeper-app.tls=true"
       - "traefik.http.routers.chordkeeper-app.tls.certresolver=cloudflare"
       - "traefik.http.services.chordkeeper-app.loadbalancer.server.port=3000"
+      - "traefik.docker.network=proxy"
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+    stdin_open: true
+    tty: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chordkeeper-app.entrypoints=https"
+      - "traefik.http.routers.chordkeeper-app.rule=Host(`chordkeeper.innapses.com`)"
+      - "traefik.http.routers.chordkeeper-app.tls=true"
+      - "traefik.http.routers.chordkeeper-app.tls.certresolver=cloudflare"
+      - "traefik.http.services.chordkeeper-app.loadbalancer.server.port=8080"
       - "traefik.docker.network=proxy"
 networks:
   proxy:
