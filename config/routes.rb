@@ -41,6 +41,8 @@ Rails.application.routes.draw do
 
   # API routes
   namespace :api do
+    devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
+
     resources :songs do
       member do
         get :generate_pdf

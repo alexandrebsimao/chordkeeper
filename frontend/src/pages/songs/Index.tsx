@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 type ApiSong = {
   id: number;
@@ -26,6 +27,12 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Verificar autenticação
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+      return;
+    }
+
     let mounted = true;
 
     const fetchSongs = async (pageToLoad: number) => {
@@ -34,8 +41,14 @@ const Index = () => {
         if (pageToLoad === 1) setLoading(true);
         else setLoadingMore(true);
 
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetchWithAuth(url);
+        if (!res.ok) {
+          if (res.status === 401) {
+            navigate("/auth/login");
+            return;
+          }
+          throw new Error(`HTTP ${res.status}`);
+        }
         const jsonData = await res.json();
 
         // Parse JSONAPI format: extract data array from response

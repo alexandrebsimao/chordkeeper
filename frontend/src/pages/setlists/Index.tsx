@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 type ApiSetlist = {
   id: number;
@@ -39,6 +40,12 @@ const Setlists = () => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // Verificar autenticação
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+      return;
+    }
+
     let mounted = true;
 
     const fetchSetlists = async (pageToLoad: number) => {
@@ -47,11 +54,15 @@ const Setlists = () => {
         if (pageToLoad === 1) setLoading(true);
         else setLoadingMore(true);
 
-        const res = await fetch(url, {
-          credentials: "include",
-        });
+        const res = await fetchWithAuth(url);
         
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          if (res.status === 401) {
+            navigate("/auth/login");
+            return;
+          }
+          throw new Error(`HTTP ${res.status}`);
+        }
         
         const jsonData = await res.json();
         
@@ -124,12 +135,8 @@ const Setlists = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/setlists", {
+      const res = await fetchWithAuth("http://localhost:3000/api/setlists", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify({
           setlist: {
             title: newSetlist.title,
@@ -166,9 +173,8 @@ const Setlists = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/setlists/${id}`, {
+      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

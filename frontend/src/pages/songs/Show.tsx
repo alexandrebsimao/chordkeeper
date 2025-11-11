@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 type MediaRef = {
   id?: number;
@@ -43,10 +44,14 @@ const CifraView = () => {
 
     setDeleting(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/songs/${cifra.id}`, {
+      const response = await fetchWithAuth(`http://localhost:3000/api/songs/${cifra.id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error('Erro ao excluir música');
@@ -62,12 +67,24 @@ const CifraView = () => {
   };
 
   useEffect(() => {
+    // Verificar autenticação
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+      return;
+    }
+
     let mounted = true;
     const fetchSong = async (songId?: string) => {
       if (!songId) return;
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:3000/api/songs/${songId}`);
+        const res = await fetchWithAuth(`http://localhost:3000/api/songs/${songId}`);
+
+        if (res.status === 401) {
+          navigate("/auth/login");
+          return;
+        }
+
         if (!res.ok) {
           if (res.status === 404) throw new Error('Cifra não encontrada');
           throw new Error(`HTTP ${res.status}`);

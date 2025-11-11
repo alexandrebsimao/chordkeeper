@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 interface MediaReference {
   id?: number;
@@ -54,12 +55,24 @@ const EditSong = () => {
   });
 
   useEffect(() => {
+    // Verificar autenticação
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+      return;
+    }
+
     const fetchSong = async () => {
       if (!id) return;
       
       setLoadingData(true);
       try {
-        const res = await fetch(`http://localhost:3000/api/songs/${id}`);
+        const res = await fetchWithAuth(`http://localhost:3000/api/songs/${id}`);
+
+        if (res.status === 401) {
+          navigate("/auth/login");
+          return;
+        }
+
         if (!res.ok) {
           throw new Error('Erro ao carregar música');
         }
@@ -213,11 +226,15 @@ const EditSong = () => {
       });
 
       // Enviar para API com PATCH
-      const response = await fetch(`http://localhost:3000/api/songs/${id}`, {
+      const response = await fetchWithAuth(`http://localhost:3000/api/songs/${id}`, {
         method: "PATCH",
         body: formDataToSend,
-        credentials: "include",
       });
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json();

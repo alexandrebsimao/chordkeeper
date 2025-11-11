@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 type Song = {
   id: number;
@@ -37,9 +38,15 @@ const SetlistManager = () => {
   const dragOverItem = useRef<number | null>(null);
 
   useEffect(() => {
+    // Verificar autenticação
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+      return;
+    }
+
     fetchSetlist();
     fetchAllSongs();
-  }, [id]);
+  }, [id, navigate]);
 
   // Filter available songs based on search and setlist
   const availableSongs = allSongs
@@ -58,9 +65,12 @@ const SetlistManager = () => {
     
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/setlists/${id}`, {
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}`);
+
+      if (res.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
       
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
@@ -95,9 +105,12 @@ const SetlistManager = () => {
   const fetchAllSongs = async () => {
     setLoadingSongs(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/songs?search=${encodeURIComponent(searchQuery)}&per_page=1000`, {
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(`http://localhost:3000/api/songs?search=${encodeURIComponent(searchQuery)}&per_page=1000`);
+
+      if (res.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
       
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
@@ -127,14 +140,18 @@ const SetlistManager = () => {
 
   const handleAddSong = async (song: Song) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/setlists/${id}/add_song`, {
+      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/add_song`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ song_id: song.id }),
       });
+
+      if (res.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -156,14 +173,18 @@ const SetlistManager = () => {
 
   const handleRemoveSong = async (songId: number) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/setlists/${id}/remove_song`, {
+      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/remove_song`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ song_id: songId }),
       });
+
+      if (res.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -226,16 +247,20 @@ const SetlistManager = () => {
 
     // Send update to backend
     try {
-      const res = await fetch(`http://localhost:3000/api/setlists/${id}/reorder_songs`, {
+      const res = await fetchWithAuth(`http://localhost:3000/api/setlists/${id}/reorder_songs`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ 
           song_ids: newSongs.map(song => song.id)
         }),
       });
+
+      if (res.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
 
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);

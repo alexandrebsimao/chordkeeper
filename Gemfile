@@ -70,6 +70,7 @@ group :test do
 end
 
 gem 'devise'
+gem 'devise-jwt'
 
 gem 'pdfkit'
 gem 'wkhtmltopdf-binary'

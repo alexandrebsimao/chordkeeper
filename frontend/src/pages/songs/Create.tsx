@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, FileText, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 interface MediaReference {
   id?: number;
@@ -47,6 +48,13 @@ const CreateSong = () => {
     attachment: null,
     media_references: [],
   });
+
+  useEffect(() => {
+    // Verificar autenticação
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+    }
+  }, [navigate]);
 
   const handleAddMediaReference = () => {
     setFormData({
@@ -152,11 +160,15 @@ const CreateSong = () => {
       });
 
       // Enviar para API
-      const response = await fetch("http://localhost:3000/api/songs", {
+      const response = await fetchWithAuth("http://localhost:3000/api/songs", {
         method: "POST",
         body: formDataToSend,
-        credentials: "include",
       });
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json();

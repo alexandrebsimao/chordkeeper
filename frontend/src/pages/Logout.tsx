@@ -1,17 +1,32 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
+import { removeAuthToken, fetchWithAuth } from "@/lib/auth";
 
 const Logout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simula logout e redireciona
-    const timer = setTimeout(() => {
-      navigate("/");
-    }, 1500);
+    const handleLogout = async () => {
+      try {
+        // Chamar endpoint de logout do backend (revoga o token JWT)
+        await fetchWithAuth("http://localhost:3000/users/sign_out", {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error("Erro ao fazer logout:", error);
+      } finally {
+        // Sempre remove o token local
+        removeAuthToken();
+        
+        // Aguarda um pouco antes de redirecionar
+        setTimeout(() => {
+          navigate("/auth/login");
+        }, 1500);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    handleLogout();
   }, [navigate]);
 
   return (
