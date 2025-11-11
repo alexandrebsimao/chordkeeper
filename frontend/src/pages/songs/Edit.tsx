@@ -169,13 +169,13 @@ const EditSong = () => {
       const formDataToSend = new FormData();
 
       // Adicionar campos simples
-      formDataToSend.append("song[title]", formData.title);
-      formDataToSend.append("song[artist]", formData.artist);
-      formDataToSend.append("song[genre]", formData.genre);
-      formDataToSend.append("song[original_key]", formData.original_key);
-      if (formData.bpm) formDataToSend.append("song[bpm]", formData.bpm.toString());
-      if (formData.capo) formDataToSend.append("song[capo]", formData.capo.toString());
-      formDataToSend.append("song[content]", formData.content);
+      formDataToSend.append("song[title]", formData.title || '');
+      formDataToSend.append("song[artist]", formData.artist || '');
+      formDataToSend.append("song[genre]", formData.genre || '');
+      formDataToSend.append("song[original_key]", formData.original_key || '');
+      formDataToSend.append("song[bpm]", formData.bpm ? formData.bpm.toString() : '');
+      formDataToSend.append("song[capo]", formData.capo ? formData.capo.toString() : '');
+      formDataToSend.append("song[content]", formData.content || '');
       formDataToSend.append("song[convert_pdf]", formData.convert_pdf ? "1" : "0");
 
       // Adicionar attachment da música se houver um novo arquivo
@@ -205,16 +205,20 @@ const EditSong = () => {
           }
           formDataToSend.append(
             `song[media_references_attributes][${index}][media_type]`,
-            media.media_type
+            media.media_type || ''
           );
-          formDataToSend.append(
-            `song[media_references_attributes][${index}][url]`,
-            media.url
-          );
-          formDataToSend.append(
-            `song[media_references_attributes][${index}][description]`,
-            media.description
-          );
+          if (media.url) {
+            formDataToSend.append(
+              `song[media_references_attributes][${index}][url]`,
+              media.url
+            );
+          }
+          if (media.description) {
+            formDataToSend.append(
+              `song[media_references_attributes][${index}][description]`,
+              media.description
+            );
+          }
 
           if (media.attachment) {
             formDataToSend.append(
@@ -385,13 +389,18 @@ const EditSong = () => {
                     id="capo"
                     type="number"
                     placeholder="0"
+                    min="0"
+                    max="12"
                     value={formData.capo || ""}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : null;
+                      // Limitar entre 0 e 12
+                      const limitedValue = value !== null ? Math.max(0, Math.min(12, value)) : null;
                       setFormData({
                         ...formData,
-                        capo: e.target.value ? parseInt(e.target.value) : null,
-                      })
-                    }
+                        capo: limitedValue,
+                      });
+                    }}
                   />
                 </div>
               </div>

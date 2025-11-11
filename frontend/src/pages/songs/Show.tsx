@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 
 type MediaRef = {
@@ -36,6 +43,56 @@ const CifraView = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [transposing, setTransposing] = useState(false);
+
+  // Lista de tons musicais
+  const musicalKeys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  const handleTranspose = async (newKey: string) => {
+    if (!cifra) return;
+    
+    setTransposing(true);
+    try {
+      const response = await fetchWithAuth(`/api/songs/${cifra.id}/transpose`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transpose_key: newKey }),
+      });
+
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Erro ao transpor música');
+      }
+
+      const jsonData = await response.json();
+      const songData = jsonData.data?.attributes || jsonData.data || jsonData;
+      
+      // Parse media_references from included array
+      if (jsonData.included && Array.isArray(jsonData.included)) {
+        songData.media_references = jsonData.included
+          .filter((item: any) => item.type === 'media_reference')
+          .map((item: any) => ({
+            id: item.id,
+            ...item.attributes
+          }));
+      } else {
+        songData.media_references = [];
+      }
+      
+      setCifra(songData as ApiSong);
+    } catch (err: any) {
+      console.error('Failed to transpose song', err);
+      alert(err.message || 'Erro ao transpor música');
+    } finally {
+      setTransposing(false);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     if (!cifra) return;
@@ -267,10 +324,38 @@ const CifraView = () => {
           </Button>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <Badge variant="outline" className="font-mono text-xs sm:text-sm">
-            Tom: {cifra.transpose_key || cifra.original_key || '—'}
+        <div className="flex gap-3 flex-wrap items-center">
+          <Badge variant="outline" className="font-mono text-xs">
+            Tom Original: {cifra.original_key || '—'}
           </Badge>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm text-muted-foreground">Transpor para:</span>
+            <Select 
+              value={cifra.transpose_key || cifra.original_key || ''} 
+              onValueChange={handleTranspose}
+              disabled={transposing || !cifra.original_key}
+            >
+              <SelectTrigger className="w-[80px] h-6 font-mono text-xs">
+                <SelectValue placeholder="Tom" />
+              </SelectTrigger>
+              <SelectContent>
+                {musicalKeys.map((key) => (
+                  <SelectItem key={key} value={key} className="font-mono">
+                    {key}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {cifra.transpose_key && cifra.transpose_key !== cifra.original_key && (
+              <Badge variant="secondary" className="font-mono text-xs">
+                Transposto: {cifra.transpose_key}
+              </Badge>
+            )}
+            <Badge variant="outline" className="font-mono text-xs">
+              Capotraste: {cifra.capo ? `${cifra.capo}ª casa` : '—'}
+            </Badge>
+          </div>
         </div>
 
         <Card className="overflow-hidden">
@@ -284,7 +369,7 @@ const CifraView = () => {
           <CardContent className="p-3 sm:p-4 md:p-8">
             <div 
               className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
-              dangerouslySetInnerHTML={{ __html: cifra.content || 'Nenhum conteúdo disponível.' }}
+              dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
             />
             <style>{`
               .cifra-content .chord-line, .chord {

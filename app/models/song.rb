@@ -14,10 +14,12 @@ class Song < ApplicationRecord
     reject_if: :all_blank
   
   validates :title, presence: true
+  validates :capo, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 12, allow_nil: true }
   validate :acceptable_attachment, if: -> { attachment.attached? }
 
   before_save :set_original_key_if_missing
   before_save :pdf_to_text!, if: -> { convert_pdf? }
+  before_save :capo_to_nil_if_zero
 
   def set_original_key_if_missing
     if self.original_key.blank? && self.content.present?
@@ -46,6 +48,10 @@ class Song < ApplicationRecord
   end
 
   private
+
+  def capo_to_nil_if_zero
+    self.capo = nil if self.capo == 0
+  end
 
   def convert_pdf?
     attachment.attached? && attachment.blob.content_type == 'application/pdf' && content.blank? && self.convert_pdf

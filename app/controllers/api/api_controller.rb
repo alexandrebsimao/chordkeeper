@@ -4,6 +4,11 @@ module Api
     before_action :check_is_current_library, unless: :devise_controller?
     helper_method :current_library
 
+    # Handle parameter parsing errors
+    rescue_from ActionDispatch::Http::Parameters::ParseError do |exception|
+      render json: { error: 'Invalid request format. Please check your request body and Content-Type header.' }, status: :bad_request
+    end
+
     def current_library
       @current_library ||= Library.find_by(id: session[:current_library_id])
       @current_library ||= Library

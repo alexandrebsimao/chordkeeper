@@ -179,6 +179,9 @@ const Index = () => {
                       <Badge variant="outline" className="font-mono">
                         Tom: {cifra.transpose_key || cifra.original_key || '—'}
                       </Badge>
+                      <Badge variant="outline" className="font-mono">
+                        Capo: {cifra.capo ? `${cifra.capo}ª casa` : '—'}
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>

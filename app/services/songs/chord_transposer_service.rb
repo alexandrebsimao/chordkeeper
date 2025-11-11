@@ -18,7 +18,9 @@ module Songs
       semitones = calculate_interval(@song.original_key, @song.key)
       return @song.content unless semitones != 0
       transposed_lines = @song.content.lines.map do |line|
-        if chord_line?(line)
+        if is_tablature_line?(line.strip)
+          transpose_tablature_line(line, semitones)
+        elsif chord_line?(line)
           transpose_chord_line(line, semitones)
         else
           line
@@ -73,6 +75,87 @@ module Songs
       NOTES[new_index]
     end
 
+    # Verifica se uma linha é tablatura (tab)
+    # Tablatura tem padrões como: E|---5-7---|, e|--0--2--|, etc.
+    # @param [String] line A linha a ser verificada
+    # @return [Boolean] true se for uma linha de tablatura
+    def is_tablature_line?(line)
+      # Padrões comuns de tablatura:
+      # 1. Linha começa com uma nota de corda (E, A, D, G, B, e) seguida de pipe: E|, A|, e|
+      # 2. Contém sequências de traços e números: -5-7-, --0--, |-----|
+      # 3. Contém múltiplos pipes com traços: |-----|-----|
+      
+      # Verifica padrão de corda + pipe no início (ex: E|, A|, e|, etc.)
+      return true if line =~ /^[EADGBe]\|/
+      
+      # Verifica se tem pipe seguido/precedido de múltiplos traços
+      return true if line =~ /\|[-\d]+/ || line =~ /[-\d]+\|/
+      
+      # Verifica se tem múltiplas sequências de traços e números (padrão de tab)
+      # Ex: ---5---7--- ou -0-2-3-
+      return true if line =~ /-{2,}\d/ || line =~ /\d-{2,}/
+      
+      false
+    end
+
+    # Transpõe uma linha de tablatura ajustando os números das casas
+    # @param [String] line A linha de tablatura
+    # @param [Integer] semitones Número de semitons para transpor
+    # @return [String] A linha de tablatura transposta
+    def transpose_tablature_line(line, semitones)
+      # Substitui cada número (casa) na tablatura pelo número + semitones
+      # Mantém o tamanho total da linha removendo/adicionando traços no final
+      
+      result = line.dup
+      total_size_change = 0  # Controla mudança total no tamanho da linha
+      offset = 0  # Controla o deslocamento na string devido a mudanças de tamanho
+      
+      line.scan(/\d+/) do |match|
+        match_start = Regexp.last_match.begin(0) + offset
+        match_end = match_start + match.length
+        
+        fret = match.to_i
+        new_fret = fret + semitones
+        
+        # Garante que não fique negativo
+        new_fret = 0 if new_fret < 0
+        
+        new_fret_str = new_fret.to_s
+        digit_diff = new_fret_str.length - match.length
+        
+        # Substitui o número
+        result[match_start...match_end] = new_fret_str
+        
+        # Atualiza contadores
+        offset += digit_diff
+        total_size_change += digit_diff
+      end
+      
+      # Ajusta o tamanho total da linha removendo ou adicionando traços no final
+      # (antes do último caractere que geralmente é |)
+      if total_size_change > 0
+        # Linha ficou maior, remove traços no final (antes do pipe final)
+        # Procura traços antes do último pipe
+        if result =~ /(-+)\|?\s*$/
+          trailing_dashes = $1
+          chars_to_remove = [total_size_change, trailing_dashes.length].min
+          result.sub!(/(-{#{chars_to_remove}})(\|?\s*)$/, '\2')
+        end
+      elsif total_size_change < 0
+        # Linha ficou menor, adiciona traços no final (antes do pipe final)
+        chars_to_add = -total_size_change
+        if result =~ /\|\s*$/
+          # Tem pipe no final, adiciona traços antes do pipe
+          result.sub!(/(\|)(\s*)$/, "#{'-' * chars_to_add}\\1\\2")
+        else
+          # Não tem pipe, adiciona traços no final
+          result += '-' * chars_to_add
+        end
+      end
+      
+      result
+    end
+
     # Verifica se uma linha contém apenas acordes (e espaços)
     # @param [String] line A linha a ser verificada
     # @return [Boolean] true se for uma linha de acordes
@@ -95,11 +178,15 @@ module Songs
       # Se mais de 30% são letras minúsculas, é provavelmente letra
       return false if lowercase_count.to_f / total_chars > 0.3
 
+      # Detecta linhas de tablatura (tab)
+      # Tablatura geralmente tem padrões como: E|---, B|---, e|-5-7-9-|, etc.
+      # Verifica se tem pipe (|) seguido ou precedido de traços
+      return false if is_tablature_line?(content)
+
       # Verifica se a linha contém pelo menos um padrão de acorde válido
       # Padrão: [A-G][#b]? seguido por números, letras maiúsculas, parênteses, ou /
-      # A regex do TS: /[A-G][#b]?(?:[0-9()\-#b/]|[A-Z](?=[0-9()\-#b/\s]|$))+/
-      # Traduzida para Ruby:
-      chord_pattern = /[A-G][#b]?(?:[0-9()\-#b\/]|[A-Z](?=[0-9()\-#b\/\s]|$))+/
+      # Os modificadores são opcionais (* em vez de +) para aceitar acordes simples como E, A, etc.
+      chord_pattern = /[A-G][#b]?(?:[0-9()\-#b\/]|[A-Z](?=[0-9()\-#b\/\s]|$))*/
 
       # Verifica se toda a linha corresponde ao padrão de acordes e espaços
       # A lógica do TS apenas testava se *existia* um acorde, mas a descrição

@@ -1,6 +1,6 @@
 module Api
   class SongsController < Api::ApiController
-  before_action :set_song, only: %i[ show edit update destroy ]
+  before_action :set_song, only: %i[ show edit update destroy transpose generate_pdf ]
 
   # GET /songs or /songs.json
   def index
@@ -19,7 +19,6 @@ module Api
     ).call
 
     render json: SongSerializer.new(@songs, { include: [:media_references] }).serializable_hash
-    # render json: @songs
   end
 
   # GET /songs/1 or /songs/1.json
@@ -81,21 +80,20 @@ module Api
   end
 
   def transpose
-    song = Song.find(params[:id])
     to_key = params[:transpose_key]
 
-    song.transpose_key = song.original_key == to_key ? nil : to_key
-    if song.save
-      redirect_to song, notice: "Música transposta para #{to_key} com sucesso."
+    @song.transpose_key = @song.original_key == to_key ? nil : to_key
+    if @song.save
+      render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash, status: :ok
     else
-      redirect_to song, alert: "Erro ao transpor a música."
+      render json: { errors: @song.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_song
-      @song = Song.find(params.expect(:id))
+      @song = Song.find(params[:id])
     end
 
       # Only allow a list of trusted parameters through.

@@ -1,7 +1,7 @@
 class SongSerializer
   include JSONAPI::Serializer
 
-  attributes :id, :title, :artist, :genre, :original_key, :transpose_key, :bpm, :capo, :created_at, :updated_at
+  attributes :id, :title, :artist, :genre, :original_key, :transpose_key, :bpm, :capo, :content, :created_at, :updated_at
 
   has_many :media_references, serializer: MediaReferenceSerializer
   
@@ -21,7 +21,7 @@ class SongSerializer
     end
   end
 
-  attribute :content do |object|
+  attribute :content_format do |object|
     Songs::ChordProcessorService.call(object).html_safe
   end
 end

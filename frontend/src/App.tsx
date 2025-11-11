@@ -10,7 +10,6 @@ import Index from "./pages/songs/Index";
 import AddCifra from "./pages/songs/Create";
 import EditSong from "./pages/songs/Edit";
 import CifraView from "./pages/songs/Show";
-import Search from "./pages/Search";
 import Setlists from "./pages/setlists/Index";
 import SetlistManager from "./pages/setlists/SetlistManager";
 import Settings from "./pages/Settings";

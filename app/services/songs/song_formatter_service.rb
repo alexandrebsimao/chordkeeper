@@ -22,6 +22,8 @@ module Songs
         # Verifica se é uma linha de notação (entre chaves)
         if line.match?(/^\s*\{([^}]+)\}\s*$/)
           "<span class=\"notation\">#{line}</span>"
+        elsif line.include?('|-----') || line.include?('-----|')
+          line
         else
           # Envolve cada acorde com <span class="chord">...</span>
           # Evita palavras comuns em português que não são acordes
