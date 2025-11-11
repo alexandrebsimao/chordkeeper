@@ -32,8 +32,8 @@ jobs:
         port: 22
         script: |
           cd ~/chordkeeper/frontend
-          npm ci
-          npm run build
+          docker compose exec -T frontend npm ci
+          docker compose exec -T frontend npm run build
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@master
