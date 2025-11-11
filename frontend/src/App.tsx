@@ -12,6 +12,7 @@ import EditSong from "./pages/songs/Edit";
 import CifraView from "./pages/songs/Show";
 import Setlists from "./pages/setlists/Index";
 import SetlistManager from "./pages/setlists/SetlistManager";
+import MusicPlayer from "./pages/setlists/MusicPlayer";
 import Settings from "./pages/Settings";
 import Logout from "./pages/Logout";
 import Login from "./pages/auth/Login";
@@ -52,6 +53,7 @@ const App = () => (
                       <Route path="/songs/:id" element={<CifraView />} />
                       <Route path="/setlists" element={<Setlists />} />
                       <Route path="/setlist/:id" element={<SetlistManager />} />
+                      <Route path="/setlist/:id/play" element={<MusicPlayer />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/logout" element={<Logout />} />
                       <Route path="*" element={<NotFound />} />
