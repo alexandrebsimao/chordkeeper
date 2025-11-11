@@ -50,6 +50,7 @@ const SetlistManager = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   const handlePrintSetlist = async () => {
     if (!id) return;
@@ -337,6 +338,48 @@ const SetlistManager = () => {
     }
   };
 
+  // Touch handlers for mobile devices
+  const handleTouchStart = (index: number, e: TouchEvent) => {
+    dragItem.current = index;
+    setDraggedIndex(index);
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (dragItem.current === null || touchStartY.current === null) return;
+    
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    
+    // Find which item the touch is over
+    const elements = document.querySelectorAll('[data-song-index]');
+    let newOverIndex: number | null = null;
+    
+    elements.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (touchY >= rect.top && touchY <= rect.bottom) {
+        newOverIndex = parseInt(el.getAttribute('data-song-index') || '');
+      }
+    });
+    
+    if (newOverIndex !== null && newOverIndex !== dragOverItem.current) {
+      dragOverItem.current = newOverIndex;
+      setDragOverIndex(newOverIndex);
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (dragItem.current === null || dragOverItem.current === null) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      touchStartY.current = null;
+      return;
+    }
+
+    await handleDragEnd();
+    touchStartY.current = null;
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
@@ -497,11 +540,15 @@ const SetlistManager = () => {
                   {setlist.songs.map((song, index) => (
                     <div
                       key={song.id}
+                      data-song-index={index}
                       draggable
                       onDragStart={() => handleDragStart(index)}
                       onDragEnter={() => handleDragEnter(index)}
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => e.preventDefault()}
+                      onTouchStart={(e) => handleTouchStart(index, e.nativeEvent)}
+                      onTouchMove={(e) => handleTouchMove(e.nativeEvent)}
+                      onTouchEnd={handleTouchEnd}
                       className={`flex items-center gap-3 p-4 border rounded-lg transition-all group ${
                         draggedIndex === index 
                           ? 'opacity-50 scale-95' 
