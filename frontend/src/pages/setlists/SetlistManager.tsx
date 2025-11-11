@@ -7,7 +7,8 @@ import {
   GripVertical, 
   Music2, 
   Printer,
-  Share2
+  Share2,
+  Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -448,6 +449,15 @@ const SetlistManager = () => {
               publicLink={setlist.public_link}
               onLinkGenerated={fetchSetlist}
             />
+            <Button
+              variant="default"
+              size="icon"
+              onClick={() => navigate(`/setlist/${id}/play`)}
+              title="Modo Apresentação"
+              disabled={setlist.songs.length === 0}
+            >
+              <Play className="h-5 w-5" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
