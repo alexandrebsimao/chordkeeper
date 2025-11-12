@@ -19,6 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { API_BASE_URL } from "@/config/api";
 
 type Song = {
   id: number;
@@ -55,7 +56,7 @@ const PublicMusicPlayer = () => {
   useEffect(() => {
     const fetchSetlistSongs = async () => {
       try {
-        const response = await fetch(`/api/public/setlist/${publicToken}`);
+        const response = await fetch(`${API_BASE_URL}/api/public/setlist/${publicToken}`);
         
         if (!response.ok) {
           throw new Error('Erro ao carregar setlist');
