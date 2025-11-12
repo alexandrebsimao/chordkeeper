@@ -42,13 +42,9 @@ const Login = () => {
       
       // Extrair o token JWT do JSON da resposta (fallback para header)
       const token = data.token || response.headers.get("authorization") || response.headers.get("Authorization");
-      console.log("Token recebido:", token);
       
       if (token) {
         localStorage.setItem("authToken", token);
-        console.log("Token salvo no localStorage");
-      } else {
-        console.error("Token não encontrado");
       }
 
       toast({
@@ -58,7 +54,6 @@ const Login = () => {
 
       navigate("/songs");
     } catch (error: any) {
-      console.error("Login error:", error);
       toast({
         title: "Erro no login",
         description: error.message || "Email ou senha inválidos",
