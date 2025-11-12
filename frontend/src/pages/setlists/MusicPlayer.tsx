@@ -55,8 +55,7 @@ const MusicPlayer = () => {
   const [scrollSpeed, setScrollSpeed] = useState(1);
   
   const contentRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<number | null>(null);
-  const lastScrollTime = useRef<number>(0);
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Carregar lista de músicas do setlist
   useEffect(() => {
@@ -154,44 +153,50 @@ const MusicPlayer = () => {
 
   // Controle de scroll automático
   useEffect(() => {
+    console.log('Scroll effect triggered - isScrolling:', isScrolling, 'scrollSpeed:', scrollSpeed);
+    
     if (!isScrolling) {
       if (scrollIntervalRef.current) {
-        cancelAnimationFrame(scrollIntervalRef.current);
+        clearInterval(scrollIntervalRef.current);
         scrollIntervalRef.current = null;
       }
       return;
     }
 
-    const scroll = () => {
-      if (!contentRef.current || !isScrolling) return;
+    if (!contentRef.current) {
+      console.log('contentRef.current is null');
+      return;
+    }
 
-      const now = Date.now();
-      const deltaTime = now - lastScrollTime.current;
-      
-      if (deltaTime >= 16) { // ~60fps
-        lastScrollTime.current = now;
-        contentRef.current.scrollTop += scrollSpeed;
-        
-        // Parar quando chegar ao final
-        const isAtBottom = 
-          contentRef.current.scrollHeight - contentRef.current.scrollTop <= 
-          contentRef.current.clientHeight + 10;
-        
-        if (isAtBottom) {
-          setIsScrolling(false);
-          return;
-        }
+    console.log('Starting auto-scroll');
+
+    scrollIntervalRef.current = setInterval(() => {
+      if (!contentRef.current) {
+        console.log('contentRef lost');
+        return;
       }
 
-      scrollIntervalRef.current = requestAnimationFrame(scroll);
-    };
-
-    lastScrollTime.current = Date.now();
-    scrollIntervalRef.current = requestAnimationFrame(scroll);
+      const oldScrollTop = contentRef.current.scrollTop;
+      contentRef.current.scrollTop += scrollSpeed;
+      const newScrollTop = contentRef.current.scrollTop;
+      
+      console.log('Scrolling - oldTop:', oldScrollTop, 'newTop:', newScrollTop, 'speed:', scrollSpeed);
+      
+      // Parar quando chegar ao final
+      const isAtBottom = 
+        contentRef.current.scrollHeight - contentRef.current.scrollTop <= 
+        contentRef.current.clientHeight + 10;
+      
+      if (isAtBottom) {
+        console.log('Reached bottom, stopping');
+        setIsScrolling(false);
+      }
+    }, 50);
 
     return () => {
       if (scrollIntervalRef.current) {
-        cancelAnimationFrame(scrollIntervalRef.current);
+        clearInterval(scrollIntervalRef.current);
+        scrollIntervalRef.current = null;
       }
     };
   }, [isScrolling, scrollSpeed]);
@@ -217,6 +222,8 @@ const MusicPlayer = () => {
   };
 
   const toggleScroll = () => {
+    console.log('Toggle scroll:', !isScrolling);
+    console.log('contentRef.current:', contentRef.current);
     setIsScrolling(!isScrolling);
   };
 
@@ -369,7 +376,7 @@ const MusicPlayer = () => {
       `}</style>
       <div 
         ref={contentRef}
-        className="music-content flex-1 overflow-y-auto p-6 pb-24 md:pb-6 scroll-smooth"
+        className="music-content flex-1 overflow-y-auto p-6 pb-24 md:pb-6"
         style={{ fontSize: `${fontSize}px` }}
       >
         <Card>
