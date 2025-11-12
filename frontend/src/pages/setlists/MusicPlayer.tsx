@@ -55,7 +55,8 @@ const MusicPlayer = () => {
   const [scrollSpeed, setScrollSpeed] = useState(1);
   
   const contentRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollIntervalRef = useRef<number | null>(null);
+  const lastScrollTime = useRef<number>(0);
 
   // Carregar lista de músicas do setlist
   useEffect(() => {
@@ -153,31 +154,44 @@ const MusicPlayer = () => {
 
   // Controle de scroll automático
   useEffect(() => {
-    if (isScrolling && contentRef.current) {
-      scrollIntervalRef.current = setInterval(() => {
-        if (contentRef.current) {
-          contentRef.current.scrollTop += scrollSpeed;
-          
-          // Parar quando chegar ao final
-          const isAtBottom = 
-            contentRef.current.scrollHeight - contentRef.current.scrollTop <= 
-            contentRef.current.clientHeight + 10;
-          
-          if (isAtBottom) {
-            setIsScrolling(false);
-          }
-        }
-      }, 50);
-    } else {
+    if (!isScrolling) {
       if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
+        cancelAnimationFrame(scrollIntervalRef.current);
         scrollIntervalRef.current = null;
       }
+      return;
     }
+
+    const scroll = () => {
+      if (!contentRef.current || !isScrolling) return;
+
+      const now = Date.now();
+      const deltaTime = now - lastScrollTime.current;
+      
+      if (deltaTime >= 16) { // ~60fps
+        lastScrollTime.current = now;
+        contentRef.current.scrollTop += scrollSpeed;
+        
+        // Parar quando chegar ao final
+        const isAtBottom = 
+          contentRef.current.scrollHeight - contentRef.current.scrollTop <= 
+          contentRef.current.clientHeight + 10;
+        
+        if (isAtBottom) {
+          setIsScrolling(false);
+          return;
+        }
+      }
+
+      scrollIntervalRef.current = requestAnimationFrame(scroll);
+    };
+
+    lastScrollTime.current = Date.now();
+    scrollIntervalRef.current = requestAnimationFrame(scroll);
 
     return () => {
       if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
+        cancelAnimationFrame(scrollIntervalRef.current);
       }
     };
   }, [isScrolling, scrollSpeed]);
@@ -347,10 +361,15 @@ const MusicPlayer = () => {
           color: #d97706;
           font-style: italic;
         }
+        
+        .music-content {
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+        }
       `}</style>
       <div 
         ref={contentRef}
-        className="flex-1 overflow-y-auto p-6 pb-24 md:pb-6 scroll-smooth"
+        className="music-content flex-1 overflow-y-auto p-6 pb-24 md:pb-6 scroll-smooth"
         style={{ fontSize: `${fontSize}px` }}
       >
         <Card>
