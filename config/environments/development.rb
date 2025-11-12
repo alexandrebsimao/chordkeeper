@@ -73,5 +73,6 @@ Rails.application.configure do
   # Allow requests from React frontend
   config.hosts << "localhost"
   config.hosts << "127.0.0.1"
+  config.hosts << "web:3000"
   config.action_controller.forgery_protection_origin_check = false
 end

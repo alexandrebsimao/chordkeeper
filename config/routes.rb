@@ -10,7 +10,6 @@ Rails.application.routes.draw do
       delete :public_link_destroyer
     end
   end
-  get 'public_setlist/:public_token', to: 'public_setlist#show', as: 'public_setlist'
   resources :songs do
     member do
       get :generate_pdf
@@ -65,6 +64,12 @@ Rails.application.routes.draw do
         post :public_link_generator
         delete :public_link_destroyer
       end
+    end
+    
+    # Public API (sem autenticação)
+    namespace :public do
+      get 'setlist/:public_token', to: 'setlists#show'
+      get 'setlist/:public_token/pdf', to: 'setlists#pdf'
     end
   end
 end

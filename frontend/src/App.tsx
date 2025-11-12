@@ -13,6 +13,8 @@ import CifraView from "./pages/songs/Show";
 import Setlists from "./pages/setlists/Index";
 import SetlistManager from "./pages/setlists/SetlistManager";
 import MusicPlayer from "./pages/setlists/MusicPlayer";
+import PublicSetlistOptions from "./pages/public/PublicSetlistOptions";
+import PublicMusicPlayer from "./pages/public/PublicMusicPlayer";
 import Settings from "./pages/Settings";
 import Logout from "./pages/Logout";
 import Login from "./pages/auth/Login";
@@ -34,6 +36,10 @@ const App = () => (
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          
+          {/* Public routes without sidebar */}
+          <Route path="/public/setlist/:publicToken" element={<PublicSetlistOptions />} />
+          <Route path="/public/setlist/:publicToken/play" element={<PublicMusicPlayer />} />
           
           {/* App routes with sidebar */}
           <Route path="/*" element={

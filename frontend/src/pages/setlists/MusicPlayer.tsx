@@ -22,6 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 
 type Song = {
   id: number;
@@ -53,6 +54,8 @@ const MusicPlayer = () => {
   const [fontSize, setFontSize] = useState(16);
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1);
+  const [setlistTitle, setSetlistTitle] = useState("");
+  const [publicLink, setPublicLink] = useState<{uuid: string; url: string} | undefined>(undefined);
   
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -84,8 +87,13 @@ const MusicPlayer = () => {
         if (data.data && data.data.attributes) {
           // Tentar pegar songs ou all_songs
           songsData = data.data.attributes.songs || data.data.attributes.all_songs || [];
+          // Pegar título e link público
+          setSetlistTitle(data.data.attributes.title || "");
+          setPublicLink(data.data.attributes.public_link);
         } else if (data.attributes) {
           songsData = data.attributes.songs || data.attributes.all_songs || [];
+          setSetlistTitle(data.attributes.title || "");
+          setPublicLink(data.attributes.public_link);
         } else if (Array.isArray(data.data)) {
           songsData = data.data;
         } else if (Array.isArray(data)) {
@@ -235,6 +243,21 @@ const MusicPlayer = () => {
     setFontSize(prev => Math.max(prev - 2, 12));
   };
 
+  const handleLinkGenerated = async () => {
+    // Recarregar dados do setlist para pegar o novo link
+    try {
+      const response = await fetchWithAuth(`/api/setlists/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data && data.data.attributes) {
+          setPublicLink(data.data.attributes.public_link);
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao recarregar link:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
@@ -284,6 +307,14 @@ const MusicPlayer = () => {
             <Badge variant="outline" className="hidden sm:inline-flex">
               {currentIndex + 1} / {songs.length}
             </Badge>
+
+            {/* Botão de compartilhar */}
+            <ShareSetlistDialog
+              setlistId={Number(id)}
+              setlistTitle={setlistTitle}
+              publicLink={publicLink}
+              onLinkGenerated={handleLinkGenerated}
+            />
 
             {/* Controle de fonte */}
             <Button variant="outline" size="icon" onClick={decreaseFontSize}>
