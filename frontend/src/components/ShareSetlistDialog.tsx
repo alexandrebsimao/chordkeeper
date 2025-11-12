@@ -22,13 +22,17 @@ type ShareSetlistDialogProps = {
     url: string;
   };
   onLinkGenerated?: () => void;
+  variant?: "ghost" | "outline" | "default";
+  iconSize?: "sm" | "md";
 };
 
 const ShareSetlistDialog = ({ 
   setlistId, 
   setlistTitle, 
   publicLink,
-  onLinkGenerated 
+  onLinkGenerated,
+  variant = "ghost",
+  iconSize = "sm"
 }: ShareSetlistDialogProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -141,11 +145,12 @@ const ShareSetlistDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="outline"
+          variant={variant}
           size="icon"
+          className={variant === "ghost" ? "h-9 w-9 hover:bg-muted" : ""}
           title="Compartilhar setlist"
         >
-          <Share2 className="h-5 w-5" />
+          <Share2 className={iconSize === "sm" ? "h-4 w-4" : "h-5 w-5"} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

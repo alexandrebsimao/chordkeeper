@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
+import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 
 type ApiSetlist = {
   id: number;
@@ -24,6 +25,10 @@ type ApiSetlist = {
   total_songs?: number;
   created_at?: string;
   updated_at?: string;
+  public_link?: {
+    uuid: string;
+    url: string;
+  };
 };
 
 const Setlists = () => {
@@ -169,6 +174,39 @@ const Setlists = () => {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, loadingMore, loading]);
+
+  const fetchSetlist = async (id: number) => {
+    try {
+      const response = await fetchWithAuth(`/api/setlists/${id}`);
+      
+      if (response.status === 401) {
+        navigate("/auth/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const jsonData = await response.json();
+      const updatedSetlist = {
+        id: jsonData.data.id,
+        ...jsonData.data.attributes
+      };
+
+      // Update setlist in state
+      setSetlists((prevSetlists) =>
+        prevSetlists.map((s) => (s.id === updatedSetlist.id ? updatedSetlist : s))
+      );
+    } catch (err: any) {
+      console.error('Failed to fetch setlist', err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o setlist",
+        variant: "destructive",
+      });
+    }
+  }
 
   const handleCreateSetlist = async () => {
     if (!newSetlist.title) {
@@ -375,6 +413,12 @@ const Setlists = () => {
                       </div>
                     </div>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                      <ShareSetlistDialog
+                        setlistId={setlist.id}
+                        setlistTitle={setlist.title}
+                        publicLink={setlist.public_link}
+                        onLinkGenerated={() => fetchSetlist(setlist.id)}
+                      />
                       <Button
                         variant="ghost"
                         size="icon"

@@ -443,12 +443,6 @@ const SetlistManager = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ShareSetlistDialog
-              setlistId={setlist.id}
-              setlistTitle={setlist.title}
-              publicLink={setlist.public_link}
-              onLinkGenerated={fetchSetlist}
-            />
             <Button
               variant="default"
               size="icon"
@@ -458,6 +452,14 @@ const SetlistManager = () => {
             >
               <Play className="h-5 w-5" />
             </Button>
+            <ShareSetlistDialog
+              setlistId={setlist.id}
+              setlistTitle={setlist.title}
+              publicLink={setlist.public_link}
+              onLinkGenerated={fetchSetlist}
+              variant="outline"
+              iconSize="md"
+            />
             <Button
               variant="outline"
               size="icon"

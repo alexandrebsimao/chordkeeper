@@ -17,7 +17,22 @@ module Api
         per_page: 6
       ).call
 
-      render json: SetlistSerializer.new(@setlists).serializable_hash
+      serialized = SetlistSerializer.new(@setlists).serializable_hash
+      
+      # Adicionar informações do link público para cada setlist
+      if serialized[:data].is_a?(Array)
+        serialized[:data].each do |setlist_data|
+          setlist = @setlists.find { |s| s.id.to_s == setlist_data[:id].to_s }
+          if setlist&.public_setlist.present?
+            setlist_data[:attributes][:public_link] = {
+              uuid: setlist.public_setlist.uuid,
+              url: "#{ENV['DOMAIN_NAME']}/public/setlist/#{setlist.public_setlist.uuid}"
+            }
+          end
+        end
+      end
+      
+      render json: serialized
     end
 
     # GET /setlists/1 or /setlists/1.json
@@ -46,7 +61,7 @@ module Api
       
       render json: { 
         uuid: public_setlist.uuid,
-        url: "#{ENV['DOMAIN_NAME']}/public_setlists/#{public_setlist.uuid}"
+        url: "#{ENV['DOMAIN_NAME']}/public/setlist/#{public_setlist.uuid}"
       }, status: :ok
     end
 
