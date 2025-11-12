@@ -20,7 +20,7 @@ const PublicSetlistOptions = () => {
   useEffect(() => {
     const fetchSetlist = async () => {
       try {
-        const response = await fetch(`/api/public/setlist/${publicToken}`);
+        const response = await fetch(`${API_BASE_URL}/api/public/setlist/${publicToken}`);
         if (!response.ok) {
           throw new Error("Setlist não encontrado");
         }
