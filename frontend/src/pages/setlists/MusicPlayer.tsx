@@ -209,6 +209,14 @@ const MusicPlayer = () => {
     };
   }, [isScrolling, scrollSpeed]);
 
+  const increaseFontSize = () => {
+    setFontSize(prev => Math.min(prev + 2, 32));
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize(prev => Math.max(prev - 2, 12));
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -219,17 +227,43 @@ const MusicPlayer = () => {
       switch(e.key) {
         case ' ': // Spacebar
           e.preventDefault();
-          setIsScrolling(!isScrolling);
+          setIsScrolling(prev => !prev);
           break;
         case '+':
         case '=':
           e.preventDefault();
-          increaseFontSize();
+          setFontSize(prev => Math.min(prev + 2, 32));
           break;
         case '-':
         case '_':
           e.preventDefault();
-          decreaseFontSize();
+          setFontSize(prev => Math.max(prev - 2, 12));
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          setCurrentIndex(prev => {
+            const newIndex = Math.max(prev - 1, 0);
+            if (newIndex !== prev) {
+              setIsScrolling(false);
+              setTimeout(() => {
+                if (contentRef.current) contentRef.current.scrollTop = 0;
+              }, 0);
+            }
+            return newIndex;
+          });
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          setCurrentIndex(prev => {
+            const newIndex = Math.min(prev + 1, songs.length - 1);
+            if (newIndex !== prev) {
+              setIsScrolling(false);
+              setTimeout(() => {
+                if (contentRef.current) contentRef.current.scrollTop = 0;
+              }, 0);
+            }
+            return newIndex;
+          });
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -260,7 +294,7 @@ const MusicPlayer = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isScrolling]);
+  }, []);
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
@@ -286,14 +320,6 @@ const MusicPlayer = () => {
     console.log('Toggle scroll:', !isScrolling);
     console.log('contentRef.current:', contentRef.current);
     setIsScrolling(!isScrolling);
-  };
-
-  const increaseFontSize = () => {
-    setFontSize(prev => Math.min(prev + 2, 32));
-  };
-
-  const decreaseFontSize = () => {
-    setFontSize(prev => Math.max(prev - 2, 12));
   };
 
   const handleLinkGenerated = async () => {

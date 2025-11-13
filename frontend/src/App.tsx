@@ -46,11 +46,8 @@ const App = () => (
             <SidebarProvider>
               <div className="flex min-h-screen w-full">
                 <AppSidebar />
+                <SidebarTrigger className="mr-2" />
                 <div className="flex-1 flex flex-col">
-                  <header className="h-14 border-b bg-background hidden md:flex items-center px-6">
-                    <SidebarTrigger />
-                    <h1 className="ml-4 font-semibold text-lg">ChordKeeper</h1>
-                  </header>
                   <main className="flex-1 flex flex-col">
                     <Routes>
                       <Route path="/songs/" element={<Index />} />  
