@@ -209,6 +209,59 @@ const MusicPlayer = () => {
     };
   }, [isScrolling, scrollSpeed]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!contentRef.current) return;
+
+      const scrollAmount = 50;
+      
+      switch(e.key) {
+        case ' ': // Spacebar
+          e.preventDefault();
+          setIsScrolling(!isScrolling);
+          break;
+        case '+':
+        case '=':
+          e.preventDefault();
+          increaseFontSize();
+          break;
+        case '-':
+        case '_':
+          e.preventDefault();
+          decreaseFontSize();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          contentRef.current.scrollTop -= scrollAmount;
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          contentRef.current.scrollTop += scrollAmount;
+          break;
+        case 'PageUp':
+          e.preventDefault();
+          contentRef.current.scrollTop -= contentRef.current.clientHeight;
+          break;
+        case 'PageDown':
+          e.preventDefault();
+          contentRef.current.scrollTop += contentRef.current.clientHeight;
+          break;
+        case 'Home':
+          e.preventDefault();
+          contentRef.current.scrollTop = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          contentRef.current.scrollTop = contentRef.current.scrollHeight;
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isScrolling]);
+
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
@@ -282,10 +335,11 @@ const MusicPlayer = () => {
   }
 
   return (
-    <div className="flex-1 p-3 sm:p-4 md:p-6 pb-20 md:pb-6">
-      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 sm:gap-4">
+    <div className="flex flex-col h-screen">
+      <div className="flex-shrink-0 p-3 sm:p-4 md:p-6 pb-0">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="flex items-start gap-2 sm:gap-4 flex-1 min-w-0">
             <Button
               variant="ghost"
@@ -381,66 +435,70 @@ const MusicPlayer = () => {
             </Badge>
           )}
         </div>
+      </div>
+    </div>
 
-        {/* Conteúdo da música */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-3 sm:p-4 md:p-8">
-            <style>{`
-              .cifra-content .chord-line, .chord {
-                color: #2563eb;
-                font-weight: bold;
-                padding: 0;
-                margin: 0;
-              }
+      {/* Conteúdo da música - área com scroll */}
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-4xl mx-auto h-full px-3 sm:px-4 md:px-6">
+          <Card className="overflow-hidden h-full">
+            <CardContent className="p-3 sm:p-4 md:p-8 h-full overflow-hidden">
+              <style>{`
+                .cifra-content .chord-line, .chord {
+                  color: #2563eb;
+                  font-weight: bold;
+                  padding: 0;
+                  margin: 0;
+                }
 
-              .cifra-content .notation {
-                color: #d97706;
-                font-style: italic;
-              }
-              
-              .music-content {
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior: contain;
-                max-height: calc(100vh - 280px);
-                min-height: 500px;
-              }
-            `}</style>
-            <div 
-              ref={contentRef}
-              className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
-              style={{ fontSize: `${fontSize}px` }}
-              dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
-            />
-          </CardContent>
-        </Card>
+                .cifra-content .notation {
+                  color: #d97706;
+                  font-style: italic;
+                }
+                
+                .music-content {
+                  -webkit-overflow-scrolling: touch;
+                  overscroll-behavior: contain;
+                  height: 100%;
+                }
+              `}</style>
+              <div 
+                ref={contentRef}
+                className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
+                style={{ fontSize: `${fontSize}px` }}
+                dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-        {/* Footer com navegação fixo */}
-        <div className="md:sticky fixed bottom-0 left-0 right-0 border-t bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 z-[100]">
-          <div className="flex items-center justify-between p-4">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-              className="flex-1 max-w-[200px]"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Anterior
-            </Button>
+      {/* Footer com navegação fixo */}
+      <div className="md:sticky fixed bottom-0 left-0 right-0 border-t bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 z-[100]">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentIndex === 0}
+            className="flex-1 max-w-[200px]"
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Anterior
+          </Button>
 
-            <Badge variant="secondary" className="mx-4 sm:hidden">
-              {currentIndex + 1} / {songs.length}
-            </Badge>
+          <Badge variant="secondary" className="mx-4 sm">
+            {currentIndex + 1} / {songs.length}
+          </Badge>
 
-            <Button
-              variant="outline"
-              onClick={handleNext}
-              disabled={currentIndex === songs.length - 1}
-              className="flex-1 max-w-[200px]"
-            >
-              Próxima
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleNext}
+            disabled={currentIndex === songs.length - 1}
+            className="flex-1 max-w-[200px]"
+          >
+            Próxima
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
         </div>
       </div>
     </div>

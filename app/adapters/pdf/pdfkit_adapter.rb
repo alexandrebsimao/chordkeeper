@@ -13,7 +13,9 @@ module Pdf
         margin_bottom: '10mm',
         margin_left: '10mm',
         encoding: 'UTF-8',
-        print_media_type: true
+        print_media_type: true,
+        footer_right: "ChordKeeper",
+        footer_font_size: '7',
       )
     end
 

@@ -145,6 +145,59 @@ const PublicMusicPlayer = () => {
     };
   }, [isScrolling, scrollSpeed]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!contentRef.current) return;
+
+      const scrollAmount = 50;
+      
+      switch(e.key) {
+        case ' ': // Spacebar
+          e.preventDefault();
+          setIsScrolling(!isScrolling);
+          break;
+        case '+':
+        case '=':
+          e.preventDefault();
+          increaseFontSize();
+          break;
+        case '-':
+        case '_':
+          e.preventDefault();
+          decreaseFontSize();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          contentRef.current.scrollTop -= scrollAmount;
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          contentRef.current.scrollTop += scrollAmount;
+          break;
+        case 'PageUp':
+          e.preventDefault();
+          contentRef.current.scrollTop -= contentRef.current.clientHeight;
+          break;
+        case 'PageDown':
+          e.preventDefault();
+          contentRef.current.scrollTop += contentRef.current.clientHeight;
+          break;
+        case 'Home':
+          e.preventDefault();
+          contentRef.current.scrollTop = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          contentRef.current.scrollTop = contentRef.current.scrollHeight;
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isScrolling]);
+
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
@@ -198,153 +251,155 @@ const PublicMusicPlayer = () => {
   }
 
   return (
-    <div className="flex-1 p-2 sm:p-3 md:p-4 pb-20 md:pb-6">
-      <div className="max-w-4xl mx-auto space-y-2 sm:space-y-3">
-        {/* App Name */}
-        <div className="text-center py-1">
-          <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground">ChordKeeper</h2>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 sm:gap-3">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground break-words">{currentSong?.title || 'Carregando...'}</h1>
-              {currentSong?.artist && (
-                <p className="text-xs text-muted-foreground truncate">{currentSong.artist}</p>
-              )}
-            </div>
+    <div className="flex flex-col h-screen">
+      <div className="flex-shrink-0 p-2 sm:p-3 md:p-4">
+        <div className="max-w-4xl mx-auto space-y-2 sm:space-y-3">
+          {/* Branding */}
+          <div>
+            <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground">ChordKeeper</h2>
           </div>
 
-          <Button variant="outline" size="icon" onClick={decreaseFontSize} className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-            <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
-          
-          <Button variant="outline" size="icon" onClick={increaseFontSize} className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-            <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-                <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="scroll-speed">
-                    Velocidade do Scroll: {scrollSpeed}x
-                  </Label>
-                  <Slider
-                    id="scroll-speed"
-                    min={0.5}
-                    max={5}
-                    step={0.5}
-                    value={[scrollSpeed]}
-                    onValueChange={(value) => setScrollSpeed(value[0])}
-                    className="mt-2"
-                  />
-                </div>
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2 sm:gap-3">
+            <div className="flex items-start gap-2 flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground break-words">{currentSong?.title || 'Carregando...'}</h1>
+                {currentSong?.artist && (
+                  <p className="text-xs text-muted-foreground truncate">{currentSong.artist}</p>
+                )}
               </div>
-            </PopoverContent>
-          </Popover>
+            </div>
 
-          <Button
-            variant={isScrolling ? "destructive" : "default"}
-            size="icon"
-            onClick={toggleScroll}
-            className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
-          >
-            {isScrolling ? (
-              <Pause className="h-3 w-3 sm:h-4 sm:w-4" />
-            ) : (
-              <Play className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Button variant="outline" size="icon" onClick={decreaseFontSize} className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
+              <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+            
+            <Button variant="outline" size="icon" onClick={increaseFontSize} className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
+              <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
+                  <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="scroll-speed">
+                      Velocidade do Scroll: {scrollSpeed}x
+                    </Label>
+                    <Slider
+                      id="scroll-speed"
+                      min={0.5}
+                      max={5}
+                      step={0.5}
+                      value={[scrollSpeed]}
+                      onValueChange={(value) => setScrollSpeed(value[0])}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Button
+              variant={isScrolling ? "destructive" : "default"}
+              size="icon"
+              onClick={toggleScroll}
+              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+            >
+              {isScrolling ? (
+                <Pause className="h-3 w-3 sm:h-4 sm:w-4" />
+              ) : (
+                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
+              )}
+            </Button>
+          </div>
+
+          {/* Badges de informações */}
+          <div className="flex gap-2 flex-wrap items-center">
+            {currentSong?.original_key && (
+              <Badge variant="outline" className="font-mono text-xs">
+                Tom: {currentSong.original_key}
+              </Badge>
             )}
-          </Button>
+            {currentSong?.capo !== null && currentSong?.capo !== undefined && currentSong?.capo > 0 && (
+              <Badge variant="outline" className="font-mono text-xs">
+                Capotraste: {currentSong.capo}ª casa
+              </Badge>
+            )}
+            {currentSong?.bpm && (
+              <Badge variant="outline" className="font-mono text-xs">
+                BPM: {currentSong.bpm}
+              </Badge>
+            )}
+          </div>
         </div>
+      </div>
 
-        {/* Badges de informações */}
-        <div className="flex gap-2 flex-wrap items-center">
-          <Badge variant="outline" className="font-mono text-xs">
+      {/* Conteúdo da música - área com scroll */}
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-4xl mx-auto h-full px-2 sm:px-3 md:px-4">
+          <Card className="overflow-hidden h-full">
+            <CardContent className="p-3 sm:p-4 md:p-8 h-full overflow-hidden">
+              <style>{`
+                .cifra-content .chord-line, .chord {
+                  color: #2563eb;
+                  font-weight: bold;
+                  padding: 0;
+                  margin: 0;
+                }
+
+                .cifra-content .notation {
+                  color: #d97706;
+                  font-style: italic;
+                }
+                
+                .music-content {
+                  -webkit-overflow-scrolling: touch;
+                  overscroll-behavior: contain;
+                  height: 100%;
+                }
+              `}</style>
+              <div 
+                ref={contentRef}
+                className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
+                style={{ fontSize: `${fontSize}px` }}
+                dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Footer com navegação fixo */}
+      <div className="md:sticky fixed bottom-0 left-0 right-0 border-t bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 z-[100]">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentIndex === 0}
+            className="flex-1 max-w-[200px]"
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Anterior
+          </Button>
+
+          <Badge variant="secondary" className="mx-4 sm">
             {currentIndex + 1} / {songs.length}
           </Badge>
-          {currentSong?.original_key && (
-            <Badge variant="outline" className="font-mono text-xs">
-              Tom: {currentSong.original_key}
-            </Badge>
-          )}
-          {currentSong?.capo !== null && currentSong?.capo !== undefined && currentSong?.capo > 0 && (
-            <Badge variant="outline" className="font-mono text-xs">
-              Capotraste: {currentSong.capo}ª casa
-            </Badge>
-          )}
-          {currentSong?.bpm && (
-            <Badge variant="outline" className="font-mono text-xs">
-              BPM: {currentSong.bpm}
-            </Badge>
-          )}
-        </div>
 
-        {/* Conteúdo da música */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-3 sm:p-4 md:p-8">
-            <style>{`
-              .cifra-content .chord-line, .chord {
-                color: #2563eb;
-                font-weight: bold;
-                padding: 0;
-                margin: 0;
-              }
-
-              .cifra-content .notation {
-                color: #d97706;
-                font-style: italic;
-              }
-              
-              .music-content {
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior: contain;
-                max-height: calc(100vh - 280px);
-                min-height: 500px;
-              }
-            `}</style>
-            <div 
-              ref={contentRef}
-              className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
-              style={{ fontSize: `${fontSize}px` }}
-              dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Footer com navegação fixo */}
-        <div className="md:sticky fixed bottom-0 left-0 right-0 border-t bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 z-[100]">
-          <div className="flex items-center justify-between p-4">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-              className="flex-1 max-w-[200px]"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Anterior
-            </Button>
-
-            <Badge variant="secondary" className="mx-4 sm:hidden">
-              {currentIndex + 1} / {songs.length}
-            </Badge>
-
-            <Button
-              variant="outline"
-              onClick={handleNext}
-              disabled={currentIndex === songs.length - 1}
-              className="flex-1 max-w-[200px]"
-            >
-              Próxima
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleNext}
+            disabled={currentIndex === songs.length - 1}
+            className="flex-1 max-w-[200px]"
+          >
+            Próxima
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
         </div>
       </div>
     </div>
