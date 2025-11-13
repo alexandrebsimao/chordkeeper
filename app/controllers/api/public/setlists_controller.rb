@@ -34,7 +34,7 @@ class Api::Public::SetlistsController < ApplicationController
           id: song.id,
           title: song.title,
           artist: song.artist,
-          content: Songs::SongFormatterService.call(song),
+          content: Songs::ChordProcessorService.call(song),
           capo: song.capo,
           bpm: song.bpm,
           key: song.key
