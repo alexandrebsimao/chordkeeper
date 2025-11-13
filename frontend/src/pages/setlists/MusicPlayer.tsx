@@ -372,7 +372,7 @@ const MusicPlayer = () => {
           )}
           {currentSong?.capo !== null && currentSong?.capo !== undefined && currentSong?.capo > 0 && (
             <Badge variant="outline" className="font-mono text-xs">
-              Capo: {currentSong.capo}
+              Capotraste: {currentSong.capo ? `${currentSong.capo}ª casa` : '—'}
             </Badge>
           )}
           {currentSong?.bpm && (
