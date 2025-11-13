@@ -401,11 +401,13 @@ const MusicPlayer = () => {
               .music-content {
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
+                max-height: calc(100vh - 280px);
+                min-height: 500px;
               }
             `}</style>
             <div 
               ref={contentRef}
-              className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto pb-24 md:pb-6"
+              className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
               style={{ fontSize: `${fontSize}px` }}
               dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
             />
