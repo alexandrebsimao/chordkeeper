@@ -1,5 +1,9 @@
 class SetlistsController < ApplicationController
+  include PlanLimitable
+  
   before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song public_link_generator public_link_destroyer ]
+  before_action -> { check_feature_access('public_sharing') }, only: [:public_link_generator]
+  before_action -> { check_feature_access('pdf_export') }, only: [:print]
 
   # GET /setlists or /setlists.json
   def index

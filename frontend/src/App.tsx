@@ -21,6 +21,12 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import NotFound from "./pages/NotFound";
+import Plans from "./pages/Plans";
+import CheckoutSuccess from "./pages/checkout/Success";
+import AdminDashboard from "./pages/admin/Dashboard";
+import PlansManagement from "./pages/admin/PlansManagement";
+import UsersManagement from "./pages/admin/UsersManagement";
+import FeatureFlagsManagement from "./pages/admin/FeatureFlagsManagement";
 
 const queryClient = new QueryClient();
 
@@ -61,7 +67,16 @@ const App = () => (
                       <Route path="/setlist/:id" element={<SetlistManager />} />
                       <Route path="/setlist/:id/play" element={<MusicPlayer />} />
                       <Route path="/settings" element={<Settings />} />
+                      <Route path="/plans" element={<Plans />} />
+                      <Route path="/checkout/success" element={<CheckoutSuccess />} />
                       <Route path="/logout" element={<Logout />} />
+                      
+                      {/* Admin routes */}
+                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                      <Route path="/admin/plans" element={<PlansManagement />} />
+                      <Route path="/admin/users" element={<UsersManagement />} />
+                      <Route path="/admin/features" element={<FeatureFlagsManagement />} />
+                      
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>

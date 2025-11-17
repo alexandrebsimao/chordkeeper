@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  # Webhooks (fora do namespace, sem autenticação)
+  namespace :webhooks do
+    post 'stripe', to: 'stripe#create'
+  end
+
   resources :setlists do
     member do
       get :manage_songs
@@ -70,6 +75,45 @@ Rails.application.routes.draw do
     namespace :public do
       get 'setlist/:public_token', to: 'setlists#show'
       get 'setlist/:public_token/pdf', to: 'setlists#pdf'
+    end
+
+    # Plans (público - pode ver sem autenticação)
+    resources :plans, only: [:index]
+
+    # Checkout (criação de sessão de pagamento)
+    post 'checkout', to: 'checkout#create'
+    get 'checkout/success', to: 'checkout#success'
+    post 'checkout/portal', to: 'checkout#portal'
+
+    # Subscriptions (usuário pode gerenciar sua própria assinatura)
+    resources :subscriptions, only: [:create] do
+      collection do
+        get :current
+        delete :cancel
+        post :reactivate
+      end
+    end
+
+    # Admin routes
+    namespace :admin do
+      get 'dashboard', to: 'dashboard#index'
+      
+      resources :plans
+      resources :feature_flags do
+        member do
+          patch :toggle
+        end
+      end
+      
+      resources :users, only: [:index, :show, :update] do
+        member do
+          patch :update_role
+          post :assign_plan
+        end
+        collection do
+          get :search
+        end
+      end
     end
   end
 end

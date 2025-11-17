@@ -1,5 +1,7 @@
 module Api
   class SongsController < Api::ApiController
+  include PlanLimitable
+
   before_action :set_song, only: %i[ show edit update destroy transpose generate_pdf ]
 
   # GET /songs or /songs.json

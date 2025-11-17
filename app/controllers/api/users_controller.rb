@@ -3,14 +3,16 @@ module Api
     # GET /api/users/me
     def me
       render json: {
-        data: {
-          id: current_user.id,
-          type: 'user',
-          attributes: {
-            email: current_user.email,
-            created_at: current_user.created_at
-          }
-        }
+        id: current_user.id,
+        email: current_user.email,
+        role: current_user.role,
+        created_at: current_user.created_at,
+        plan_name: current_user.plan_name,
+        songs_count: current_user.songs_count,
+        setlists_count: current_user.setlists_count,
+        songs_limit: current_user.songs_limit,
+        setlists_limit: current_user.setlists_limit,
+        has_active_subscription: current_user.has_active_subscription?
       }, status: :ok
     end
 

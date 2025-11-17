@@ -1,5 +1,6 @@
 module Api
   class SetlistsController < Api::ApiController
+    include PlanLimitable
     before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song reorder_songs public_link_generator public_link_destroyer ]
 
     # GET /setlists or /setlists.json
