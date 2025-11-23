@@ -501,7 +501,7 @@ const MusicPlayer = () => {
                     isScrolling={isScrolling}
                     scrollSpeed={scrollSpeed}
                     containerRef={contentRef}
-                    scale={fontSize / 16}
+                    scale={fontSize / 12}
                   />
                 ) : (
                   <div dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }} />

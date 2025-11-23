@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
+import SimplePdfViewer from "@/components/SimplePdfViewer";
 
 type MediaRef = {
   id?: number;
@@ -372,10 +373,15 @@ const CifraView = () => {
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-8">
-            <div 
-              className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
-              dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
-            />
+            {!cifra?.content && !cifra?.content_format && cifra?.attachment_url ? (
+              <SimplePdfViewer url={cifra.attachment_url} />
+            ) : (
+              <div 
+                className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
+                dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
+              />
+            )}
+
             <style>{`
               .cifra-content .chord-line, .chord {
                 color: #2563eb;
