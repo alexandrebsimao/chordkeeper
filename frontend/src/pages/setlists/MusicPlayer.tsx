@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
+import PdfViewer from "@/components/PdfViewer";
 
 type Song = {
   id: number;
@@ -33,6 +34,7 @@ type Song = {
   bpm?: number;
   content?: string;
   formatted_content?: string;
+  attachment_url?: string;
 };
 
 type SetlistSong = {
@@ -492,8 +494,19 @@ const MusicPlayer = () => {
                 ref={contentRef}
                 className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
                 style={{ fontSize: `${fontSize}px` }}
-                dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
-              />
+              >
+                {!currentSong?.content && !currentSong?.content_format && currentSong?.attachment_url ? (
+                  <PdfViewer 
+                    url={currentSong.attachment_url} 
+                    isScrolling={isScrolling}
+                    scrollSpeed={scrollSpeed}
+                    containerRef={contentRef}
+                    scale={fontSize / 16}
+                  />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }} />
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
