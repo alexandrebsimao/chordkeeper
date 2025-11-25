@@ -45,11 +45,34 @@ class User < ApplicationRecord
 
   # OAuth: Find or create user from Google OAuth data
   def self.from_omniauth(auth)
-    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
-      user.email = auth.info.email
-      user.password = Devise.friendly_token[0, 20]
-      user.name = auth.info.name
-      user.avatar_url = auth.info.image
+    # Primeiro tenta encontrar por provider e uid
+    user = where(provider: auth.provider, uid: auth.uid).first
+    
+    # Se não encontrar, busca por email
+    if user.nil?
+      user = find_by(email: auth.info.email)
+      
+      # Se encontrou por email, atualiza com dados do OAuth
+      if user
+        user.update(
+          provider: auth.provider,
+          uid: auth.uid,
+          name: auth.info.name || user.name,
+          avatar_url: auth.info.image
+        )
+      else
+        # Se não existe, cria novo usuário
+        user = create(
+          provider: auth.provider,
+          uid: auth.uid,
+          email: auth.info.email,
+          password: Devise.friendly_token[0, 20],
+          name: auth.info.name,
+          avatar_url: auth.info.image
+        )
+      end
     end
+    
+    user
   end
 end
