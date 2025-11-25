@@ -49,7 +49,7 @@ group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
   # Testing
-  gem 'rspec-rails', '~> 6.0'
+  gem 'rspec-rails', '~> 8.0'
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
