@@ -18,6 +18,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - internal
   web:
     stdin_open: true
     tty: true # Enables debugging capabilities when attached to this container.
@@ -52,6 +54,8 @@ services:
       - redis
     volumes:
       - .:/myapp
+    networks:
+      - internal
   frontend:
     build: 
       context: ./frontend
