@@ -31,7 +31,7 @@ jobs:
           docker volume prune -f
           
           # Build e restart dos containers
-          docker compose -f docker-compose-production.yml build --no-cache frontend
+          docker compose -f docker-compose-production.yml build --no-cache
           docker compose -f docker-compose-production.yml up -d
           
           # Aguardar containers iniciarem

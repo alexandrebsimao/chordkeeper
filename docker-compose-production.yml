@@ -11,13 +11,13 @@ services:
       - ./tmp/db:/var/lib/postgresql/data
     networks:
       - internal
-    redis:
-      image: redis:7-alpine
-      restart: always
-      ports:
-        - "6379:6379"
-      volumes:
-        - redis_data:/data
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
   web:
     stdin_open: true
     tty: true # Enables debugging capabilities when attached to this container.
