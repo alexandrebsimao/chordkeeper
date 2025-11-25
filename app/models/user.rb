@@ -3,9 +3,13 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
+         :jwt_authenticatable, :omniauthable,
+         jwt_revocation_strategy: JwtDenylist,
+         omniauth_providers: [:google_oauth2]
 
   has_many :library_users, dependent: :destroy
+  has_many :libraries, through: :library_users
+
   has_many :shared_libraries, through: :library_users, source: :library
   has_many :owned_libraries, class_name: "Library", foreign_key: "owner_id", dependent: :destroy
   
@@ -37,5 +41,38 @@ class User < ApplicationRecord
     end
     
     true
+  end
+
+  # OAuth: Find or create user from Google OAuth data
+  def self.from_omniauth(auth)
+    # Primeiro tenta encontrar por provider e uid
+    user = where(provider: auth.provider, uid: auth.uid).first
+    
+    # Se não encontrar, busca por email
+    if user.nil?
+      user = find_by(email: auth.info.email)
+      
+      # Se encontrou por email, atualiza com dados do OAuth
+      if user
+        user.update(
+          provider: auth.provider,
+          uid: auth.uid,
+          name: auth.info.name || user.name,
+          avatar_url: auth.info.image
+        )
+      else
+        # Se não existe, cria novo usuário
+        user = create(
+          provider: auth.provider,
+          uid: auth.uid,
+          email: auth.info.email,
+          password: Devise.friendly_token[0, 20],
+          name: auth.info.name,
+          avatar_url: auth.info.image
+        )
+      end
+    end
+    
+    user
   end
 end

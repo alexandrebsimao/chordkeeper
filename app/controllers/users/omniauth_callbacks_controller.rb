@@ -1,30 +1,33 @@
 # frozen_string_literal: true
 
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
-  # You should configure your model like this:
-  # devise :omniauthable, omniauth_providers: [:twitter]
+  # Importante: skip CSRF token verification para OmniAuth callbacks
+  skip_before_action :verify_authenticity_token
+  skip_forgery_protection
 
-  # You should also create an action method in this controller like this:
-  # def twitter
-  # end
+  def google_oauth2
+    Rails.logger.info "OmniAuth callback received: #{request.env['omniauth.auth']&.provider}"
+    
+    @user = User.from_omniauth(request.env['omniauth.auth'])
 
-  # More info at:
-  # https://github.com/heartcombo/devise#omniauth
+    if @user.persisted?
+      # Generate JWT token for the user
+      token = Warden::JWTAuth::UserEncoder.new.call(@user, :user, nil).first
 
-  # GET|POST /resource/auth/twitter
-  # def passthru
-  #   super
-  # end
+      # Redirect to frontend with token
+      redirect_to "#{ENV['FRONTEND_URL']}/auth/callback?token=#{token}&email=#{@user.email}", allow_other_host: true
+    else
+      session['devise.google_data'] = request.env['omniauth.auth'].except(:extra)
+      redirect_to "#{ENV['FRONTEND_URL']}/login?error=#{@user.errors.full_messages.join(',')}", allow_other_host: true
+    end
+  rescue StandardError => e
+    Rails.logger.error "Google OAuth error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    redirect_to "#{ENV['FRONTEND_URL']}/login?error=authentication_failed", allow_other_host: true
+  end
 
-  # GET|POST /users/auth/twitter/callback
-  # def failure
-  #   super
-  # end
-
-  # protected
-
-  # The path used when OmniAuth fails
-  # def after_omniauth_failure_path_for(scope)
-  #   super(scope)
-  # end
+  def failure
+    Rails.logger.error "OmniAuth failure: #{params[:message]}"
+    redirect_to "#{ENV['FRONTEND_URL']}/login?error=#{params[:message]}", allow_other_host: true
+  end
 end

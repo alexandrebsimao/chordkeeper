@@ -16,8 +16,10 @@ module Api
     def check_is_current_library
       return if current_user.nil?
       unless current_library.present?
-        library = Library.create(name: "Biblioteca de #{current_user.email}", owner: current_user)
-        LibraryUser.create(user: current_user, library: library)
+        ActiveRecord::Base.transaction do
+          library = Library.create(name: "Biblioteca de #{current_user.email}", owner: current_user)
+          LibraryUser.create!(user: current_user, library: library)
+        end
       end
     end
     

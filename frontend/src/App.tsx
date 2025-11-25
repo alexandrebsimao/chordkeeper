@@ -20,6 +20,7 @@ import Logout from "./pages/Logout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import OAuthCallback from "./pages/auth/OAuthCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
           
           {/* Public routes without sidebar */}
           <Route path="/public/setlist/:publicToken" element={<PublicSetlistOptions />} />

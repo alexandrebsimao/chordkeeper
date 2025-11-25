@@ -23,7 +23,12 @@ Rails.application.routes.draw do
     resources :users, controller: 'api/library_users', only: [:index, :create, :update, :destroy]
   end
   # devise_for :users
-  devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
+  devise_for :users, controllers: { 
+    sessions: 'users/sessions', 
+    registrations: 'users/registrations', 
+    passwords: 'users/passwords',
+    omniauth_callbacks: 'users/omniauth_callbacks'
+  }
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -41,8 +46,6 @@ Rails.application.routes.draw do
 
   # API routes
   namespace :api do
-    devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
-
     # User endpoints
     get 'users/me', to: 'users#me'
     patch 'users/update_password', to: 'users#update_password'
