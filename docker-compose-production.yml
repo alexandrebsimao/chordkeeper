@@ -16,10 +16,8 @@ services:
     tty: true # Enables debugging capabilities when attached to this container.
     build: .
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
-    environment:
-      - RAILS_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-chordkeeper}@db:5432/${DB_NAME:-chordkeeper}
-      - DOMAIN_NAME=chordkeeper.innapses.com
+    env_file:
+      - .env.production
     volumes:
       - .:/myapp
     ports:
@@ -43,6 +41,8 @@ services:
       dockerfile: Dockerfile.production
     container_name: frontend
     restart: always
+    env_file:
+      - ./frontend/.env.production
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://api-chordkeeper.innapses.com

@@ -2,9 +2,12 @@
 
 class Users::SessionsController < Devise::SessionsController
   protect_from_forgery with: :null_session
+  skip_before_action :verify_authenticity_token
   respond_to :json
 
   def create
+    Rails.logger.info "Login attempt for: #{params[:user]&.[](:email)}"
+    
     self.resource = warden.authenticate!(auth_options)
     set_flash_message!(:notice, :signed_in)
     sign_in(resource_name, resource)

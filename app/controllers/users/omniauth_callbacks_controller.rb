@@ -15,7 +15,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       token = Warden::JWTAuth::UserEncoder.new.call(@user, :user, nil).first
 
       # Redirect to frontend with token
-      redirect_to "#{ENV['FRONTEND_URL']}/auth/callback?token=#{token}&email=#{@user.email}", allow_other_host: true
+      redirect_to "#{ENV['FRONTEND_URL']}/auth/callback?token=Bearer #{token}&email=#{@user.email}", allow_other_host: true
     else
       session['devise.google_data'] = request.env['omniauth.auth'].except(:extra)
       redirect_to "#{ENV['FRONTEND_URL']}/login?error=#{@user.errors.full_messages.join(',')}", allow_other_host: true
