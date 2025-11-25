@@ -1,6 +1,8 @@
 module Api
   class SetlistsController < Api::ApiController
     before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song reorder_songs public_link_generator public_link_destroyer ]
+    before_action :check_edit_permission, only: %i[ new create edit update destroy manage_songs save_songs add_song remove_song reorder_songs ]
+    before_action :check_share_permission, only: %i[ public_link_generator public_link_destroyer ]
 
     # GET /setlists or /setlists.json
     def index
@@ -192,6 +194,22 @@ module Api
       # Use callbacks to share common setup or constraints between actions.
       def set_setlist
         @setlist = Setlist.find(params.expect(:id))
+        unless @setlist.library_id == current_library&.id
+          render json: { error: 'Você não tem acesso a este setlist.' }, status: :forbidden
+          return
+        end
+      end
+
+      def check_edit_permission
+        unless current_library&.editable_by?(current_user)
+          render json: { error: 'Você não tem permissão para editar nesta biblioteca.' }, status: :forbidden
+        end
+      end
+
+      def check_share_permission
+        unless current_library&.can_share_setlists?(current_user)
+          render json: { error: 'Apenas administradores e editores podem compartilhar setlists.' }, status: :forbidden
+        end
       end
 
       # Only allow a list of trusted parameters through.

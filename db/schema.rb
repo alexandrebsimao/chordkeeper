@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_25_164425) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "feature_flags", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.boolean "enabled", default: false, null: false
+    t.text "allowed_plans"
+    t.text "config"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["enabled"], name: "index_feature_flags_on_enabled"
+    t.index ["key"], name: "index_feature_flags_on_key", unique: true
+  end
+
   create_table "jwt_denylists", force: :cascade do |t|
     t.string "jti"
     t.datetime "exp"
@@ -65,7 +78,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
     t.string "role", default: "admin", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_current_scope", default: false, null: false
     t.index ["library_id"], name: "index_library_users_on_library_id"
+    t.index ["user_id", "is_current_scope"], name: "index_library_users_on_user_id_and_is_current_scope", unique: true, where: "(is_current_scope = true)"
     t.index ["user_id"], name: "index_library_users_on_user_id"
   end
 
@@ -77,6 +92,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["song_id"], name: "index_media_references_on_song_id"
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "price_cents", default: 0, null: false
+    t.string "interval", default: "month", null: false
+    t.integer "max_songs"
+    t.integer "max_setlists"
+    t.integer "max_collaborators", default: 1
+    t.text "features"
+    t.boolean "active", default: true, null: false
+    t.integer "sort_order", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_plans_on_active"
+    t.index ["name"], name: "index_plans_on_name", unique: true
   end
 
   create_table "public_setlists", force: :cascade do |t|
@@ -120,8 +151,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "convert_pdf", default: false, null: false
-    t.integer "capo", default: 0, null: false
+    t.integer "capo"
     t.index ["library_id"], name: "index_songs_on_library_id"
+  end
+
+  create_table "user_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "plan_id", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "started_at"
+    t.datetime "expires_at"
+    t.datetime "cancelled_at"
+    t.string "payment_provider"
+    t.string "external_subscription_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_user_subscriptions_on_expires_at"
+    t.index ["plan_id"], name: "index_user_subscriptions_on_plan_id"
+    t.index ["user_id", "status"], name: "index_user_subscriptions_on_user_id_and_status"
+    t.index ["user_id"], name: "index_user_subscriptions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -132,8 +180,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "role", default: "user", null: false
+    t.string "provider"
+    t.string "uid"
+    t.string "name"
+    t.string "avatar_url"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["role"], name: "index_users_on_role"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -148,4 +203,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_004013) do
   add_foreign_key "setlists", "libraries"
   add_foreign_key "setlists", "users", column: "owner_id"
   add_foreign_key "songs", "libraries"
+  add_foreign_key "user_subscriptions", "plans"
+  add_foreign_key "user_subscriptions", "users"
 end

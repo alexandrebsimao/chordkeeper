@@ -13,20 +13,11 @@
     <% end %>
   </div>
 
-  <%= form_with url: songs_path, method: :get, local: true, class: "mb-6" do |form| %>
-    <div class="flex items-center">
-      <%= form.label :search, "Buscar músicas:", class: "sr-only" %>
-      <%= form.text_field :search, value: params[:search], placeholder: "Digite o nome da música ou do artista/grupo/banda...", class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-      <%= form.submit "Buscar", class: "ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200" %>
-      <%= link_to "Limpar", songs_path, class: "ml-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200" %>
-    </div>
-  <% end %>
-
   <div id="songs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <% @songs.each do |song| %>
       <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
         <div class="relative" data-controller="dropdown">
-          <button type="button"
+          <button ou do artista/grupo/banda type="button"
                   data-action="dropdown#toggle"
                   class="p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-colors duration-200 absolute top-0 right-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +45,7 @@
                 Editar
               <% end %>
 
-              <%= link_to chord_link(song), 
+              <%= link_to song.attachment.presence || generate_pdf_song_path(song), 
                     class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900", 
                     target: '_blank' do %>
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,9 +73,5 @@
 
       </div>
     <% end %>
-  </div>
-
-  <div class="flex items-center">
-    <%= paginate @songs %>
   </div>
 </div>

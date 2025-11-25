@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
+import { useLibraries } from "@/hooks/use-libraries";
 
 type ApiSetlist = {
   id: number;
@@ -47,6 +48,11 @@ const Setlists = () => {
   const [hasMore, setHasMore] = useState(true);
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const { libraries } = useLibraries();
+  
+  const currentLibrary = libraries.find(lib => lib.is_current);
+  const canEdit = currentLibrary?.permission !== "read_only";
+  const canShare = currentLibrary?.permission === "admin" || currentLibrary?.permission === "editor" || currentLibrary?.permission === "owner";
 
   const handlePrintSetlist = async (setlistId: number, fontSize: number = 16) => {
     setPrintingPdf(true);
@@ -297,13 +303,14 @@ const Setlists = () => {
             <h1 className="text-3xl font-bold text-foreground mb-2">Setlists</h1>
             <p className="text-muted-foreground">Gerencie suas listas de músicas</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Setlist
-              </Button>
-            </DialogTrigger>
+          {canEdit && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo Setlist
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Criar Novo Setlist</DialogTitle>
@@ -340,6 +347,7 @@ const Setlists = () => {
               </div>
             </DialogContent>
           </Dialog>
+          )}
         </div>
 
         <div className="relative">
@@ -413,12 +421,14 @@ const Setlists = () => {
                       </div>
                     </div>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                      <ShareSetlistDialog
-                        setlistId={setlist.id}
-                        setlistTitle={setlist.title}
-                        publicLink={setlist.public_link}
-                        onLinkGenerated={() => fetchSetlist(setlist.id)}
-                      />
+                      {canShare && (
+                        <ShareSetlistDialog
+                          setlistId={setlist.id}
+                          setlistTitle={setlist.title}
+                          publicLink={setlist.public_link}
+                          onLinkGenerated={() => fetchSetlist(setlist.id)}
+                        />
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -431,15 +441,17 @@ const Setlists = () => {
                       >
                         <Printer className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => handleDeleteSetlist(setlist.id)}
-                        title="Excluir setlist"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => handleDeleteSetlist(setlist.id)}
+                          title="Excluir setlist"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>

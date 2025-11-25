@@ -6,5 +6,36 @@ class User < ApplicationRecord
          :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
 
   has_many :library_users, dependent: :destroy
-  has_many :libraries, through: :library_users
+  has_many :shared_libraries, through: :library_users, source: :library
+  has_many :owned_libraries, class_name: "Library", foreign_key: "owner_id", dependent: :destroy
+  
+  # Retorna todas as bibliotecas que o usuário pode acessar (próprias + compartilhadas)
+  def accessible_libraries
+    Library.left_joins(:library_users)
+           .where("library_users.user_id = ?", id)
+           .order("library_users.created_at ASC")
+  end
+
+  # Retorna a biblioteca com escopo atual
+  def current_library
+    # Busca pela library_users com is_current_scope = true
+    library_users.find_by(is_current_scope: true)&.library || owned_libraries.first || shared_libraries.first
+  end
+
+  # Define o escopo atual
+  def set_current_library(library)
+    return false unless accessible_libraries.exists?(library.id)
+    
+    # Remove o escopo atual de todas as library_users
+    library_users.update_all(is_current_scope: false)
+    
+    # Se não for o dono, cria ou atualiza library_user com is_current_scope = true
+    if library.owner_id != id
+      library_user = library_users.find_by(library: library)
+      library_user.is_current_scope = true
+      library_user.save
+    end
+    
+    true
+  end
 end
