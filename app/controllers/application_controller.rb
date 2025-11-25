@@ -10,20 +10,14 @@ class ApplicationController < ActionController::Base
   skip_before_action :verify_authenticity_token, if: -> { devise_controller? || json_request? }
 
   def current_library
-    @current_library ||= Library.find_by(id: session[:current_library_id])
-    @current_library ||= Library
-                            .joins(:library_users)
-                            .where(library_users: { user_id: current_user.id })
-                            .first
-    session[:current_library_id] = @current_library&.id if session[:current_library_id] != @current_library&.id
-    @current_library
+    current_user&.current_library
   end
 
   def check_is_current_library
     return if current_user.nil?
     unless current_library.present?
       library = Library.create(name: "Biblioteca de #{current_user.email}", owner: current_user)
-      LibraryUser.create(user: current_user, library: library)
+      LibraryUser.create(user: current_user, library: library, is_current_scope: true)
     end
   end
 

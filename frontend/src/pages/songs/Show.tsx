@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
+import SimplePdfViewer from "@/components/SimplePdfViewer";
+import { useLibraries } from "@/hooks/use-libraries";
 
 type MediaRef = {
   id?: number;
@@ -46,6 +48,10 @@ const CifraView = () => {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [transposing, setTransposing] = useState(false);
+  const { libraries } = useLibraries();
+
+  const currentLibrary = libraries.find(lib => lib.is_current);
+  const canEdit = currentLibrary?.permission !== "read_only";
 
   // Lista de tons musicais
   const musicalKeys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -314,19 +320,23 @@ const CifraView = () => {
             <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
-          <Button variant="outline" size="icon" onClick={() => navigate(`/songs/${cifra.id}/edit`)} className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10">
-            <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
+          {canEdit && (
+            <>
+              <Button variant="outline" size="icon" onClick={() => navigate(`/songs/${cifra.id}/edit`)} className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10">
+                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
 
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="flex gap-3 flex-wrap items-center">
@@ -372,10 +382,15 @@ const CifraView = () => {
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-8">
-            <div 
-              className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
-              dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
-            />
+            {!cifra?.content && !cifra?.content_format && cifra?.attachment_url ? (
+              <SimplePdfViewer url={cifra.attachment_url} />
+            ) : (
+              <div 
+                className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
+                dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
+              />
+            )}
+
             <style>{`
               .cifra-content .chord-line, .chord {
                 color: #2563eb;

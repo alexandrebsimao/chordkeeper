@@ -37,7 +37,8 @@ class Api::Public::SetlistsController < ApplicationController
           content: Songs::ChordProcessorService.call(song),
           capo: song.capo,
           bpm: song.bpm,
-          key: song.key
+          key: song.key,
+          attachment_url: song.attachment.attached? ? url_for(song.attachment) : nil
         }
       end
     }

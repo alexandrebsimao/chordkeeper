@@ -1,5 +1,7 @@
 class SetlistsController < ApplicationController
   before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song public_link_generator public_link_destroyer ]
+  before_action :check_edit_permission, only: %i[ new create edit update destroy manage_songs save_songs add_song remove_song ]
+  before_action :check_share_permission, only: %i[ public_link_generator public_link_destroyer ]
 
   # GET /setlists or /setlists.json
   def index
@@ -141,6 +143,27 @@ class SetlistsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_setlist
       @setlist = Setlist.find(params.expect(:id))
+      unless @setlist.library_id == current_library&.id
+        redirect_to setlists_path, alert: "Você não tem acesso a este setlist."
+      end
+    end
+
+    def check_edit_permission
+      unless current_library&.editable_by?(current_user)
+        respond_to do |format|
+          format.html { redirect_to setlists_path, alert: "Você não tem permissão para editar nesta biblioteca." }
+          format.json { render json: { error: 'Forbidden' }, status: :forbidden }
+        end
+      end
+    end
+
+    def check_share_permission
+      unless current_library&.can_share_setlists?(current_user)
+        respond_to do |format|
+          format.html { redirect_to setlists_path, alert: "Apenas administradores e editores podem compartilhar setlists." }
+          format.json { render json: { error: 'Forbidden' }, status: :forbidden }
+        end
+      end
     end
 
     # Only allow a list of trusted parameters through.

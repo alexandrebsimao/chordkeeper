@@ -4,6 +4,18 @@
 # See the Securing Rails Applications Guide for more information:
 # https://guides.rubyonrails.org/security.html#content-security-policy-header
 
+Rails.application.config.content_security_policy do |policy|
+  policy.default_src :self, :https
+  policy.font_src    :self, :https, :data
+  policy.img_src     :self, :https, :data, :blob
+  policy.object_src  :self, :blob
+  policy.frame_src   :self, :blob
+  policy.script_src  :self, :https
+  policy.style_src   :self, :https, :unsafe_inline
+  policy.connect_src :self, :https, 'http://localhost:3000', 'http://localhost:8080'
+  policy.frame_ancestors :self
+end
+
 # Rails.application.configure do
 #   config.content_security_policy do |policy|
 #     policy.default_src :self, :https

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/config/api";
+import PdfViewer from "@/components/PdfViewer";
 
 type Song = {
   id: number;
@@ -30,6 +31,7 @@ type Song = {
   bpm?: number;
   content?: string;
   content_format?: string;
+  attachment_url?: string;
 };
 
 type SetlistSong = {
@@ -393,8 +395,19 @@ const PublicMusicPlayer = () => {
                 ref={contentRef}
                 className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
                 style={{ fontSize: `${fontSize}px` }}
-                dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }}
-              />
+              >
+                {!currentSong?.content && !currentSong?.content_format && currentSong?.attachment_url ? (
+                  <PdfViewer 
+                    url={currentSong.attachment_url} 
+                    isScrolling={isScrolling}
+                    scrollSpeed={scrollSpeed}
+                    containerRef={contentRef}
+                    scale={fontSize / 12}
+                  />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }} />
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

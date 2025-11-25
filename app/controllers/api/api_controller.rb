@@ -10,13 +10,7 @@ module Api
     end
 
     def current_library
-      @current_library ||= Library.find_by(id: session[:current_library_id])
-      @current_library ||= Library
-                              .joins(:library_users)
-                              .where(library_users: { user_id: current_user.id })
-                              .first
-      session[:current_library_id] = @current_library&.id if session[:current_library_id] != @current_library&.id
-      @current_library
+      current_user&.current_library
     end
 
     def check_is_current_library
