@@ -3,7 +3,8 @@ class LibrariesController < ApplicationController
 
   # GET /libraries or /libraries.json
   def index
-    @libraries = Library.joins(:library_users).where(library_users: { user_id: current_user.id })
+    # Mostra bibliotecas próprias e compartilhadas
+    @libraries = current_user.accessible_libraries
   end
 
   # GET /libraries/1 or /libraries/1.json
@@ -38,6 +39,14 @@ class LibrariesController < ApplicationController
 
   # PATCH/PUT /libraries/1 or /libraries/1.json
   def update
+    unless @library.editable_by?(current_user)
+      respond_to do |format|
+        format.html { redirect_to @library, alert: "Você não tem permissão para editar esta biblioteca." }
+        format.json { render json: { error: 'Forbidden' }, status: :forbidden }
+      end
+      return
+    end
+
     respond_to do |format|
       if @library.update(library_params)
         format.html { redirect_to @library, notice: "Library was successfully updated." }
@@ -51,6 +60,14 @@ class LibrariesController < ApplicationController
 
   # DELETE /libraries/1 or /libraries/1.json
   def destroy
+    unless @library.owner_id == current_user.id
+      respond_to do |format|
+        format.html { redirect_to @library, alert: "Apenas o dono pode excluir esta biblioteca." }
+        format.json { render json: { error: 'Forbidden' }, status: :forbidden }
+      end
+      return
+    end
+
     @library.destroy!
 
     respond_to do |format|
@@ -60,8 +77,8 @@ class LibrariesController < ApplicationController
   end
 
   def define_scope
-    library = Library.joins(:library_users).where(libraries: { id: params[:id] }, library_users: { user_id: current_user.id }).first
-    if library.present?
+    library = current_user.accessible_libraries.find_by(id: params[:id])
+    if library.present? && current_user.set_current_library(library)
       session[:current_library_id] = library.id
       redirect_to songs_path, notice: "Biblioteca alterada para #{library.name}."
     else
@@ -72,7 +89,12 @@ class LibrariesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_library
-      @library = Library.find(params.expect(:id))
+      @library = current_user.accessible_libraries.find(params.expect(:id))
+    rescue ActiveRecord::RecordNotFound
+      respond_to do |format|
+        format.html { redirect_to libraries_path, alert: "Biblioteca não encontrada ou você não tem acesso." }
+        format.json { render json: { error: 'Not found' }, status: :not_found }
+      end
     end
 
     # Only allow a list of trusted parameters through.

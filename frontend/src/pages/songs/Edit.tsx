@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import { useLibraries } from "@/hooks/use-libraries";
 
 interface MediaReference {
   id?: number;
@@ -40,6 +41,7 @@ const EditSong = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [contentTab, setContentTab] = useState<"text" | "file">("text");
+  const { libraries } = useLibraries();
   const [formData, setFormData] = useState<FormData>({
     title: "",
     artist: "",
@@ -58,6 +60,13 @@ const EditSong = () => {
     // Verificar autenticação
     if (!isAuthenticated()) {
       navigate("/auth/login");
+      return;
+    }
+
+    // Verificar permissão
+    const currentLibrary = libraries.find(lib => lib.is_current);
+    if (currentLibrary && currentLibrary.permission === "read_only") {
+      navigate("/songs");
       return;
     }
 
@@ -120,7 +129,7 @@ const EditSong = () => {
     };
 
     fetchSong();
-  }, [id]);
+  }, [id, navigate, libraries]);
 
   const handleAddMediaReference = () => {
     setFormData({

@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
+import { useLibraries } from "@/hooks/use-libraries";
 
 type Song = {
   id: number;
@@ -54,6 +55,11 @@ const SetlistManager = () => {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const { libraries } = useLibraries();
+  
+  const currentLibrary = libraries.find(lib => lib.is_current);
+  const canEdit = currentLibrary?.permission !== "read_only";
+  const canShare = currentLibrary?.permission === "admin" || currentLibrary?.permission === "editor" || currentLibrary?.permission === "owner";
 
   const handlePrintSetlist = async (fontSize: number = 16) => {
     if (!id) return;
@@ -106,9 +112,16 @@ const SetlistManager = () => {
       return;
     }
 
+    // Verificar permissão
+    const currentLibrary = libraries.find(lib => lib.is_current);
+    if (currentLibrary && currentLibrary.permission === "read_only") {
+      navigate("/setlists");
+      return;
+    }
+
     fetchSetlist();
     fetchAllSongs();
-  }, [id, navigate]);
+  }, [id, navigate, libraries]);
 
   // Filter available songs based on search and setlist
   const availableSongs = allSongs
@@ -452,14 +465,16 @@ const SetlistManager = () => {
             >
               <Play className="h-5 w-5" />
             </Button>
-            <ShareSetlistDialog
-              setlistId={setlist.id}
-              setlistTitle={setlist.title}
-              publicLink={setlist.public_link}
-              onLinkGenerated={fetchSetlist}
-              variant="outline"
-              iconSize="md"
-            />
+            {canShare && (
+              <ShareSetlistDialog
+                setlistId={setlist.id}
+                setlistTitle={setlist.title}
+                publicLink={setlist.public_link}
+                onLinkGenerated={fetchSetlist}
+                variant="outline"
+                iconSize="md"
+              />
+            )}
             <Button
               variant="outline"
               size="icon"
@@ -499,8 +514,9 @@ const SetlistManager = () => {
                     availableSongs.map((song) => (
                       <div
                         key={song.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted transition-colors cursor-pointer group"
-                        onClick={() => handleAddSong(song)}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted transition-colors group"
+                        style={{ cursor: canEdit ? 'pointer' : 'default' }}
+                        onClick={() => canEdit && handleAddSong(song)}
                       >
                         <div className="flex-1">
                           <h3 className="font-medium text-sm">{song.title}</h3>
@@ -514,17 +530,19 @@ const SetlistManager = () => {
                               {song.original_key}
                             </Badge>
                           )}
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddSong(song);
-                            }}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                          {canEdit && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddSong(song);
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))
@@ -558,14 +576,14 @@ const SetlistManager = () => {
                     <div
                       key={song.id}
                       data-song-index={index}
-                      draggable
-                      onDragStart={() => handleDragStart(index)}
-                      onDragEnter={() => handleDragEnter(index)}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={(e) => e.preventDefault()}
-                      onTouchStart={(e) => handleTouchStart(index, e.nativeEvent)}
-                      onTouchMove={(e) => handleTouchMove(e.nativeEvent)}
-                      onTouchEnd={handleTouchEnd}
+                      draggable={canEdit}
+                      onDragStart={() => canEdit && handleDragStart(index)}
+                      onDragEnter={() => canEdit && handleDragEnter(index)}
+                      onDragEnd={canEdit ? handleDragEnd : undefined}
+                      onDragOver={(e) => canEdit && e.preventDefault()}
+                      onTouchStart={(e) => canEdit && handleTouchStart(index, e.nativeEvent)}
+                      onTouchMove={(e) => canEdit && handleTouchMove(e.nativeEvent)}
+                      onTouchEnd={canEdit ? handleTouchEnd : undefined}
                       className={`flex items-center gap-3 p-4 border rounded-lg transition-all group ${
                         draggedIndex === index 
                           ? 'opacity-50 scale-95' 
@@ -573,11 +591,13 @@ const SetlistManager = () => {
                           ? 'border-primary bg-primary/5 scale-[1.02]' 
                           : 'hover:bg-muted/50'
                       }`}
-                      style={{ cursor: 'grab' }}
+                      style={{ cursor: canEdit ? 'grab' : 'default' }}
                     >
-                      <div className="cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
-                        <GripVertical className="h-5 w-5 text-muted-foreground" />
-                      </div>
+                      {canEdit && (
+                        <div className="cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
+                          <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                         {index + 1}
                       </div>
@@ -595,14 +615,16 @@ const SetlistManager = () => {
                           {song.original_key}
                         </Badge>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveSong(song.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveSong(song.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>

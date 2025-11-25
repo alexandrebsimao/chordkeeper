@@ -20,4 +20,12 @@ module ApplicationHelper
   def paginate(collection)
     will_paginate collection, renderer: TailwindPaginationRenderer, previous_label: 'Voltar', next_label: 'Próxima'
   end
+
+  def can_edit_library?
+    current_library&.editable_by?(current_user)
+  end
+
+  def can_share_setlists?
+    current_library&.can_share_setlists?(current_user)
+  end
 end

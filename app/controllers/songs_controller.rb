@@ -1,5 +1,6 @@
 class SongsController < ApplicationController
   before_action :set_song, only: %i[ show edit update destroy ]
+  before_action :check_edit_permission, only: %i[ new create edit update destroy ]
 
   # GET /songs or /songs.json
   def index
@@ -105,6 +106,18 @@ class SongsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_song
       @song = Song.find(params.expect(:id))
+      unless @song.library_id == current_library&.id
+        redirect_to songs_path, alert: "Você não tem acesso a esta música."
+      end
+    end
+
+    def check_edit_permission
+      unless current_library&.editable_by?(current_user)
+        respond_to do |format|
+          format.html { redirect_to songs_path, alert: "Você não tem permissão para editar nesta biblioteca." }
+          format.json { render json: { error: 'Forbidden' }, status: :forbidden }
+        end
+      end
     end
 
     # Only allow a list of trusted parameters through.

@@ -1,5 +1,9 @@
-import { Home, Plus, Search, ListMusic, Settings, LogOut } from "lucide-react";
+import { Home, Plus, Search, ListMusic, Settings, LogOut, Library, Users, ChevronRight } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { useState, useEffect } from "react";
+import { LibraryItem } from "@/components/LibraryItem";
+import { Badge } from "@/components/ui/badge";
+import { useLibraries } from "@/hooks/use-libraries";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +15,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const menuItems = [
   { title: "Minhas Cifras", url: "/songs", icon: Home },
@@ -25,6 +34,42 @@ const bottomItems = [
 
 export function AppSidebar() {
   const { open } = useSidebar();
+  const { libraries, currentUser, switchLibrary, currentLibraryId: apiCurrentLibraryId } = useLibraries();
+  const [currentLibraryId, setCurrentLibraryId] = useState<number | null>(null);
+  const [librariesOpen, setLibrariesOpen] = useState(() => {
+    const saved = localStorage.getItem('librariesOpen');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const currentLibrary = libraries.find(lib => lib.is_current);
+  const canEdit = currentLibrary?.permission !== "read_only";
+
+  const filteredMenuItems = menuItems.filter(item => {
+    if (item.url === "/songs/create") {
+      return canEdit;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (apiCurrentLibraryId) {
+      setCurrentLibraryId(apiCurrentLibraryId);
+    } else if (libraries.length > 0 && !currentLibraryId) {
+      setCurrentLibraryId(libraries[0].id);
+    }
+  }, [libraries, apiCurrentLibraryId]);
+
+  useEffect(() => {
+    localStorage.setItem('librariesOpen', JSON.stringify(librariesOpen));
+  }, [librariesOpen]);
+
+  const handleLibraryChange = async (libraryId: number) => {
+    const success = await switchLibrary(libraryId);
+    if (success) {
+      setCurrentLibraryId(libraryId);
+      window.location.reload();
+    }
+  };
 
   return (
     <Sidebar className="border-r border-sidebar-border">
@@ -33,12 +78,46 @@ export function AppSidebar() {
           <div className="px-6 py-4">
             <h2 className="text-xl font-bold text-sidebar-foreground">ChordKeeper</h2>
           </div>
+
+          <SidebarGroup>
+            <Collapsible open={librariesOpen} onOpenChange={setLibrariesOpen}>
+              <CollapsibleTrigger asChild>
+                <SidebarGroupLabel className="cursor-pointer hover:bg-sidebar-accent/50 rounded-md p-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Library className="h-4 w-4" />
+                    {open && <span>Bibliotecas</span>}
+                  </div>
+                  {open && (
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform ${librariesOpen ? "rotate-90" : ""}`}
+                    />
+                  )}
+                </SidebarGroupLabel>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {libraries.map((library) => (
+                      <LibraryItem
+                        key={library.id}
+                        library={library}
+                        currentUser={currentUser}
+                        isCurrentLibrary={currentLibraryId === library.id}
+                        onLibraryChange={handleLibraryChange}
+                        sidebarOpen={open}
+                      />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup>
           
           <SidebarGroup>
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {menuItems.map((item) => (
+                {filteredMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink

@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     member do
       get :define_scope
     end
+    resources :users, controller: 'api/library_users', only: [:index, :create, :update, :destroy]
   end
   # devise_for :users
   devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', passwords: 'users/passwords' }
@@ -45,6 +46,13 @@ Rails.application.routes.draw do
     # User endpoints
     get 'users/me', to: 'users#me'
     patch 'users/update_password', to: 'users#update_password'
+
+    resources :libraries, only: [:index, :show] do
+      resources :users, controller: 'library_users', only: [:index, :create, :update, :destroy]
+      member do
+        get :define_scope
+      end
+    end
 
     resources :songs do
       member do

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import { useLibraries } from "@/hooks/use-libraries";
 
 type ApiSong = {
   id: number;
@@ -26,6 +27,10 @@ const Index = () => {
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const { libraries } = useLibraries();
+  
+  const currentLibrary = libraries.find(lib => lib.is_current);
+  const canEdit = currentLibrary?.permission !== "read_only";
 
   useEffect(() => {
     // Verificar autenticação
@@ -128,10 +133,12 @@ const Index = () => {
             <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Cifras</h1>
             <p className="text-muted-foreground">Gerencie e acesse suas cifras favoritas</p>
           </div>
-          <Button onClick={() => navigate("/songs/create")}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Cifra
-          </Button>
+          {canEdit && (
+            <Button onClick={() => navigate("/songs/create")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Cifra
+            </Button>
+          )}
         </div>
 
         <div className="relative">
