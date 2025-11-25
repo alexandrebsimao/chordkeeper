@@ -43,9 +43,6 @@ services:
     restart: always
     env_file:
       - ./frontend/.env.production
-    environment:
-      - NODE_ENV=production
-      - VITE_API_URL=https://api-chordkeeper.innapses.com
     networks:
       - proxy
     labels:
