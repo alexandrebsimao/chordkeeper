@@ -46,7 +46,7 @@ services:
     build: .
     command: bundle exec sidekiq
     env_file:
-      - .env
+      - .env.production
     depends_on:
       - db
       - redis
