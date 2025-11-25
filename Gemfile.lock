@@ -426,7 +426,7 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap
-  brakeman
+  brakeman (= 7.1.1)
   capybara
   combine_pdf
   debug

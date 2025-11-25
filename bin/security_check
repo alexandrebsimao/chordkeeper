@@ -1,0 +1,240 @@
+#!/bin/bash
+
+# Script de Verificação de Segurança - Chord Keeper
+# Execute: ./bin/security_check
+
+echo "🔒 =================================="
+echo "   Chord Keeper - Security Check"
+echo "===================================="
+echo ""
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Check if running in Docker
+if [ -f /.dockerenv ]; then
+    IN_DOCKER=true
+else
+    IN_DOCKER=false
+fi
+
+# Function to run commands
+run_check() {
+    local name=$1
+    local command=$2
+    
+    echo "📋 Checking: $name"
+    echo "   Running: $command"
+    
+    if eval "$command"; then
+        echo -e "${GREEN}✅ $name: PASSED${NC}\n"
+        return 0
+    else
+        echo -e "${RED}❌ $name: FAILED${NC}\n"
+        return 1
+    fi
+}
+
+# Counter for issues
+ISSUES=0
+
+echo "1️⃣  Running Brakeman (Static Analysis)..."
+echo "==========================================="
+if $IN_DOCKER; then
+    if bin/brakeman -q; then
+        echo -e "${GREEN}✅ Brakeman: No security warnings found${NC}\n"
+    else
+        echo -e "${YELLOW}⚠️  Brakeman: Warnings found (see above)${NC}\n"
+        ((ISSUES++))
+    fi
+else
+    if docker-compose exec -T web bin/brakeman -q; then
+        echo -e "${GREEN}✅ Brakeman: No security warnings found${NC}\n"
+    else
+        echo -e "${YELLOW}⚠️  Brakeman: Warnings found (see above)${NC}\n"
+        ((ISSUES++))
+    fi
+fi
+
+echo "2️⃣  Checking Environment Variables..."
+echo "==========================================="
+
+# Check critical environment variables
+ENV_VARS=(
+    "DEVISE_JWT_SECRET_KEY"
+    "DATABASE_PASSWORD"
+    "GOOGLE_CLIENT_ID"
+    "GOOGLE_CLIENT_SECRET"
+    "FRONTEND_URL"
+)
+
+for var in "${ENV_VARS[@]}"; do
+    if [ -z "${!var}" ]; then
+        echo -e "${YELLOW}⚠️  $var is not set${NC}"
+        ((ISSUES++))
+    else
+        echo -e "${GREEN}✅ $var is set${NC}"
+    fi
+done
+echo ""
+
+echo "3️⃣  Checking .gitignore..."
+echo "==========================================="
+if grep -q "\.env" .gitignore; then
+    echo -e "${GREEN}✅ .env files are ignored${NC}"
+else
+    echo -e "${RED}❌ .env files are NOT ignored!${NC}"
+    ((ISSUES++))
+fi
+
+if grep -q "master.key" .gitignore; then
+    echo -e "${GREEN}✅ master.key is ignored${NC}"
+else
+    echo -e "${YELLOW}⚠️  master.key should be in .gitignore${NC}"
+    ((ISSUES++))
+fi
+echo ""
+
+echo "4️⃣  Checking Rails Configuration..."
+echo "==========================================="
+
+# Check if force_ssl is enabled in production
+if grep -q "config.force_ssl = true" config/environments/production.rb; then
+    echo -e "${GREEN}✅ Force SSL is enabled in production${NC}"
+else
+    echo -e "${YELLOW}⚠️  Force SSL is disabled in production${NC}"
+    echo "   Recommendation: Set config.force_ssl = true"
+    ((ISSUES++))
+fi
+
+# Check if CSP is configured
+if grep -q "config.content_security_policy do" config/initializers/content_security_policy.rb; then
+    echo -e "${GREEN}✅ Content Security Policy is configured${NC}"
+else
+    echo -e "${YELLOW}⚠️  Content Security Policy is not configured${NC}"
+    echo "   Recommendation: Enable CSP in initializer"
+    ((ISSUES++))
+fi
+echo ""
+
+echo "5️⃣  Checking Dependencies..."
+echo "==========================================="
+
+# Check if bundler-audit is installed
+if $IN_DOCKER; then
+    if bundle list | grep -q "bundler-audit"; then
+        echo -e "${GREEN}✅ bundler-audit is installed${NC}"
+        echo "   Running bundler-audit..."
+        bundle exec bundle-audit check --update 2>/dev/null || echo "   (gem not available or update failed)"
+    else
+        echo -e "${YELLOW}⚠️  bundler-audit is not installed${NC}"
+        echo "   Recommendation: Add 'gem \"bundler-audit\"' to Gemfile"
+        ((ISSUES++))
+    fi
+else
+    echo "   Skipping (not in Docker environment)"
+fi
+echo ""
+
+echo "6️⃣  Checking Secrets in Code..."
+echo "==========================================="
+
+# Check for potential secrets in code
+if grep -r "password.*=" app/ config/ --include="*.rb" | grep -v "password_confirmation" | grep -v "reset_password" | grep -v "encrypted_password" | grep -v "ENV" | grep -q "="; then
+    echo -e "${YELLOW}⚠️  Potential hardcoded passwords found:${NC}"
+    grep -r "password.*=" app/ config/ --include="*.rb" | grep -v "password_confirmation" | grep -v "reset_password" | grep -v "encrypted_password" | grep -v "ENV" | head -5
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅ No hardcoded passwords detected${NC}"
+fi
+
+if grep -r "secret.*=" config/ --include="*.rb" | grep -v "ENV" | grep -v "secret_key_base" | grep -q "="; then
+    echo -e "${YELLOW}⚠️  Potential hardcoded secrets found:${NC}"
+    grep -r "secret.*=" config/ --include="*.rb" | grep -v "ENV" | grep -v "secret_key_base" | head -5
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅ No hardcoded secrets detected${NC}"
+fi
+echo ""
+
+echo "7️⃣  Checking CORS Configuration..."
+echo "==========================================="
+
+if grep -q "resource '\*'" config/initializers/cors.rb; then
+    echo -e "${YELLOW}⚠️  CORS allows all resources (*)${NC}"
+    echo "   Recommendation: Restrict to '/api/*'"
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅ CORS resources are restricted${NC}"
+fi
+
+if grep -q "192.168" config/initializers/cors.rb; then
+    echo -e "${YELLOW}⚠️  CORS includes local IP addresses${NC}"
+    echo "   Recommendation: Remove local IPs from production"
+    ((ISSUES++))
+else
+    echo -e "${GREEN}✅ No local IPs in CORS config${NC}"
+fi
+echo ""
+
+echo "8️⃣  Checking Strong Parameters..."
+echo "==========================================="
+
+# Check if all controllers use strong parameters
+CONTROLLERS_WITHOUT_PARAMS=$(grep -r "def create\|def update" app/controllers --include="*.rb" -A 10 | grep -v "params.require\|params.permit" | grep "def create\|def update" | wc -l)
+
+if [ "$CONTROLLERS_WITHOUT_PARAMS" -eq 0 ]; then
+    echo -e "${GREEN}✅ All controllers appear to use strong parameters${NC}"
+else
+    echo -e "${YELLOW}⚠️  Some controllers may not use strong parameters${NC}"
+    echo "   Manual review recommended"
+    ((ISSUES++))
+fi
+echo ""
+
+echo "9️⃣  Checking Authorization..."
+echo "==========================================="
+
+# Check for current_user checks in controllers
+if grep -r "current_user" app/controllers --include="*.rb" | grep -q "\."; then
+    echo -e "${GREEN}✅ Authorization checks found in controllers${NC}"
+else
+    echo -e "${YELLOW}⚠️  No current_user checks found${NC}"
+    echo "   Review: Ensure proper authorization"
+    ((ISSUES++))
+fi
+echo ""
+
+echo "🔟 Checking Database Configuration..."
+echo "==========================================="
+
+if grep -q "password:.*ENV" config/database.yml; then
+    echo -e "${GREEN}✅ Database password uses environment variable${NC}"
+else
+    echo -e "${YELLOW}⚠️  Database password may be hardcoded${NC}"
+    echo "   Recommendation: Use ENV['DATABASE_PASSWORD']"
+    ((ISSUES++))
+fi
+echo ""
+
+echo "=================================="
+echo "   Security Check Complete"
+echo "=================================="
+echo ""
+
+if [ $ISSUES -eq 0 ]; then
+    echo -e "${GREEN}🎉 No security issues found!${NC}"
+    echo -e "${GREEN}   Your application appears to be secure.${NC}"
+    exit 0
+elif [ $ISSUES -le 5 ]; then
+    echo -e "${YELLOW}⚠️  $ISSUES potential issues found${NC}"
+    echo -e "${YELLOW}   Please review the recommendations above.${NC}"
+    exit 0
+else
+    echo -e "${RED}❌ $ISSUES security issues found${NC}"
+    echo -e "${RED}   Please address the issues above immediately.${NC}"
+    exit 1
+fi
