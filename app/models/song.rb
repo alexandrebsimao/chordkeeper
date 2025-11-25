@@ -6,6 +6,7 @@ class Song < ApplicationRecord
   has_many :setlist_songs, dependent: :destroy
   has_many :setlists, through: :setlist_songs
   has_many :media_references, dependent: :destroy
+  has_many :song_pdf_caches, class_name: 'SongPdfCache', dependent: :destroy
 
   has_one_attached :attachment
 
@@ -20,6 +21,7 @@ class Song < ApplicationRecord
   before_save :set_original_key_if_missing
   before_save :pdf_to_text!, if: -> { convert_pdf? }
   before_save :capo_to_nil_if_zero
+  after_commit :enqueue_cache_job, on: [:create, :update]
 
   def set_original_key_if_missing
     if self.original_key.blank? && self.content.present?
@@ -48,6 +50,10 @@ class Song < ApplicationRecord
   end
 
   private
+
+  def enqueue_cache_job
+    SongCacheJob.perform_later(self.id)
+  end
 
   def capo_to_nil_if_zero
     self.capo = nil if self.capo == 0

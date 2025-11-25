@@ -1,14 +1,14 @@
 module Songs
   class SongFormatterService < ApplicationService
-    def initialize(song)
-      @song = song
-    end
+    def initialize(content)
+      @content = content
+   end
 
     def call
-      return '' if @song.content.blank?
+      return '' if @content.blank?
 
       # Escapa o HTML
-      content = ERB::Util.html_escape(@song.content)
+      content = ERB::Util.html_escape(@content)
 
       # Padrão de acorde - captura acordes completos incluindo inversões
       # Aceita: A, Am, A7, A7M, F7M/C, A#m7, Abm, Asus4, Amaj7, A/G, D9, E11/G#, etc.

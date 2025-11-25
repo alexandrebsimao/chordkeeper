@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  # Sidekiq Web UI - com autenticação básica
+  require 'sidekiq/web'
+  
+  # Sidekiq::Web.use Rack::Auth::Basic do |username, password|
+  #   user = User.find_by(email: username)
+
+  #   user.valid_password?(password) && user.role == 'admin' if user
+  # end
+  
+  mount Sidekiq::Web => '/sidekiq'
+  
   resources :setlists do
     member do
       get :manage_songs

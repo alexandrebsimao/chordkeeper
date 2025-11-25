@@ -5,15 +5,14 @@ module Songs
     end
 
     def call
-      @song.content = transpose if @song.transpose_key.present?
-      @song.content = formatter
-      @song.content
+      content = @song.transpose_key.present? ? transpose : @song.content
+      formatter(content)
     end
 
     private
 
-    def formatter
-      Songs::SongFormatterService.call(@song)
+    def formatter(content)
+      Songs::SongFormatterService.call(content)
     end
 
     def transpose

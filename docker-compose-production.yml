@@ -11,6 +11,13 @@ services:
       - ./tmp/db:/var/lib/postgresql/data
     networks:
       - internal
+    redis:
+      image: redis:7-alpine
+      restart: always
+      ports:
+        - "6379:6379"
+      volumes:
+        - redis_data:/data
   web:
     stdin_open: true
     tty: true # Enables debugging capabilities when attached to this container.
@@ -35,6 +42,16 @@ services:
       - "traefik.http.routers.chordkeeper-api.tls.certresolver=cloudflare"
       - "traefik.http.services.chordkeeper-api.loadbalancer.server.port=3000"
       - "traefik.docker.network=proxy"
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/myapp
   frontend:
     build: 
       context: ./frontend
@@ -58,3 +75,5 @@ networks:
     external: true
   internal:
     driver: bridge
+volumes:
+  redis_data:

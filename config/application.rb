@@ -24,6 +24,9 @@ module Myapp
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
+    # Use Sidekiq for Active Job
+    config.active_job.queue_adapter = :sidekiq
+
     # CORS configuration for React frontend
     config.middleware.insert_before 0, Rack::Cors do
       allow do
