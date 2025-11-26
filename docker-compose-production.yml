@@ -70,7 +70,7 @@ services:
       - "traefik.enable=true"
 
       # Middleware de autenticação básica
-      - "traefik.http.middlewares.frontend-auth.basicauth.users=admin:$$apr1$MoL1cc0.$8CXZi9gbnNPsdFQizV1he."
+      - "traefik.http.middlewares.frontend-auth.basicauth.users=admin:$$apr1$$ikz1.zUy$$CcLN2pVuGG50IMSLbgN5W/"
       # Router com autenticação
       - "traefik.http.routers.chordkeeper-app.middlewares=frontend-auth"
 
