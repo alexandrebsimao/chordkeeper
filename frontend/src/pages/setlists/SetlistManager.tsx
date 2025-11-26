@@ -113,8 +113,7 @@ const SetlistManager = () => {
     }
 
     // Verificar permissão
-    const currentLibrary = libraries.find(lib => lib.is_current);
-    if (currentLibrary && currentLibrary.permission === "read_only") {
+    if (!canEdit()) {
       navigate("/setlists");
       return;
     }

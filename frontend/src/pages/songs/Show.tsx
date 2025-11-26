@@ -16,6 +16,7 @@ import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import SimplePdfViewer from "@/components/SimplePdfViewer";
 import { useLibraries } from "@/hooks/use-libraries";
+import { usePermissions } from "@/hooks/use-permissions";
 
 type MediaRef = {
   id?: number;
@@ -49,9 +50,7 @@ const CifraView = () => {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [transposing, setTransposing] = useState(false);
   const { libraries } = useLibraries();
-
-  const currentLibrary = libraries.find(lib => lib.is_current);
-  const canEdit = currentLibrary?.permission !== "read_only";
+  const { canEdit } = usePermissions();
 
   // Lista de tons musicais
   const musicalKeys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];

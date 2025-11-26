@@ -18,6 +18,7 @@ import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 import { useLibraries } from "@/hooks/use-libraries";
+import { usePermissions } from "@/hooks/use-permissions";
 
 type ApiSetlist = {
   id: number;
@@ -49,10 +50,7 @@ const Setlists = () => {
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { libraries } = useLibraries();
-  
-  const currentLibrary = libraries.find(lib => lib.is_current);
-  const canEdit = currentLibrary?.permission !== "read_only";
-  const canShare = currentLibrary?.permission === "admin" || currentLibrary?.permission === "editor" || currentLibrary?.permission === "owner";
+  const { canEdit, canShare } = usePermissions();
 
   const handlePrintSetlist = async (setlistId: number, fontSize: number = 16) => {
     setPrintingPdf(true);
