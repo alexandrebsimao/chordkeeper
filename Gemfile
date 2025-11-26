@@ -83,7 +83,7 @@ gem 'wkhtmltopdf-binary'
 
 gem 'combine_pdf'
 
-gem "rqrcode", "~> 3.0"
+gem "rqrcode", "~> 3.1"
 
 gem 'pdf-reader'
 
