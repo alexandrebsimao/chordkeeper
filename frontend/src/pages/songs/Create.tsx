@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import { useLibraries } from "@/hooks/use-libraries";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface MediaReference {
   id?: number;
@@ -38,6 +39,7 @@ const CreateSong = () => {
   const [error, setError] = useState<string | null>(null);
   const [contentTab, setContentTab] = useState<"text" | "file">("text");
   const { libraries } = useLibraries();
+  const { canEdit } = usePermissions();
   const [formData, setFormData] = useState<FormData>({
     title: "",
     artist: "",
@@ -58,11 +60,10 @@ const CreateSong = () => {
     }
 
     // Verificar permissão
-    const currentLibrary = libraries.find(lib => lib.is_current);
-    if (currentLibrary && currentLibrary.permission === "read_only") {
+    if (!canEdit()) {
       navigate("/songs");
     }
-  }, [navigate, libraries]);
+  }, [navigate, canEdit]);
 
   useEffect(() => {
     // Verificar autenticação

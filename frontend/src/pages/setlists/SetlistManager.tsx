@@ -56,10 +56,7 @@ const SetlistManager = () => {
   const dragOverItem = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const { libraries } = useLibraries();
-  
-  const currentLibrary = libraries.find(lib => lib.is_current);
-  const canEdit = currentLibrary?.permission !== "read_only";
-  const canShare = currentLibrary?.permission === "admin" || currentLibrary?.permission === "editor" || currentLibrary?.permission === "owner";
+  const { canEdit, canShare } = usePermissions();
 
   const handlePrintSetlist = async (fontSize: number = 16) => {
     if (!id) return;
@@ -113,8 +110,7 @@ const SetlistManager = () => {
     }
 
     // Verificar permissão
-    const currentLibrary = libraries.find(lib => lib.is_current);
-    if (currentLibrary && currentLibrary.permission === "read_only") {
+    if (!canEdit()) {
       navigate("/setlists");
       return;
     }
@@ -465,7 +461,7 @@ const SetlistManager = () => {
             >
               <Play className="h-5 w-5" />
             </Button>
-            {canShare && (
+            {canShare() && (
               <ShareSetlistDialog
                 setlistId={setlist.id}
                 setlistTitle={setlist.title}
@@ -530,7 +526,7 @@ const SetlistManager = () => {
                               {song.original_key}
                             </Badge>
                           )}
-                          {canEdit && (
+                          {canEdit() && (
                             <Button
                               size="icon"
                               variant="ghost"
@@ -591,9 +587,9 @@ const SetlistManager = () => {
                           ? 'border-primary bg-primary/5 scale-[1.02]' 
                           : 'hover:bg-muted/50'
                       }`}
-                      style={{ cursor: canEdit ? 'grab' : 'default' }}
+                      style={{ cursor: canEdit() ? 'grab' : 'default' }}
                     >
-                      {canEdit && (
+                      {canEdit() && (
                         <div className="cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
                           <GripVertical className="h-5 w-5 text-muted-foreground" />
                         </div>
@@ -615,7 +611,7 @@ const SetlistManager = () => {
                           {song.original_key}
                         </Badge>
                       )}
-                      {canEdit && (
+                      {canEdit() && (
                         <Button
                           variant="ghost"
                           size="icon"

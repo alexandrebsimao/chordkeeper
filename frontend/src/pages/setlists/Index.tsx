@@ -18,6 +18,7 @@ import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 import { useLibraries } from "@/hooks/use-libraries";
+import { usePermissions } from "@/hooks/use-permissions";
 
 type ApiSetlist = {
   id: number;
@@ -49,10 +50,7 @@ const Setlists = () => {
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { libraries } = useLibraries();
-  
-  const currentLibrary = libraries.find(lib => lib.is_current);
-  const canEdit = currentLibrary?.permission !== "read_only";
-  const canShare = currentLibrary?.permission === "admin" || currentLibrary?.permission === "editor" || currentLibrary?.permission === "owner";
+  const { canEdit, canShare } = usePermissions();
 
   const handlePrintSetlist = async (setlistId: number, fontSize: number = 16) => {
     setPrintingPdf(true);
@@ -303,7 +301,7 @@ const Setlists = () => {
             <h1 className="text-3xl font-bold text-foreground mb-2">Setlists</h1>
             <p className="text-muted-foreground">Gerencie suas listas de músicas</p>
           </div>
-          {canEdit && (
+          {canEdit() && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -421,7 +419,7 @@ const Setlists = () => {
                       </div>
                     </div>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                      {canShare && (
+                      {canShare() && (
                         <ShareSetlistDialog
                           setlistId={setlist.id}
                           setlistTitle={setlist.title}
@@ -441,7 +439,7 @@ const Setlists = () => {
                       >
                         <Printer className="h-4 w-4" />
                       </Button>
-                      {canEdit && (
+                      {canEdit() && (
                         <Button
                           variant="ghost"
                           size="icon"

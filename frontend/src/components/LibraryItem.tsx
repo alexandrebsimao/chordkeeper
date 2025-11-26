@@ -8,7 +8,7 @@ interface Library {
   name: string;
   description?: string;
   owner_id: number;
-  permission?: "owner" | "editor" | "read_only";
+  permission?: "owner" | "admin" | "editor" | "read_only";
   is_current?: boolean;
 }
 
@@ -33,15 +33,19 @@ export function LibraryItem({
   onLibraryChange,
   sidebarOpen 
 }: LibraryItemProps) {
-  const isOwner = () => {
-    return library.permission === "owner" || (currentUser && library.owner_id === currentUser.id);
-  };
+  // Check admin permission for THIS specific library, not the current one
+  const hasAdminPermission = library.permission === "owner" || library.permission === "admin";
 
   const getPermissionBadge = () => {
-    if (library.permission === "owner") {
+    // Use the permission from THIS library, not the current library
+    const libraryRole = library.permission;
+    if (libraryRole === "owner") {
       return <Badge variant="default" className="ml-2 text-xs">Admin</Badge>;
     }
-    if (library.permission === "editor") {
+    if (libraryRole === "admin") {
+      return <Badge variant="secondary" className="ml-2 text-xs">Admin</Badge>;
+    }
+    if (libraryRole === "editor") {
       return <Badge variant="secondary" className="ml-2 text-xs">Editor</Badge>;
     }
     return <Badge variant="secondary" className="ml-2 text-xs bg-amber-100 text-amber-800 border-amber-200">Leitura</Badge>;
@@ -72,7 +76,7 @@ export function LibraryItem({
             )}
           </button>
         </SidebarMenuButton>
-        {isOwner() && (
+        {hasAdminPermission && (
           <div className="flex-shrink-0">
             <ManageLibraryUsersDialog
               libraryId={library.id}

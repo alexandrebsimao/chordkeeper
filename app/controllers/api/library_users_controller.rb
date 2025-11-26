@@ -62,8 +62,8 @@ class Api::LibraryUsersController < ApplicationController
   end
 
   def authorize_owner!
-    unless @library.owner_id == current_user.id
-      render json: { error: 'Apenas o dono pode gerenciar compartilhamentos' }, status: :forbidden
+    unless PermissionService.can?(@library, current_user, :admin)
+      render json: { error: 'Apenas administradores podem gerenciar usuários' }, status: :forbidden
     end
   end
 

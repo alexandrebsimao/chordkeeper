@@ -6,7 +6,7 @@ export interface Library {
   name: string;
   description?: string;
   owner_id: number;
-  permission?: "owner" | "editor" | "read_only";
+  permission?: "owner" | "admin" | "editor" | "read_only";
   is_current?: boolean;
 }
 
