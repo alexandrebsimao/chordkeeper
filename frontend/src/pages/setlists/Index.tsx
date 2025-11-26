@@ -301,7 +301,7 @@ const Setlists = () => {
             <h1 className="text-3xl font-bold text-foreground mb-2">Setlists</h1>
             <p className="text-muted-foreground">Gerencie suas listas de músicas</p>
           </div>
-          {canEdit && (
+          {canEdit() && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -419,7 +419,7 @@ const Setlists = () => {
                       </div>
                     </div>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                      {canShare && (
+                      {canShare() && (
                         <ShareSetlistDialog
                           setlistId={setlist.id}
                           setlistTitle={setlist.title}
@@ -439,7 +439,7 @@ const Setlists = () => {
                       >
                         <Printer className="h-4 w-4" />
                       </Button>
-                      {canEdit && (
+                      {canEdit() && (
                         <Button
                           variant="ghost"
                           size="icon"

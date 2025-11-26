@@ -15,11 +15,15 @@ class PermissionService
   def can?(action)
     return false if @library.nil? || @user.nil?
     
-    library_user = @library.library_users.find_by(user: @user)
-    return false if library_user.nil?
-    
+    # Verificar se a permissão existe
     allowed_roles = PERMISSIONS[action.to_sym]
     return false if allowed_roles.nil?
+    
+    # Owner sempre tem todas as permissões (se a permissão existir)
+    return true if @library.owner_id == @user.id
+    
+    library_user = @library.library_users.find_by(user: @user)
+    return false if library_user.nil?
     
     allowed_roles.include?(library_user.role.to_sym)
   end
@@ -46,6 +50,9 @@ class PermissionService
 
   def role
     return nil if @library.nil? || @user.nil?
+    
+    # Owner sempre é owner
+    return :owner if @library.owner_id == @user.id
     
     library_user = @library.library_users.find_by(user: @user)
     library_user&.role&.to_sym

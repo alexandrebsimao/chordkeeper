@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { LibraryItem } from "@/components/LibraryItem";
 import { Badge } from "@/components/ui/badge";
 import { useLibraries } from "@/hooks/use-libraries";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   Sidebar,
   SidebarContent,
@@ -41,12 +42,11 @@ export function AppSidebar() {
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  const currentLibrary = libraries.find(lib => lib.is_current);
-  const canEdit = currentLibrary?.permission !== "read_only";
+  const { canEdit } = usePermissions();
 
   const filteredMenuItems = menuItems.filter(item => {
     if (item.url === "/songs/create") {
-      return canEdit;
+      return canEdit();
     }
     return true;
   });
