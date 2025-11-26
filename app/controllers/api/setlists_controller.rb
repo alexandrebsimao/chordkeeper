@@ -27,7 +27,7 @@ module Api
           if setlist&.public_setlist.present?
             setlist_data[:attributes][:public_link] = {
               uuid: setlist.public_setlist.uuid,
-              url: "#{ENV['DOMAIN_NAME']}/public/setlist/#{setlist.public_setlist.uuid}"
+              url: "#{ENV['FRONTEND_URL']}/public/setlist/#{setlist.public_setlist.uuid}"
             }
           end
         end
@@ -44,7 +44,7 @@ module Api
       if @setlist.public_setlist.present?
         serialized[:data][:attributes][:public_link] = {
           uuid: @setlist.public_setlist.uuid,
-          url: "#{ENV['DOMAIN_NAME']}/public/setlist/#{@setlist.public_setlist.uuid}"
+          url: "#{ENV['FRONTEND_URL']}/public/setlist/#{@setlist.public_setlist.uuid}"
         }
       end
       
@@ -62,7 +62,7 @@ module Api
       
       render json: { 
         uuid: public_setlist.uuid,
-        url: "#{ENV['DOMAIN_NAME']}/public/setlist/#{public_setlist.uuid}"
+        url: "#{ENV['FRONTEND_URL']}/public/setlist/#{public_setlist.uuid}"
       }, status: :ok
     end
 

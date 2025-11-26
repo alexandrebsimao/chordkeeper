@@ -1,26 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Play, 
-  Pause, 
-  ZoomIn, 
-  ZoomOut,
-  Settings
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/config/api";
-import PdfViewer from "@/components/PdfViewer";
+import { useAutoScroll } from "@/hooks/use-auto-scroll";
+import { useMusicNavigation } from "@/hooks/use-music-navigation";
+import MusicPlayerControls from "@/components/MusicPlayerControls";
+import MusicContent from "@/components/MusicContent";
+import SongInfoBadges from "@/components/SongInfoBadges";
 
 type Song = {
   id: number;
@@ -51,8 +40,18 @@ const PublicMusicPlayer = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1);
   
-  const contentRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Callback estável para quando o scroll completar
+  const handleScrollComplete = useCallback(() => {
+    setIsScrolling(false);
+  }, []);
+
+  // Hook para gerenciar scroll automático
+  const { contentRef, setContentRef } = useAutoScroll({
+    isScrolling,
+    scrollSpeed,
+    currentSong,
+    onScrollComplete: handleScrollComplete,
+  });
 
   // Carregar lista de músicas do setlist
   useEffect(() => {
@@ -108,45 +107,6 @@ const PublicMusicPlayer = () => {
     fetchSong();
   }, [currentIndex, songs]);
 
-  // Controle de scroll automático
-  useEffect(() => {
-    if (!isScrolling) {
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
-      return;
-    }
-
-    if (!contentRef.current) {
-      return;
-    }
-
-    scrollIntervalRef.current = setInterval(() => {
-      if (!contentRef.current) {
-        return;
-      }
-
-      contentRef.current.scrollTop += scrollSpeed;
-      
-      // Parar quando chegar ao final
-      const isAtBottom = 
-        contentRef.current.scrollHeight - contentRef.current.scrollTop <= 
-        contentRef.current.clientHeight + 10;
-      
-      if (isAtBottom) {
-        setIsScrolling(false);
-      }
-    }, 50);
-
-    return () => {
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
-    };
-  }, [isScrolling, scrollSpeed]);
-
   const increaseFontSize = () => {
     setFontSize(prev => Math.min(prev + 2, 32));
   };
@@ -155,92 +115,10 @@ const PublicMusicPlayer = () => {
     setFontSize(prev => Math.max(prev - 2, 12));
   };
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!contentRef.current) return;
-
-      const scrollAmount = 50;
-      
-      switch(e.key) {
-        case ' ': // Spacebar
-          e.preventDefault();
-          setIsScrolling(prev => !prev);
-          break;
-        case '+':
-        case '=':
-          e.preventDefault();
-          setFontSize(prev => Math.min(prev + 2, 32));
-          break;
-        case '-':
-        case '_':
-          e.preventDefault();
-          setFontSize(prev => Math.max(prev - 2, 12));
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          setCurrentIndex(prev => {
-            const newIndex = Math.max(prev - 1, 0);
-            if (newIndex !== prev) {
-              setIsScrolling(false);
-              setTimeout(() => {
-                if (contentRef.current) contentRef.current.scrollTop = 0;
-              }, 0);
-            }
-            return newIndex;
-          });
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          setCurrentIndex(prev => {
-            const newIndex = Math.min(prev + 1, songs.length - 1);
-            if (newIndex !== prev) {
-              setIsScrolling(false);
-              setTimeout(() => {
-                if (contentRef.current) contentRef.current.scrollTop = 0;
-              }, 0);
-            }
-            return newIndex;
-          });
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          contentRef.current.scrollTop -= scrollAmount;
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          contentRef.current.scrollTop += scrollAmount;
-          break;
-        case 'PageUp':
-          e.preventDefault();
-          contentRef.current.scrollTop -= contentRef.current.clientHeight;
-          break;
-        case 'PageDown':
-          e.preventDefault();
-          contentRef.current.scrollTop += contentRef.current.clientHeight;
-          break;
-        case 'Home':
-          e.preventDefault();
-          contentRef.current.scrollTop = 0;
-          break;
-        case 'End':
-          e.preventDefault();
-          contentRef.current.scrollTop = contentRef.current.scrollHeight;
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
       setIsScrolling(false);
-      if (contentRef.current) {
-        contentRef.current.scrollTop = 0;
-      }
     }
   };
 
@@ -248,15 +126,24 @@ const PublicMusicPlayer = () => {
     if (currentIndex < songs.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setIsScrolling(false);
-      if (contentRef.current) {
-        contentRef.current.scrollTop = 0;
-      }
     }
   };
 
   const toggleScroll = () => {
     setIsScrolling(!isScrolling);
   };
+
+  // Hook para navegação por teclado
+  useMusicNavigation({
+    currentIndex,
+    songsLength: songs.length,
+    contentRef,
+    onNext: handleNext,
+    onPrevious: handlePrevious,
+    onToggleScroll: toggleScroll,
+    onIncreaseFontSize: increaseFontSize,
+    onDecreaseFontSize: decreaseFontSize,
+  });
 
   if (loading) {
     return (
@@ -298,72 +185,23 @@ const PublicMusicPlayer = () => {
               </div>
             </div>
 
-            <Button variant="outline" size="icon" onClick={decreaseFontSize} className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-              <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-            
-            <Button variant="outline" size="icon" onClick={increaseFontSize} className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-              <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-                  <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="scroll-speed">
-                      Velocidade do Scroll: {scrollSpeed}x
-                    </Label>
-                    <Slider
-                      id="scroll-speed"
-                      min={0.5}
-                      max={5}
-                      step={0.5}
-                      value={[scrollSpeed]}
-                      onValueChange={(value) => setScrollSpeed(value[0])}
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            <Button
-              variant={isScrolling ? "destructive" : "default"}
-              size="icon"
-              onClick={toggleScroll}
-              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
-            >
-              {isScrolling ? (
-                <Pause className="h-3 w-3 sm:h-4 sm:w-4" />
-              ) : (
-                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
-              )}
-            </Button>
+            <MusicPlayerControls
+              isScrolling={isScrolling}
+              scrollSpeed={scrollSpeed}
+              fontSize={fontSize}
+              onToggleScroll={toggleScroll}
+              onScrollSpeedChange={setScrollSpeed}
+              onIncreaseFontSize={increaseFontSize}
+              onDecreaseFontSize={decreaseFontSize}
+            />
           </div>
 
           {/* Badges de informações */}
-          <div className="flex gap-2 flex-wrap items-center">
-            {currentSong?.original_key && (
-              <Badge variant="outline" className="font-mono text-xs">
-                Tom: {currentSong.original_key}
-              </Badge>
-            )}
-            {currentSong?.capo !== null && currentSong?.capo !== undefined && currentSong?.capo > 0 && (
-              <Badge variant="outline" className="font-mono text-xs">
-                Capotraste: {currentSong.capo}ª casa
-              </Badge>
-            )}
-            {currentSong?.bpm && (
-              <Badge variant="outline" className="font-mono text-xs">
-                BPM: {currentSong.bpm}
-              </Badge>
-            )}
-          </div>
+          <SongInfoBadges
+            song={currentSong}
+            currentIndex={currentIndex}
+            totalSongs={songs.length}
+          />
         </div>
       </div>
 
@@ -372,42 +210,14 @@ const PublicMusicPlayer = () => {
         <div className="max-w-4xl mx-auto h-full px-2 sm:px-3 md:px-4">
           <Card className="overflow-hidden h-full">
             <CardContent className="p-3 sm:p-4 md:p-8 h-full overflow-hidden">
-              <style>{`
-                .cifra-content .chord-line, .chord {
-                  color: #2563eb;
-                  font-weight: bold;
-                  padding: 0;
-                  margin: 0;
-                }
-
-                .cifra-content .notation {
-                  color: #d97706;
-                  font-style: italic;
-                }
-                
-                .music-content {
-                  -webkit-overflow-scrolling: touch;
-                  overscroll-behavior: contain;
-                  height: 100%;
-                }
-              `}</style>
-              <div 
-                ref={contentRef}
-                className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
-                style={{ fontSize: `${fontSize}px` }}
-              >
-                {!currentSong?.content && !currentSong?.content_format && currentSong?.attachment_url ? (
-                  <PdfViewer 
-                    url={currentSong.attachment_url} 
-                    isScrolling={isScrolling}
-                    scrollSpeed={scrollSpeed}
-                    containerRef={contentRef}
-                    scale={fontSize / 12}
-                  />
-                ) : (
-                  <div dangerouslySetInnerHTML={{ __html: currentSong?.content_format || currentSong?.content || 'Sem conteúdo disponível.' }} />
-                )}
-              </div>
+              <MusicContent
+                song={currentSong}
+                fontSize={fontSize}
+                isScrolling={isScrolling}
+                scrollSpeed={scrollSpeed}
+                contentRef={setContentRef}
+                onScrollComplete={handleScrollComplete}
+              />
             </CardContent>
           </Card>
         </div>

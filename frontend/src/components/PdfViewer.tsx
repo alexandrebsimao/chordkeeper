@@ -12,14 +12,15 @@ interface PdfViewerProps {
   url: string;
   isScrolling: boolean;
   scrollSpeed: number;
-  containerRef: React.RefObject<HTMLDivElement>;
   scale: number;
+  onScrollComplete?: () => void;
 }
 
-const PdfViewer = ({ url, isScrolling, scrollSpeed, containerRef, scale }: PdfViewerProps) => {
+const PdfViewer = ({ url, isScrolling, scrollSpeed, scale, onScrollComplete }: PdfViewerProps) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   
+  const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -49,36 +50,37 @@ const PdfViewer = ({ url, isScrolling, scrollSpeed, containerRef, scale }: PdfVi
       return;
     }
 
-    if (!containerRef.current) {
-      return;
-    }
-
-    scrollIntervalRef.current = setInterval(() => {
+    // Delay para garantir que o PDF está renderizado
+    const startScrollTimeout = setTimeout(() => {
       if (!containerRef.current) {
         return;
       }
 
-      const oldScrollTop = containerRef.current.scrollTop;
-      containerRef.current.scrollTop += scrollSpeed;
-      const newScrollTop = containerRef.current.scrollTop;
-      
-      // Parar quando chegar ao final
-      const isAtBottom = 
-        containerRef.current.scrollHeight - containerRef.current.scrollTop <= 
-        containerRef.current.clientHeight + 10;
-      
-      if (isAtBottom) {
-        setIsScrolling(false);
-      }
-    }, 50);
+      scrollIntervalRef.current = setInterval(() => {
+        if (!containerRef.current) {
+          return;
+        }
+
+        containerRef.current.scrollTop += scrollSpeed;
+        
+        // Parar quando chegar ao final
+        const remainingScroll = containerRef.current.scrollHeight - containerRef.current.scrollTop;
+        const isAtBottom = remainingScroll <= containerRef.current.clientHeight + 10;
+        
+        if (isAtBottom && onScrollComplete) {
+          onScrollComplete();
+        }
+      }, 50);
+    }, 200);
 
     return () => {
+      clearTimeout(startScrollTimeout);
       if (scrollIntervalRef.current) {
         clearInterval(scrollIntervalRef.current);
         scrollIntervalRef.current = null;
       }
     };
-  }, [isScrolling, scrollSpeed]);
+  }, [isScrolling, scrollSpeed]); // Removido onScrollComplete das dependências
 
   return (
     <div className="flex flex-col items-center space-y-4 w-full h-full">

@@ -33,12 +33,9 @@ class User < ApplicationRecord
     # Remove o escopo atual de todas as library_users
     library_users.update_all(is_current_scope: false)
     
-    # Se não for o dono, cria ou atualiza library_user com is_current_scope = true
-    if library.owner_id != id
-      library_user = library_users.find_by(library: library)
-      library_user.is_current_scope = true
-      library_user.save
-    end
+    library_user = library_users.find_by(library: library)
+    library_user.is_current_scope = true
+    library_user.save
     
     true
   end

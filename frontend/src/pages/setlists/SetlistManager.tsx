@@ -19,6 +19,7 @@ import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import { useLibraries } from "@/hooks/use-libraries";
+import { usePermissions } from "@/hooks/use-permissions";
 
 type Song = {
   id: number;
@@ -55,7 +56,7 @@ const SetlistManager = () => {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
-  const { libraries } = useLibraries();
+  const { libraries, loading: librariesLoading } = useLibraries();
   const { canEdit, canShare } = usePermissions();
 
   const handlePrintSetlist = async (fontSize: number = 16) => {
@@ -109,15 +110,27 @@ const SetlistManager = () => {
       return;
     }
 
-    // Verificar permissão
-    if (!canEdit()) {
+    // Aguarda libraries carregarem antes de verificar permissão
+    if (librariesLoading) {
+      return;
+    }
+
+    // Busca a biblioteca atual
+    const currentLibrary = libraries.find(lib => lib.is_current);
+    if (!currentLibrary) {
+      return;
+    }
+
+    // Verifica permissão diretamente
+    const hasEditPermission = ['owner', 'admin', 'editor'].includes(currentLibrary.permission || '');
+    if (!hasEditPermission) {
       navigate("/setlists");
       return;
     }
 
     fetchSetlist();
     fetchAllSongs();
-  }, [id, navigate, libraries]);
+  }, [id, navigate, libraries, librariesLoading]);
 
   // Filter available songs based on search and setlist
   const availableSongs = allSongs

@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { Music, Search as SearchIcon, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import { fetchWithAuth } from "@/lib/auth";
 import { useLibraries } from "@/hooks/use-libraries";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useRequireAuth } from "@/hooks/use-require-auth";
+import { PageHeader } from "@/components/PageHeader";
+import { SearchInput } from "@/components/SearchInput";
+import { LoadingState } from "@/components/LoadingState";
+import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
+import { ResourceCard } from "@/components/ResourceCard";
 
 type ApiSong = {
   id: number;
@@ -30,14 +34,9 @@ const Index = () => {
   const navigate = useNavigate();
   const { libraries } = useLibraries();
   const { canEdit } = usePermissions();
+  useRequireAuth();
 
   useEffect(() => {
-    // Verificar autenticação
-    if (!isAuthenticated()) {
-      navigate("/auth/login");
-      return;
-    }
-
     let mounted = true;
 
     const fetchSongs = async (pageToLoad: number) => {
@@ -127,71 +126,45 @@ const Index = () => {
   return (
     <div className="flex-1 p-6 pb-20 md:pb-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Cifras</h1>
-            <p className="text-muted-foreground">Gerencie e acesse suas cifras favoritas</p>
-          </div>
-          {canEdit() && (
+        <PageHeader
+          title="Minhas Cifras"
+          description="Gerencie e acesse suas cifras favoritas"
+          action={canEdit() && (
             <Button onClick={() => navigate("/songs/create")}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Cifra
             </Button>
           )}
-        </div>
+        />
 
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-          <Input
-            type="text"
-            placeholder="Buscar por título ou artista..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar por título ou artista..."
+        />
 
         {loading ? (
-          <div className="text-center py-12">
-            <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <p className="text-muted-foreground">Carregando músicas...</p>
-          </div>
+          <LoadingState message="Carregando músicas..." />
         ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-red-500">{error}</p>
-          </div>
+          <ErrorState error={error} />
         ) : filteredCifras.length === 0 ? (
-          <div className="text-center py-12">
-            <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhuma cifra encontrada</p>
-          </div>
+          <EmptyState
+            title="Nenhuma cifra encontrada"
+            description={searchTerm ? "Tente buscar com outros termos" : "Adicione sua primeira cifra"}
+          />
         ) : (
           <div className="grid gap-4">
             {filteredCifras.map((cifra) => (
-              <Card
+              <ResourceCard
                 key={cifra.id}
-                className="hover:shadow-md transition-shadow cursor-pointer"
+                title={cifra.title}
+                subtitle={cifra.artist}
+                badges={[
+                  { label: `Tom: ${cifra.transpose_key || cifra.original_key || '—'}`, variant: "outline", className: "font-mono" },
+                  { label: `Capo: ${cifra.capo ? `${cifra.capo}ª casa` : '—'}`, variant: "outline", className: "font-mono" }
+                ]}
                 onClick={() => navigate(`/songs/${cifra.id}`)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground mb-1">
-                        {cifra.title}
-                      </h3>
-                      <p className="text-muted-foreground">{cifra.artist}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge variant="outline" className="font-mono">
-                        Tom: {cifra.transpose_key || cifra.original_key || '—'}
-                      </Badge>
-                      <Badge variant="outline" className="font-mono">
-                        Capo: {cifra.capo ? `${cifra.capo}ª casa` : '—'}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              />
             ))}
             {/* sentinel for infinite scroll */}
             <div ref={sentinelRef} />

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Music, Calendar, Trash2, Printer, Search as SearchIcon } from "lucide-react";
+import { Plus, Music, Calendar, Trash2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import { fetchWithAuth } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 import { useLibraries } from "@/hooks/use-libraries";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useRequireAuth } from "@/hooks/use-require-auth";
+import { usePrintSetlist } from "@/hooks/use-print-setlist";
+import { PageHeader } from "@/components/PageHeader";
+import { SearchInput } from "@/components/SearchInput";
+import { LoadingState } from "@/components/LoadingState";
+import { EmptyState } from "@/components/EmptyState";
 
 type ApiSetlist = {
   id: number;
@@ -41,7 +47,6 @@ const Setlists = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
-  const [printingPdf, setPrintingPdf] = useState(false);
   const [selectedSetlistId, setSelectedSetlistId] = useState<number | null>(null);
   const [newSetlist, setNewSetlist] = useState({ title: "", description: "" });
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,56 +56,10 @@ const Setlists = () => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { libraries } = useLibraries();
   const { canEdit, canShare } = usePermissions();
-
-  const handlePrintSetlist = async (setlistId: number, fontSize: number = 16) => {
-    setPrintingPdf(true);
-    try {
-      const response = await fetchWithAuth(`/api/setlists/${setlistId}/print?font_size=${fontSize}`);
-
-      if (response.status === 401) {
-        navigate("/auth/login");
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error('Erro ao gerar PDF do setlist');
-      }
-
-      // Obter o blob do PDF
-      const blob = await response.blob();
-      
-      // Criar URL temporária para o blob
-      const url = window.URL.createObjectURL(blob);
-      
-      // Abrir PDF em nova aba
-      window.open(url, '_blank');
-      
-      // Limpar URL após um pequeno delay
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 500);
-
-      // Fechar o dialog após sucesso
-      setPrintDialogOpen(false);
-    } catch (err: any) {
-      console.error('Failed to print setlist', err);
-      toast({
-        title: "Erro",
-        description: err.message || 'Erro ao gerar PDF',
-        variant: "destructive",
-      });
-    } finally {
-      setPrintingPdf(false);
-    }
-  };
+  const { printSetlist, printing: printingPdf } = usePrintSetlist();
+  useRequireAuth();
 
   useEffect(() => {
-    // Verificar autenticação
-    if (!isAuthenticated()) {
-      navigate("/auth/login");
-      return;
-    }
-
     let mounted = true;
 
     const fetchSetlists = async (pageToLoad: number) => {
@@ -296,12 +255,10 @@ const Setlists = () => {
   return (
     <div className="flex-1 p-6 pb-20 md:pb-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Setlists</h1>
-            <p className="text-muted-foreground">Gerencie suas listas de músicas</p>
-          </div>
-          {canEdit() && (
+        <PageHeader
+          title="Setlists"
+          description="Gerencie suas listas de músicas"
+          action={canEdit() && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -346,44 +303,30 @@ const Setlists = () => {
             </DialogContent>
           </Dialog>
           )}
-        </div>
+        />
 
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-          <Input
-            type="text"
-            placeholder="Buscar por título ou descrição..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar por título ou descrição..."
+        />
 
         {loading ? (
-          <div className="text-center py-12">
-            <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <p className="text-muted-foreground">Carregando setlists...</p>
-          </div>
+          <LoadingState message="Carregando setlists..." />
         ) : filteredSetlists.length === 0 ? (
-          <div className="text-center py-12">
-            <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            {setlists.length === 0 ? (
-              <>
-                <p className="text-lg font-medium text-center mb-2">
-                  Nenhum setlist criado ainda
-                </p>
-                <p className="text-sm text-muted-foreground text-center mb-6">
-                  Crie seu primeiro setlist para organizar suas músicas
-                </p>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar Primeiro Setlist
-                </Button>
-              </>
-            ) : (
-              <p className="text-muted-foreground">Nenhum setlist encontrado</p>
-            )}
-          </div>
+          setlists.length === 0 ? (
+            <EmptyState
+              title="Nenhum setlist criado ainda"
+              description="Crie seu primeiro setlist para organizar suas músicas"
+              actionLabel="Criar Primeiro Setlist"
+              onAction={() => setIsDialogOpen(true)}
+            />
+          ) : (
+            <EmptyState
+              title="Nenhum setlist encontrado"
+              description="Tente buscar com outros termos"
+            />
+          )
         ) : (
           <div className="grid gap-4">
             {filteredSetlists.map((setlist) => (
@@ -474,7 +417,19 @@ const Setlists = () => {
       <PrintOptionsDialog
         open={printDialogOpen}
         onOpenChange={setPrintDialogOpen}
-        onPrint={(fontSize) => selectedSetlistId && handlePrintSetlist(selectedSetlistId, fontSize)}
+        onPrint={(fontSize) => {
+          if (selectedSetlistId) {
+            printSetlist(selectedSetlistId, fontSize).then(() => {
+              setPrintDialogOpen(false);
+            }).catch(() => {
+              toast({
+                title: "Erro",
+                description: "Erro ao gerar PDF",
+                variant: "destructive",
+              });
+            });
+          }
+        }}
         isPrinting={printingPdf}
       />
     </div>
