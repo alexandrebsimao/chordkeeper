@@ -36,7 +36,7 @@ class Users::SessionsController < Devise::SessionsController
         scp: 'user',
         aud: nil,
         iat: Time.now.to_i,
-        exp: (Time.now + 30.days).to_i,
+        exp: 1.hour.from_now.to_i,
         jti: SecureRandom.uuid
       },
       ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
