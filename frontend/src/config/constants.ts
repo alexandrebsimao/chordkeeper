@@ -7,14 +7,14 @@ export const MUSICAL_KEYS = [
   "C",
   "C#",
   "D",
-  "D#",
+  "Eb",
   "E",
   "F",
   "F#",
   "G",
-  "G#",
+  "Ab",
   "A",
-  "A#",
+  "Bb",
   "B",
 ] as const;
 

@@ -24,12 +24,12 @@ module Api
 
   # GET /songs/1 or /songs/1.json
   def show
-      render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash
+    render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash
   end
 
   # GET /songs/new
   def new
-      @song = Song.new
+    @song = Song.new
   end
 
   # GET /songs/1/edit

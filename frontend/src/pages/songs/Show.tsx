@@ -53,7 +53,7 @@ const CifraView = () => {
   const { canEdit } = usePermissions();
 
   // Lista de tons musicais
-  const musicalKeys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const musicalKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
   const handleTranspose = async (newKey: string) => {
     if (!cifra) return;
