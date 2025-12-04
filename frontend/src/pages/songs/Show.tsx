@@ -17,6 +17,7 @@ import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import SimplePdfViewer from "@/components/SimplePdfViewer";
 import { useLibraries } from "@/hooks/use-libraries";
 import { usePermissions } from "@/hooks/use-permissions";
+import { MUSICAL_KEYS } from "@/config/constants";
 
 type MediaRef = {
   id?: number;
@@ -51,9 +52,6 @@ const CifraView = () => {
   const [transposing, setTransposing] = useState(false);
   const { libraries } = useLibraries();
   const { canEdit } = usePermissions();
-
-  // Lista de tons musicais
-  const musicalKeys = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
   const handleTranspose = async (newKey: string) => {
     if (!cifra) return;
@@ -354,7 +352,7 @@ const CifraView = () => {
                 <SelectValue placeholder="Tom" />
               </SelectTrigger>
               <SelectContent>
-                {musicalKeys.map((key) => (
+                {MUSICAL_KEYS.map((key) => (
                   <SelectItem key={key} value={key} className="font-mono">
                     {key}
                   </SelectItem>

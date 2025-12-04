@@ -31,7 +31,7 @@ module Songs
 
     private
 
-    NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'].freeze
+    NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].freeze
 
     # Verifica se uma string é uma nota válida
     # @param [String] note A string a ser verificada
@@ -40,17 +40,16 @@ module Songs
       NOTES.include?(note)
     end
 
-    # Normaliza uma nota, convertendo apenas alguns bemóis específicos
-    # Mantém: Eb, Ab, Bb (bemóis aceitos)
-    # Converte: Db -> C#, Gb -> F#
+    # Normaliza uma nota, convertendo bemóis para sustenidos
+    # Exemplo: Db -> C#, Eb -> D#, etc.
     # @param [String] note A nota a ser normalizada
     # @return [String] A nota normalizada
     def normalize_note(note)
       note.gsub('Db', 'C#')
+          .gsub('Eb', 'D#')
           .gsub('Gb', 'F#')
-          .gsub('D#', 'Eb')
-          .gsub('G#', 'Ab')
-          .gsub('A#', 'Bb')
+          .gsub('Ab', 'G#')
+          .gsub('Bb', 'A#')
           .gsub('B#', 'C')
           .gsub('E#', 'F')
     end
