@@ -68,12 +68,6 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-
-      # Middleware de autenticação básica
-      - "traefik.http.middlewares.frontend-auth.basicauth.users=admin:$$apr1$$ikz1.zUy$$CcLN2pVuGG50IMSLbgN5W/"
-      # Router com autenticação
-      - "traefik.http.routers.chordkeeper-app.middlewares=frontend-auth"
-
       - "traefik.http.routers.chordkeeper-app.entrypoints=https"
       - "traefik.http.routers.chordkeeper-app.rule=Host(`chordkeeper.innapses.com`)"
       - "traefik.http.routers.chordkeeper-app.tls=true"
