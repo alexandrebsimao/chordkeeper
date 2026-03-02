@@ -7,7 +7,7 @@ class Api::SetlistUsersController < ApplicationController
 
   # GET /api/setlists/:setlist_id/users
   def index
-    @setlist_users = @setlist.setlist_users.includes(:user)
+    @setlist_users = @setlist.setlist_users.where("role != ?", "owner").includes(:user)
     render json: SetlistUserSerializer.new(@setlist_users, include: [:user]).serializable_hash.to_json
   end
 
