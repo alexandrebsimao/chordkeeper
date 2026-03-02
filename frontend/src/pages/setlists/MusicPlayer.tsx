@@ -8,7 +8,9 @@ import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { useMusicNavigation } from "@/hooks/use-music-navigation";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
+import ManageSetlistUsersDialog from "@/components/ManageSetlistUsersDialog";
 import MusicPlayerControls from "@/components/MusicPlayerControls";
 import MusicContent from "@/components/MusicContent";
 import SongInfoBadges from "@/components/SongInfoBadges";
@@ -36,6 +38,7 @@ const MusicPlayer = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentUser } = useCurrentUser();
   
   const [songs, setSongs] = useState<SetlistSong[]>([]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -45,6 +48,7 @@ const MusicPlayer = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1);
   const [setlistTitle, setSetlistTitle] = useState("");
+  const [ownerId, setOwnerId] = useState<number | null>(null);
   const [publicLink, setPublicLink] = useState<{uuid: string; url: string} | undefined>(undefined);
   
   // Callback estável para quando o scroll completar
@@ -89,10 +93,12 @@ const MusicPlayer = () => {
           songsData = data.data.attributes.songs || data.data.attributes.all_songs || [];
           // Pegar título e link público
           setSetlistTitle(data.data.attributes.title || "");
+          setOwnerId(data.data.attributes.owner_id || null);
           setPublicLink(data.data.attributes.public_link);
         } else if (data.attributes) {
           songsData = data.attributes.songs || data.attributes.all_songs || [];
           setSetlistTitle(data.attributes.title || "");
+          setOwnerId(data.attributes.owner_id || null);
           setPublicLink(data.attributes.public_link);
         } else if (Array.isArray(data.data)) {
           songsData = data.data;
@@ -257,6 +263,16 @@ const MusicPlayer = () => {
               )}
             </div>
           </div>
+
+          {ownerId === currentUser?.id && (
+            <ManageSetlistUsersDialog
+              setlistId={Number(id)}
+              setlistTitle={setlistTitle}
+              isOwner={true}
+              variant="outline"
+              size="icon"
+            />
+          )}
 
           <ShareSetlistDialog
             setlistId={Number(id)}

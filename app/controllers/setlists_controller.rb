@@ -1,22 +1,30 @@
 class SetlistsController < ApplicationController
   before_action :set_setlist, only: %i[ show edit update destroy manage_songs print save_songs add_song remove_song public_link_generator public_link_destroyer ]
-  before_action :check_edit_permission, only: %i[ new create edit update destroy manage_songs save_songs add_song remove_song ]
+  before_action :check_edit_permission, only: %i[ edit update destroy manage_songs save_songs add_song remove_song ]
   before_action :check_share_permission, only: %i[ public_link_generator public_link_destroyer ]
 
   # GET /setlists or /setlists.json
   def index
-    @setlists = Setlists::ListSetlistsService.new(
-      conditions: { 
-        equal: {
-          library_id: current_library.id
-        },
-        like: {
-          title: params[:search].present? ? params[:search].downcase : nil
-        }
-      },
-      page: params[:page],
-      per_page: 9
-    ).call
+    # Busca setlists próprios e compartilhados
+    owned_setlists = current_library.setlists
+    shared_setlists = current_user.shared_setlists
+    
+    all_setlists = (owned_setlists + shared_setlists).uniq
+
+    # Aplica filtro de busca se existe
+    if params[:search].present?
+      search_term = params[:search].downcase
+      all_setlists = all_setlists.select { |setlist| setlist.title.downcase.include?(search_term) }
+    end
+
+    # Pagina os resultados manualmente
+    per_page = 9
+    page = (params[:page] || 1).to_i
+    total_pages = (all_setlists.length / per_page.to_f).ceil
+    
+    @setlists = all_setlists.sort_by(&:created_at).reverse.slice((page - 1) * per_page, per_page) || []
+    @total_pages = total_pages
+    @current_page = page
   end
 
   # GET /setlists/1 or /setlists/1.json
@@ -143,24 +151,27 @@ class SetlistsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_setlist
       @setlist = Setlist.find(params.expect(:id))
-      unless @setlist.library_id == current_library&.id
+      # Verifica se o usuário tem acesso ao setlist (dono ou compartilhado)
+      unless @setlist.accessible_by?(current_user)
         redirect_to setlists_path, alert: "Você não tem acesso a este setlist."
       end
     end
 
     def check_edit_permission
-      unless current_library&.editable_by?(current_user)
+      # Verifica se o usuário pode editar o setlist (dono ou com permissão de editor)
+      unless @setlist.editable_by?(current_user)
         respond_to do |format|
-          format.html { redirect_to setlists_path, alert: "Você não tem permissão para editar nesta biblioteca." }
+          format.html { redirect_to setlists_path, alert: "Você não tem permissão para editar este setlist." }
           format.json { render json: { error: 'Forbidden' }, status: :forbidden }
         end
       end
     end
 
     def check_share_permission
-      unless current_library&.can_share_setlists?(current_user)
+      # Verifica se o usuário é o dono do setlist para compartilhar
+      unless @setlist.owner_id == current_user.id
         respond_to do |format|
-          format.html { redirect_to setlists_path, alert: "Apenas administradores e editores podem compartilhar setlists." }
+          format.html { redirect_to setlists_path, alert: "Apenas o dono pode gerar link público para este setlist." }
           format.json { render json: { error: 'Forbidden' }, status: :forbidden }
         end
       end

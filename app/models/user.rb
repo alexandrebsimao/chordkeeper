@@ -12,6 +12,10 @@ class User < ApplicationRecord
 
   has_many :shared_libraries, through: :library_users, source: :library
   has_many :owned_libraries, class_name: "Library", foreign_key: "owner_id", dependent: :destroy
+
+  has_many :setlist_users, dependent: :destroy
+  has_many :shared_setlists, through: :setlist_users, source: :setlist
+  has_many :owned_setlists, class_name: "Setlist", foreign_key: "owner_id", dependent: :destroy
   
   # Retorna todas as bibliotecas que o usuário pode acessar (próprias + compartilhadas)
   def accessible_libraries

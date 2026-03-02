@@ -2,16 +2,29 @@ module Api
   class UsersController < ApiController
     # GET /api/users/me
     def me
+      Rails.logger.info "UsersController#me called by user: #{current_user&.email}"
+      
+      if current_user.nil?
+        render json: { error: 'Not authenticated' }, status: :unauthorized
+        return
+      end
+      
       render json: {
         data: {
           id: current_user.id,
           type: 'user',
           attributes: {
+            id: current_user.id,
             email: current_user.email,
+            name: current_user.name || "#{current_user.email.split('@').first}",
             created_at: current_user.created_at
           }
         }
       }, status: :ok
+    rescue => e
+      Rails.logger.error "UsersController#me error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { error: e.message }, status: :internal_server_error
     end
 
     # PATCH /api/users/update_password

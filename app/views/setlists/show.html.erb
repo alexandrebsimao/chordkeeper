@@ -67,6 +67,77 @@
         <span>Excluir setlist</span>
       <% end %>
     </div>
+
+    <% if @setlist.owner_id == current_user.id %>
+      <!-- Seção de Compartilhamento com Usuários -->
+      <div class="mt-8 border-t pt-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">Compartilhar com usuários</h3>
+        
+        <!-- Formulário para adicionar novo usuário -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+          <h4 class="text-sm font-medium text-gray-900 mb-4">Adicionar usuário</h4>
+          <form id="shareSetlistForm" class="flex gap-2 mb-4">
+            <input 
+              type="email" 
+              id="userEmail" 
+              placeholder="Email do usuário" 
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+            <select 
+              id="userPermission" 
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="read_only">Apenas visualizar</option>
+              <option value="editor">Editar</option>
+            </select>
+            <button 
+              type="submit" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Compartilhar
+            </button>
+          </form>
+          <p class="text-xs text-gray-500">Permissões: <strong>Apenas visualizar</strong> = leitura apenas | <strong>Editar</strong> = pode também editar músicas</p>
+        </div>
+
+        <!-- Lista de usuários com acesso -->
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h4 class="text-sm font-medium text-gray-900">Usuários com acesso</h4>
+          </div>
+          
+          <div id="setlistUsersContainer" class="divide-y divide-gray-200">
+            <% @setlist.setlist_users.includes(:user).each do |su| %>
+              <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                <div>
+                  <p class="text-sm font-medium text-gray-900"><%= su.user.name || su.user.email %></p>
+                  <p class="text-xs text-gray-500"><%= su.user.email %></p>
+                  <span class="inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full <%= su.role == 'editor' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' %>">
+                    <%= su.role == 'editor' ? 'Editar' : 'Apenas visualizar' %>
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  class="removeUserBtn text-red-600 hover:text-red-800 transition-colors" 
+                  data-user-id="<%= su.id %>"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            <% end %>
+          </div>
+
+          <% if @setlist.setlist_users.empty? %>
+            <div class="px-6 py-8 text-center text-gray-500">
+              <p class="text-sm">Nenhum usuário compartilhado ainda.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>
 
@@ -89,4 +160,73 @@
           botao.classList.add('bg-gray-900', 'hover:bg-gray-800');
       }, 2000);
   }
+
+  // Gerenciar compartilhamento com usuários
+  const shareForm = document.getElementById('shareSetlistForm');
+  if (shareForm) {
+    shareForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('userEmail').value;
+      const permission = document.getElementById('userPermission').value;
+      const setlistId = '<%= @setlist.id %>';
+      
+      try {
+        const response = await fetch(`/api/setlists/${setlistId}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({
+            setlist_user: {
+              email: email,
+              permission: permission
+            }
+          })
+        });
+        
+        if (response.ok) {
+          // Limpar formulário e recarregar
+          shareForm.reset();
+          location.reload();
+        } else if (response.status === 404) {
+          alert('Usuário não encontrado');
+        } else {
+          alert('Erro ao compartilhar setlist');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao compartilhar setlist');
+      }
+    });
+  }
+
+  // Remover usuário
+  document.querySelectorAll('.removeUserBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Tem certeza que deseja remover o acesso deste usuário?')) return;
+      
+      const userId = btn.getAttribute('data-user-id');
+      const setlistId = '<%= @setlist.id %>';
+      
+      try {
+        const response = await fetch(`/api/setlists/${setlistId}/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          }
+        });
+        
+        if (response.ok) {
+          location.reload();
+        } else {
+          alert('Erro ao remover compartilhamento');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao remover compartilhamento');
+      }
+    });
+  });
 </script>

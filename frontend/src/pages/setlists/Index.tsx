@@ -17,7 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth } from "@/lib/auth";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
-import { useLibraries } from "@/hooks/use-libraries";
+import ManageSetlistUsersDialog from "@/components/ManageSetlistUsersDialog";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { usePrintSetlist } from "@/hooks/use-print-setlist";
@@ -26,6 +27,14 @@ import { SearchInput } from "@/components/SearchInput";
 import { LoadingState } from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
 
+type SharedUser = {
+  id: number;
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  permission: string;
+};
+
 type ApiSetlist = {
   id: number;
   title: string;
@@ -33,6 +42,9 @@ type ApiSetlist = {
   total_songs?: number;
   created_at?: string;
   updated_at?: string;
+  owner_id?: number;
+  owner_name?: string;
+  shared_users?: SharedUser[];
   public_link?: {
     uuid: string;
     url: string;
@@ -54,7 +66,7 @@ const Setlists = () => {
   const [hasMore, setHasMore] = useState(true);
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const { libraries } = useLibraries();
+  const { currentUser } = useCurrentUser();
   const { canEdit, canShare } = usePermissions();
   const { printSetlist, printing: printingPdf } = usePrintSetlist();
   useRequireAuth();
@@ -341,6 +353,11 @@ const Setlists = () => {
                       <h3 className="text-lg font-semibold text-foreground mb-1">
                         {setlist.title}
                       </h3>
+                      {setlist.owner_id !== currentUser?.id && setlist.shared_users && setlist.shared_users.length > 0 && (
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Compartilhado por: {setlist.shared_users[0]?.user_name || setlist.shared_users[0]?.user_email}
+                        </p>
+                      )}
                       {setlist.description && (
                         <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
                           {setlist.description}
@@ -362,6 +379,15 @@ const Setlists = () => {
                       </div>
                     </div>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                      {setlist.owner_id === currentUser?.id && (
+                        <ManageSetlistUsersDialog
+                          setlistId={setlist.id}
+                          setlistTitle={setlist.title}
+                          isOwner={true}
+                          variant="ghost"
+                          size="icon"
+                        />
+                      )}
                       {canShare() && (
                         <ShareSetlistDialog
                           setlistId={setlist.id}

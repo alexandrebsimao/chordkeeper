@@ -17,7 +17,8 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
   if (token) {
     // Adicionar "Bearer " antes do token conforme padrão JWT
-    (headers as Record<string, string>)["Authorization"] = `${token}`;
+    const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    (headers as Record<string, string>)["Authorization"] = authToken;
   }
 
   return fetch(`${API_BASE_URL}${url}`, {
