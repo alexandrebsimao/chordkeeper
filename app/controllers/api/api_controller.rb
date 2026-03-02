@@ -1,7 +1,7 @@
 module Api
   class ApiController < ActionController::API
     before_action :authenticate_user!
-    before_action :check_is_current_library, unless: :skip_library_check?
+    before_action :check_is_current_library, unless: :devise_controller?
     helper_method :current_library, :permission_service
 
     # Handle parameter parsing errors
@@ -78,11 +78,6 @@ module Api
 
     def require_share_permission!
       PermissionService.authorize!(current_library, current_user, :share)
-    end
-
-    def skip_library_check?
-      # Pular verificação de biblioteca para endpoints que não precisam dela
-      request.path_info == '/api/users/me' || devise_controller?
     end
 
     def check_is_current_library
