@@ -140,6 +140,9 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {currentUser?.name && (
+                <div className="mt-2 text-sm text-sidebar-foreground/80">Olá, {currentUser.name}!</div>
+              )}
               {bottomItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>

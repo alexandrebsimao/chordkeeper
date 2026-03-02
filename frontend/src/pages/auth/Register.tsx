@@ -11,6 +11,7 @@ import { API_BASE_URL } from "@/config/api";
 const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -47,6 +48,7 @@ const Register = () => {
         },
         body: JSON.stringify({
           user: {
+            name,
             email,
             password,
             password_confirmation: passwordConfirmation,
@@ -106,6 +108,19 @@ const Register = () => {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                autoComplete="name"
+                disabled={loading}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
