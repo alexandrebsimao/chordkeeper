@@ -76,10 +76,10 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col justify-between">
         <div>
           <div className="px-6 py-4">
-            <h2 className="text-xl font-bold text-sidebar-foreground">ChordKeeper</h2>
+            <h2 className="text-xl font-bold text-sidebar-foreground">chorfy</h2>
           </div>
 
-          <SidebarGroup>
+          {/* <SidebarGroup>
             <Collapsible open={librariesOpen} onOpenChange={setLibrariesOpen}>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="cursor-pointer hover:bg-sidebar-accent/50 rounded-md p-2 flex items-center justify-between">
@@ -111,7 +111,7 @@ export function AppSidebar() {
                 </SidebarGroupContent>
               </CollapsibleContent>
             </Collapsible>
-          </SidebarGroup>
+          </SidebarGroup> */}
           
           <SidebarGroup>
             <SidebarGroupLabel>Menu</SidebarGroupLabel>

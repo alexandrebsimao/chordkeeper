@@ -8,7 +8,7 @@ class Setlist < ApplicationRecord
   has_many :setlist_users, dependent: :destroy
   has_many :shared_users, through: :setlist_users, source: :user
 
-  before_create :generate_setlist_users!
+  after_create :generate_setlist_users!
 
   # Verifica se um usuário tem acesso (como dono ou compartilhado)
   def accessible_by?(user)

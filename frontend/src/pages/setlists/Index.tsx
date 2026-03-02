@@ -388,7 +388,7 @@ const Setlists = () => {
                           size="icon"
                         />
                       )}
-                      {canShare() && (
+                      {setlist.owner_id === currentUser?.id && canShare() && (
                         <ShareSetlistDialog
                           setlistId={setlist.id}
                           setlistTitle={setlist.title}
@@ -408,7 +408,7 @@ const Setlists = () => {
                       >
                         <Printer className="h-4 w-4" />
                       </Button>
-                      {canEdit() && (
+                      {setlist.owner_id === currentUser?.id && canEdit(setlist.id) && (
                         <Button
                           variant="ghost"
                           size="icon"
