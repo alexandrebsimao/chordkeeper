@@ -139,25 +139,29 @@ export function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <div className="flex flex-col items-start py-4 border-t border-sidebar-border">
               {currentUser?.name && (
-                <div className="mt-2 text-sm text-sidebar-foreground/80">Olá, {currentUser.name}!</div>
+                <div className="flex items-center gap-3 mb-4 pl-4">
+                  <div className="bg-sidebar-accent rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold text-sidebar-primary">
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-base font-semibold text-sidebar-foreground">{currentUser.name}</span>
+                </div>
               )}
-              {bottomItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="flex items-center gap-3"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {open && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+              <div className="w-full flex flex-col gap-2 mt-2">
+                {bottomItems.map((item, idx) => (
+                  <NavLink
+                    key={item.title}
+                    to={item.url}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-sidebar-accent/60 text-sidebar-foreground ${idx === 0 ? 'mb-1' : ''}`}
+                    activeClassName="bg-sidebar-accent text-sidebar-primary"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {open && <span>{item.title}</span>}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

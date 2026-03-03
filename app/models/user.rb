@@ -17,6 +17,8 @@ class User < ApplicationRecord
   has_many :shared_setlists, through: :setlist_users, source: :setlist
   has_many :owned_setlists, class_name: "Setlist", foreign_key: "owner_id", dependent: :destroy
   
+  after_create :create_library!
+
   # Retorna todas as bibliotecas que o usuário pode acessar (próprias + compartilhadas)
   def accessible_libraries
     Library.left_joins(:library_users)
@@ -75,5 +77,13 @@ class User < ApplicationRecord
     end
     
     user
+  end
+
+  private
+
+  def create_library!
+    library = Library.create(name: "Biblioteca de #{name || email}", owner: self)
+    LibraryUser.create(user: self, library: library, is_current_scope: true)
+    library
   end
 end
