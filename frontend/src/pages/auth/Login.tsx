@@ -51,11 +51,18 @@ const Login = () => {
 
       const data = await response.json();
       
-      // Extrair o token JWT do JSON da resposta (fallback para header)
-      const token = data.token || response.headers.get("authorization") || response.headers.get("Authorization");
+      // Extrair tokens da resposta
+      const accessToken = (data.access_token || data.token || 
+                          response.headers.get("authorization") || 
+                          response.headers.get("Authorization"))?.replace("Bearer ", "");
+      const refreshToken = data.refresh_token;
       
-      if (token) {
-        localStorage.setItem("authToken", token);
+      if (accessToken) {
+        localStorage.setItem("authToken", accessToken);
+      }
+      
+      if (refreshToken) {
+        localStorage.setItem("refreshToken", refreshToken);
       }
 
       toast({

@@ -14,13 +14,17 @@ class Users::RegistrationsController < Devise::RegistrationsController
         set_flash_message! :notice, :signed_up
         sign_up(resource_name, resource)
         
-        # Gerar token JWT
-        token = generate_jwt(resource)
-        response.set_header('Authorization', "Bearer #{token}")
+        # Gerar access token e refresh token
+        access_token = generate_access_token(resource)
+        refresh_token = generate_refresh_token(resource)
+        
+        response.set_header('Authorization', "Bearer #{access_token}")
         
         render json: {
           message: 'Signed up successfully.',
-          token: "Bearer #{token}",
+          access_token: "Bearer #{access_token}",
+          refresh_token: refresh_token,
+          expires_in: 15.minutes.to_i,
           user: {
             id: resource.id,
             email: resource.email
@@ -49,14 +53,31 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   private
 
-  def generate_jwt(user)
+  def generate_access_token(user)
     JWT.encode(
       {
         sub: user.id,
         scp: 'user',
+        type: 'access',
         aud: nil,
         iat: Time.now.to_i,
-        exp: 1.hour.from_now.to_i,
+        exp: 15.minutes.from_now.to_i,
+        jti: SecureRandom.uuid
+      },
+      ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+      'HS256'
+    )
+  end
+
+  def generate_refresh_token(user)
+    JWT.encode(
+      {
+        sub: user.id,
+        scp: 'user',
+        type: 'refresh',
+        aud: nil,
+        iat: Time.now.to_i,
+        exp: 30.days.from_now.to_i,
         jti: SecureRandom.uuid
       },
       ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),

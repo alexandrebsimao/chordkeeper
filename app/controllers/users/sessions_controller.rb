@@ -13,13 +13,17 @@ class Users::SessionsController < Devise::SessionsController
     sign_in(resource_name, resource)
     yield resource if block_given?
     
-    # Gerar token JWT manualmente
-    token = generate_jwt(resource)
-    response.set_header('Authorization', "Bearer #{token}")
+    # Gerar access token e refresh token
+    access_token = generate_access_token(resource)
+    refresh_token = generate_refresh_token(resource)
+    
+    response.set_header('Authorization', "Bearer #{access_token}")
     
     render json: {
       message: 'Logged in successfully.',
-      token: "Bearer #{token}",
+      access_token: "Bearer #{access_token}",
+      refresh_token: refresh_token,
+      expires_in: 15.minutes.to_i,
       user: {
         id: resource.id,
         email: resource.email
@@ -27,16 +31,72 @@ class Users::SessionsController < Devise::SessionsController
     }, status: :ok
   end
 
+  # Endpoint para renovar o access token usando refresh token
+  def refresh
+    refresh_token = params[:refresh_token]
+    
+    begin
+      decoded = JWT.decode(
+        refresh_token,
+        ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+        true,
+        { verify_expiration: true, algorithm: 'HS256' }
+      ).first
+      
+      # Verificar se é um refresh token
+      if decoded['type'] != 'refresh'
+        render json: { error: 'Token inválido' }, status: :unauthorized
+        return
+      end
+      
+      # Verificar se o token está na denylist
+      if JwtDenylist.exists?(jti: decoded['jti'])
+        render json: { error: 'Token revogado' }, status: :unauthorized
+        return
+      end
+      
+      user = User.find(decoded['sub'])
+      new_access_token = generate_access_token(user)
+      
+      render json: {
+        access_token: "Bearer #{new_access_token}",
+        expires_in: 15.minutes.to_i
+      }, status: :ok
+      
+    rescue JWT::ExpiredSignature
+      render json: { error: 'Refresh token expirado. Faça login novamente.' }, status: :unauthorized
+    rescue JWT::DecodeError, ActiveRecord::RecordNotFound
+      render json: { error: 'Token inválido' }, status: :unauthorized
+    end
+  end
+
   private
 
-  def generate_jwt(user)
+  def generate_access_token(user)
     JWT.encode(
       {
         sub: user.id,
         scp: 'user',
+        type: 'access',
         aud: nil,
         iat: Time.now.to_i,
-        exp: 1.hour.from_now.to_i,
+        exp: 15.minutes.from_now.to_i,
+        jti: SecureRandom.uuid
+      },
+      ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+      'HS256'
+    )
+  end
+
+  def generate_refresh_token(user)
+    JWT.encode(
+      {
+        sub: user.id,
+        scp: 'user',
+        type: 'refresh',
+        aud: nil,
+        iat: Time.now.to_i,
+        exp: 30.days.from_now.to_i,
         jti: SecureRandom.uuid
       },
       ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
