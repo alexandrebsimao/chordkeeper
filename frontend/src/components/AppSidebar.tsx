@@ -114,7 +114,6 @@ export function AppSidebar() {
           </SidebarGroup> */}
           
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {filteredMenuItems.map((item) => (
