@@ -1,10 +1,18 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Plus, Trash2, FileText, Upload } from "lucide-react";
+import { Plus, Trash2, FileText, Upload, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { KeySelector } from "@/components/KeySelector";
 
 export interface MediaReference {
@@ -30,6 +38,146 @@ export interface SongFormData {
   attachment?: File | null;
   attachment_url?: string | null;
   media_references: MediaReference[];
+}
+
+// Cifra to ChordPro Converter Functions
+const CHORD_RE = /\b([A-G][#b]?(?:m|M|maj|min|sus\d*|aug|dim|add\d*|dom|\d+[Mmsud]*)?\d*(?:\/[A-G][#b]?)?)\b/g;
+
+function isChordLine(line: string): boolean {
+  if (!line || line.trim() === "") return false;
+  const stripped = line.replace(CHORD_RE, "").trim();
+  return stripped.length === 0;
+}
+
+function extractChordsWithPositions(line: string): Array<{ chord: string; pos: number }> {
+  const pattern = new RegExp(CHORD_RE.source, "g");
+  const chords: Array<{ chord: string; pos: number }> = [];
+  let match;
+  while ((match = pattern.exec(line)) !== null) {
+    chords.push({ chord: match[0], pos: match.index });
+  }
+  return chords;
+}
+
+function mergeChordAndLyric(chordLine: string, lyricLine: string): string {
+  const chords = extractChordsWithPositions(chordLine);
+  if (chords.length === 0) return lyricLine;
+
+  const insertions: Record<number, string[]> = {};
+  const appended: string[] = [];
+
+  for (const { chord, pos } of chords) {
+    if (pos >= lyricLine.length) {
+      appended.push(`[${chord}]`);
+    } else {
+      if (!insertions[pos]) insertions[pos] = [];
+      insertions[pos].push(`[${chord}]`);
+    }
+  }
+
+  let result = "";
+  for (let col = 0; col <= lyricLine.length; col++) {
+    if (insertions[col]) {
+      result += insertions[col].join("");
+    }
+    if (col < lyricLine.length) {
+      result += lyricLine[col];
+    }
+  }
+
+  if (appended.length) result += " " + appended.join(" ");
+
+  return result;
+}
+
+function convertBodyLines(lines: string[]): string[] {
+  const out: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.trim() === "") {
+      out.push("");
+      i++;
+      continue;
+    }
+
+    const parenMatch = line.match(/^\s*\(([^)]+)\)\s*$/);
+    if (parenMatch) {
+      const tokens = parenMatch[1].trim().split(/\s+/).filter(Boolean);
+      out.push(tokens.map((c) => `[${c}]`).join(" "));
+      i++;
+      continue;
+    }
+
+    if (isChordLine(line)) {
+      const next = lines[i + 1];
+      const nextIsLyric =
+        next !== undefined &&
+        next.trim() !== "" &&
+        !isChordLine(next) &&
+        !next.match(/^\[/) &&
+        !next.match(/^\s*\(/);
+
+      if (nextIsLyric) {
+        out.push(mergeChordAndLyric(line, next));
+        i += 2;
+      } else {
+        const chords = extractChordsWithPositions(line).map((c) => `[${c.chord}]`);
+        out.push(chords.join(" "));
+        i++;
+      }
+      continue;
+    }
+
+    out.push(line);
+    i++;
+  }
+
+  return out;
+}
+
+function convertCifraToChordPro(input: string): string {
+  const rawLines = input.split("\n");
+
+  const blocks: Array<{ section: string | null; headerChords: string; lines: string[] }> = [];
+  let current = { section: null as string | null, headerChords: "", lines: [] as string[] };
+
+  for (const line of rawLines) {
+    const secMatch = line.match(/^\[([^\]]+)\](.*)/);
+    if (secMatch) {
+      blocks.push(current);
+      current = {
+        section: secMatch[1].trim(),
+        headerChords: secMatch[2].trim(),
+        lines: [],
+      };
+    } else {
+      current.lines.push(line);
+    }
+  }
+  blocks.push(current);
+
+  const outputLines: string[] = [];
+
+  for (const block of blocks) {
+    const bodyLines = convertBodyLines(block.lines);
+
+    if (block.section === null) {
+      outputLines.push(...bodyLines);
+    } else {
+      outputLines.push(`{start_of_verse: ${block.section}}`);
+      if (block.headerChords) {
+        const tokens = block.headerChords.split(/\s+/).filter(Boolean);
+        outputLines.push(tokens.map((c) => `[${c}]`).join(" "));
+      }
+      outputLines.push(...bodyLines);
+      outputLines.push("{end_of_verse}");
+    }
+  }
+
+  return outputLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 // ChordPro Parser Functions
@@ -172,8 +320,8 @@ function ChordLine({ line }: { line: any }) {
           fontFamily: "'Lora', serif",
           fontSize: "16px",
           color: "#1e293b",
-          lineHeight: "1.6",
-          marginBottom: "2px",
+          lineHeight: "1.8",
+          marginBottom: "4px",
         }}
       >
         {line.segments.map((s: any) => s.text).join("")}
@@ -181,42 +329,79 @@ function ChordLine({ line }: { line: any }) {
     );
   }
 
+  // Monta duas linhas: acordes e letra (seguindo a mesma lógica do backend)
+  let chordsLine = "";
+  let lyricsLine = "";
+  const minSpacing = 2;
+
+  for (const seg of line.segments) {
+    if (seg.chord) {
+      const chordText = seg.chord;
+      const lyricText = seg.text || "";
+      
+      // Adiciona o acorde
+      chordsLine += chordText;
+      
+      // Calcula espaçamento
+      if (lyricText.length > chordText.length) {
+        // Letra maior que acorde: completa acordes com espaços
+        chordsLine += " ".repeat(lyricText.length - chordText.length);
+      } else if (!lyricText || !lyricText.trim()) {
+        // Cifra isolada: adiciona espaçamento mínimo
+        chordsLine += " ".repeat(minSpacing);
+      }
+      
+      // Adiciona a letra
+      lyricsLine += lyricText;
+      
+      // Se acorde é maior que letra, adiciona espaços na letra
+      if (chordText.length > lyricText.length) {
+        lyricsLine += " ".repeat(chordText.length - lyricText.length);
+      } else if (!lyricText || !lyricText.trim()) {
+        // Cifra isolada: adiciona espaçamento mínimo
+        lyricsLine += " ".repeat(minSpacing);
+      }
+    } else {
+      // Sem acorde, apenas texto
+      const textLength = seg.text.length;
+      chordsLine += " ".repeat(textLength);
+      lyricsLine += seg.text;
+    }
+  }
+
   return (
-    <div style={{ marginBottom: "6px" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", minHeight: "22px" }}>
-        {line.segments.map((seg: any, i: number) => (
-          <div key={i} style={{ display: "inline-flex", flexDirection: "column", position: "relative" }}>
-            {seg.chord && (
-              <span
-                style={{
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#ec4899",
-                  letterSpacing: "0.02em",
-                  lineHeight: "1",
-                  paddingBottom: "3px",
-                  minWidth: seg.text ? undefined : "24px",
-                }}
-              >
-                {seg.chord}
-              </span>
-            )}
-            {!seg.chord && <span style={{ display: "block", height: "16px" }} />}
-            <span
-              style={{
-                fontFamily: "'Lora', serif",
-                fontSize: "16px",
-                color: "#1e293b",
-                lineHeight: "1.5",
-                whiteSpace: "pre",
-              }}
-            >
-              {seg.text || (seg.chord ? "\u00A0" : "")}
-            </span>
-          </div>
-        ))}
-      </div>
+    <div style={{ marginBottom: "10px" }}>
+      {/* Linha de acordes */}
+      {chordsLine.trim() && (
+        <div
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "13px",
+            fontWeight: 700,
+            color: "#ec4899",
+            lineHeight: "1.3",
+            whiteSpace: "pre",
+            marginBottom: "0",
+          }}
+        >
+          {chordsLine.trimEnd()}
+        </div>
+      )}
+      {/* Linha de letras */}
+      {lyricsLine.trim() && (
+        <div
+          style={{
+            fontFamily: "'Lora', serif",
+            fontSize: "16px",
+            color: "#1e293b",
+            lineHeight: "1.3",
+            whiteSpace: "pre",
+            marginTop: "0",
+          }}
+        >
+          {lyricsLine.trimEnd()}
+        </div>
+      )}
     </div>
   );
 }
@@ -358,6 +543,10 @@ export function SongForm({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   const syncingScrollRef = useRef(false);
+  
+  // Converter modal state
+  const [converterOpen, setConverterOpen] = useState(false);
+  const [cifraInput, setCifraInput] = useState("");
 
   const [formData, setFormData] = useState<SongFormData>({
     title: initialData?.title || "",
@@ -414,6 +603,13 @@ export function SongForm({
       ta.setSelectionRange(start + snippet.length, start + snippet.length);
     }, 0);
   }, [formData]);
+
+  const handleConvertCifra = useCallback(() => {
+    const converted = convertCifraToChordPro(cifraInput);
+    setFormData({ ...formData, content: converted });
+    setConverterOpen(false);
+    setCifraInput("");
+  }, [cifraInput, formData]);
 
   // Sincronização de scroll entre editor e visualizador
   const handleEditorScroll = useCallback(() => {
@@ -651,6 +847,17 @@ export function SongForm({
                       {item.label}
                     </Button>
                   ))}
+                  <div className="flex-1" />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs h-7 gap-1.5"
+                    onClick={() => setConverterOpen(true)}
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5" />
+                    Converter Cifra
+                  </Button>
                 </div>
               )}
 
@@ -895,6 +1102,57 @@ export function SongForm({
           {loading ? "Salvando..." : submitLabel}
         </Button>
       </div>
+
+      {/* Modal de Conversão de Cifra */}
+      <Dialog open={converterOpen} onOpenChange={setConverterOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5" />
+              Converter Letra Cifrada
+            </DialogTitle>
+            <DialogDescription>
+              Cole a letra cifrada no formato tradicional (acordes acima da letra). 
+              Exemplo: <code className="text-xs bg-muted px-1 py-0.5 rounded">[Intro] C C4</code> ou acordes em linhas separadas.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 min-h-0 py-4">
+            <Label htmlFor="cifra-input" className="text-sm font-medium mb-2 block">
+              Letra Cifrada Tradicional
+            </Label>
+            <textarea
+              id="cifra-input"
+              className="w-full h-[400px] p-4 border rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder={`[Intro] C  C4  C  C4\n\n[Primeira Parte]\n\n         C\nTe amo, Deus\n      F7M/C      C\nTua graça nunca falha`}
+              value={cifraInput}
+              onChange={(e) => setCifraInput(e.target.value)}
+              spellCheck={false}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setConverterOpen(false);
+                setCifraInput("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConvertCifra}
+              disabled={!cifraInput.trim()}
+            >
+              <ArrowRightLeft className="h-4 w-4 mr-2" />
+              Converter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

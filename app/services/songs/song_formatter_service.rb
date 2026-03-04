@@ -138,7 +138,7 @@ module Songs
     end
 
     def format_chordpro_line(line)
-      return "<div style='margin-bottom: 4px;'>&nbsp;</div>" if line.strip.empty?
+      return "<div style='margin-bottom: 0px;'></div>" if line.strip.empty?
       
       # Parse acordes [C] texto
       segments = []
@@ -182,10 +182,16 @@ module Songs
           # Adiciona o acorde sem padding extra
           chords_line += chord_text
           
+          # Define espaçamento mínimo entre acordes (para cifras isoladas)
+          min_spacing = 2
+          
           # Calcula quantos espaços adicionar após o acorde
           # Se a letra é maior que o acorde, completa com espaços
           if lyric_text.length > chord_text.length
             chords_line += " " * (lyric_text.length - chord_text.length)
+          elsif lyric_text.empty? || lyric_text.strip.empty?
+            # Se não há letra, adiciona espaçamento mínimo entre acordes
+            chords_line += " " * min_spacing
           end
           
           # Adiciona a letra
@@ -194,6 +200,9 @@ module Songs
           # Se o acorde é maior que a letra, adiciona espaços na letra
           if chord_text.length > lyric_text.length
             lyrics_line += " " * (chord_text.length - lyric_text.length)
+          elsif lyric_text.empty? || lyric_text.strip.empty?
+            # Se não há letra, adiciona espaçamento mínimo
+            lyrics_line += " " * min_spacing
           end
         else
           # Sem acorde, apenas texto
