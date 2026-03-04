@@ -594,7 +594,7 @@ export function SongForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <Tabs value={contentTab} onValueChange={(value: any) => setContentTab(value)} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            {/* <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="text" className="gap-2">
                 <FileText className="h-4 w-4" />
                 Digitar
@@ -603,11 +603,10 @@ export function SongForm({
                 <Upload className="h-4 w-4" />
                 Anexar arquivo
               </TabsTrigger>
-            </TabsList>
+            </TabsList> */}
 
             <TabsContent value="text" className="mt-4 space-y-2">
               <div className="flex items-center justify-between mb-3">
-                <Label htmlFor="content">Cifra *</Label>
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -669,7 +668,7 @@ export function SongForm({
                       <textarea
                         ref={textareaRef}
                         id="content"
-                        placeholder={`{title: Nome da música}\n{artist: Artista}\n{key: C}\n\n{start_of_verse: Verso 1}\n[C]Letra [G]da [Am]música\n{end_of_verse}`}
+                        placeholder={`{start_of_verse: Verso 1}\n[C]Letra [G]da [Am]música\n{end_of_verse}`}
                         value={formData.content}
                         onChange={(e) =>
                           setFormData({ ...formData, content: e.target.value })
@@ -709,7 +708,7 @@ export function SongForm({
             </TabsContent>
 
             <TabsContent value="file" className="mt-4 space-y-2">
-              <Label htmlFor="attachment">Arquivo (PDF ou DOC)</Label>
+              {/* <Label htmlFor="attachment">Arquivo (PDF ou DOC)</Label>
               
               {formData.attachment_url && !formData.attachment && (
                 <div className="mb-3 p-3 bg-muted/50 rounded-lg">
@@ -758,7 +757,7 @@ export function SongForm({
                   }
                 />
                 <span className="text-sm">Converter PDF para cifra automaticamente</span>
-              </label>
+              </label> */}
             </TabsContent>
           </Tabs>
         </CardContent>
