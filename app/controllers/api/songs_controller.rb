@@ -2,6 +2,7 @@ module Api
   class SongsController < Api::ApiController
   before_action :set_song, only: %i[ show edit update destroy transpose generate_pdf ]
   before_action :authorize_action!, only: %i[ new create edit update destroy ]
+  before_action :authorize_song_owner!, only: %i[ edit update destroy transpose ]
 
   # GET /songs or /songs.json
   def index
@@ -96,7 +97,16 @@ module Api
     # Use callbacks to share common setup or constraints between actions.
     def set_song
       @song = Song.where(library_id: current_library.id, id: params[:id]).first
+      # verificar se a musica pertence a setlist compartilhada por outro usuario
+      @song ||= Song.joins(setlists: :setlist_users).where(setlist_users: { user_id: current_user.id }, id: params[:id]).first
       render json: { error: 'Você não tem acesso a esta música.' }, status: :forbidden and return if @song.nil?
+    end
+
+    # Verifica se a música pertence à biblioteca do usuário (necessário para edição)
+    def authorize_song_owner!
+      unless @song.library_id == current_library.id
+        render json: { error: 'Você não tem permissão para editar esta música. Apenas músicas da sua biblioteca podem ser editadas.' }, status: :forbidden
+      end
     end
 
       # Only allow a list of trusted parameters through.
