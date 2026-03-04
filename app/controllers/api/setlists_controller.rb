@@ -7,13 +7,11 @@ module Api
     def index
       @setlists = Setlists::ListSetlistsService.new(
         conditions: { 
-          equal: {
-            library_id: current_library.id
-          },
           like: {
             title: params[:search].present? ? params[:search].downcase : nil
           }
         },
+        user: current_user,
         page: params[:page],
         per_page: 6
       ).call
@@ -193,6 +191,8 @@ module Api
       # Use callbacks to share common setup or constraints between actions.
       def set_setlist
         @setlist = Setlist.where(library_id: current_library.id, id: params[:id]).first
+        @setlist ||= Setlist.joins(:setlist_users).where(setlist_users: { user_id: current_user.id }, id: params[:id]).first
+
         render json: { error: 'Você não tem acesso a este setlist.' }, status: :forbidden and return if @setlist.nil?
       end
 

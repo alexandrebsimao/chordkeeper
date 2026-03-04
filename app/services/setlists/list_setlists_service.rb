@@ -2,7 +2,8 @@ module Setlists
   class ListSetlistsService < ApplicationService
     include QueryBuilder
 
-    def initialize(conditions: {}, filter: {}, page: 1, per_page: 10)
+    def initialize(user:, conditions: {}, filter: {}, page: 1, per_page: 10)
+      @user = user
       @conditions = conditions
       @filter = filter
       @page = page
@@ -17,6 +18,7 @@ module Setlists
       Setlists::ListSetlistsWithPaginationRepository.new(
         setlist
       ).call(
+        user: @user,
         page: @page,
         per_page: @per_page
       )

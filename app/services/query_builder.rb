@@ -18,6 +18,7 @@ module QueryBuilder
   end
 
   def apply_equal_filters(instance)
+    return instance if @conditions[:equal].blank?
     equal_conditions = @conditions[:equal].select { |k, v| v.present? }
     instance = instance.where(equal_conditions)
     instance

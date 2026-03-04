@@ -18,8 +18,17 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
 import ShareSetlistDialog from "@/components/ShareSetlistDialog";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
-import { useLibraries } from "@/hooks/use-libraries";
+import ManageSetlistUsersDialog from "@/components/ManageSetlistUsersDialog";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { usePermissions } from "@/hooks/use-permissions";
+
+type SharedUser = {
+  id: number;
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  permission: string;
+};
 
 type Song = {
   id: number;
@@ -34,6 +43,9 @@ type Setlist = {
   description?: string;
   songs: Song[];
   total_songs: number;
+  owner_id?: number;
+  owner_name?: string;
+  shared_users?: SharedUser[];
   public_link?: {
     uuid: string;
     url: string;
@@ -56,7 +68,7 @@ const SetlistManager = () => {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
-  const { libraries, loading: librariesLoading } = useLibraries();
+  const { currentUser } = useCurrentUser();
   const { canEdit, canShare } = usePermissions();
 
   const handlePrintSetlist = async (fontSize: number = 16) => {
@@ -110,27 +122,9 @@ const SetlistManager = () => {
       return;
     }
 
-    // Aguarda libraries carregarem antes de verificar permissão
-    if (librariesLoading) {
-      return;
-    }
-
-    // Busca a biblioteca atual
-    const currentLibrary = libraries.find(lib => lib.is_current);
-    if (!currentLibrary) {
-      return;
-    }
-
-    // Verifica permissão diretamente
-    const hasEditPermission = ['owner', 'admin', 'editor'].includes(currentLibrary.permission || '');
-    if (!hasEditPermission) {
-      navigate("/setlists");
-      return;
-    }
-
     fetchSetlist();
     fetchAllSongs();
-  }, [id, navigate, libraries, librariesLoading]);
+  }, [id, navigate]);
 
   // Filter available songs based on search and setlist
   const availableSongs = allSongs
@@ -474,6 +468,15 @@ const SetlistManager = () => {
             >
               <Play className="h-5 w-5" />
             </Button>
+            {setlist.owner_id === currentUser?.id && (
+              <ManageSetlistUsersDialog
+                setlistId={setlist.id}
+                setlistTitle={setlist.title}
+                isOwner={true}
+                variant="outline"
+                size="icon"
+              />
+            )}
             {canShare() && (
               <ShareSetlistDialog
                 setlistId={setlist.id}

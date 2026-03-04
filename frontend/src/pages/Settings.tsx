@@ -163,6 +163,16 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="email">Nome</Label>
+              <Input
+                id="name"
+                type="name"
+                value={userData?.name || ""}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -172,7 +182,7 @@ const Settings = () => {
                 className="bg-muted"
               />
               <p className="text-xs text-muted-foreground">
-                O email não pode ser alterado
+                O email e nome não pode ser alterado
               </p>
             </div>
             <div className="space-y-2">

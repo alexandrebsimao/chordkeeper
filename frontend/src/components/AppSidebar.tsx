@@ -76,10 +76,10 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col justify-between">
         <div>
           <div className="px-6 py-4">
-            <h2 className="text-xl font-bold text-sidebar-foreground">ChordKeeper</h2>
+            <h2 className="text-xl font-bold text-sidebar-foreground">chorfy</h2>
           </div>
 
-          <SidebarGroup>
+          {/* <SidebarGroup>
             <Collapsible open={librariesOpen} onOpenChange={setLibrariesOpen}>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="cursor-pointer hover:bg-sidebar-accent/50 rounded-md p-2 flex items-center justify-between">
@@ -111,7 +111,7 @@ export function AppSidebar() {
                 </SidebarGroupContent>
               </CollapsibleContent>
             </Collapsible>
-          </SidebarGroup>
+          </SidebarGroup> */}
           
           <SidebarGroup>
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -139,22 +139,29 @@ export function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {bottomItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="flex items-center gap-3"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {open && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <div className="flex flex-col items-start py-4 border-t border-sidebar-border">
+              {currentUser?.name && (
+                <div className="flex items-center gap-3 mb-4 pl-4">
+                  <div className="bg-sidebar-accent rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold text-sidebar-primary">
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-base font-semibold text-sidebar-foreground">{currentUser.name}</span>
+                </div>
+              )}
+              <div className="w-full flex flex-col gap-2 mt-2">
+                {bottomItems.map((item, idx) => (
+                  <NavLink
+                    key={item.title}
+                    to={item.url}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-sidebar-accent/60 text-sidebar-foreground ${idx === 0 ? 'mb-1' : ''}`}
+                    activeClassName="bg-sidebar-accent text-sidebar-primary"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {open && <span>{item.title}</span>}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

@@ -1,4 +1,8 @@
 version: '3'
+networks:
+  chordkeeper_net:
+    driver: bridge
+
 services:
   db:
     image: postgres:13.15-bullseye
@@ -7,6 +11,8 @@ services:
       POSTGRES_PASSWORD: chordkeeper
     volumes:
       - ./tmp/db:/var/lib/postgresql/data
+    networks:
+      - chordkeeper_net
   redis:
     image: redis:7-alpine
     restart: always
@@ -14,6 +20,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - chordkeeper_net
   web:
     stdin_open: true
     tty: true
@@ -28,6 +36,8 @@ services:
     depends_on:
       - db
       - redis
+    networks:
+      - chordkeeper_net
   sidekiq:
     build: .
     command: bundle exec sidekiq
@@ -36,6 +46,8 @@ services:
     depends_on:
       - db
       - redis
+    networks:
+      - chordkeeper_net
     volumes:
       - .:/myapp
   frontend:

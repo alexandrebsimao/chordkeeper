@@ -86,6 +86,7 @@ Rails.application.routes.draw do
         post :public_link_generator
         delete :public_link_destroyer
       end
+      resources :users, controller: 'setlist_users', only: [:index, :create, :update, :destroy]
     end
     
     # Public API (sem autenticação)

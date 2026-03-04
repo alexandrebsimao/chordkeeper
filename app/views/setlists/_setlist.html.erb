@@ -3,6 +3,10 @@
     <h3 class="text-lg font-semibold text-gray-900">
       <%= setlist.title %>
     </h3>
+    <% shared_by = setlist.setlist_users.find_by(user_id: current_user.id)&.user %>
+    <% if shared_by && setlist.owner_id != current_user.id %>
+      <p class="text-xs text-gray-500 mt-1">Compartilhado por: <%= shared_by.name || shared_by.email %></p>
+    <% end %>
   </div>
 
   <div class="mt-2">
