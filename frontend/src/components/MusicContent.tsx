@@ -29,17 +29,15 @@ export default function MusicContent({
   return (
     <>
       <style>{`
-        .cifra-content .chord-line,
-        .cifra-content .chord {
-          color: #2563eb;
-          font-weight: bold;
-          padding: 0;
-          margin: 0;
+        .cifra-content .chord-line {
+          font-family: 'Courier New', monospace !important;
+          font-size: ${fontSize}px !important;
+          line-height: 1.4 !important;
         }
-
-        .cifra-content .notation {
-          color: #d97706;
-          font-style: italic;
+        .cifra-content .lyrics-line {
+          font-family: 'Courier New', monospace !important;
+          font-size: ${fontSize}px !important;
+          line-height: 1.4 !important;
         }
 
         .music-content {
@@ -50,8 +48,7 @@ export default function MusicContent({
       `}</style>
       <div
         ref={contentRef}
-        className="music-content cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto"
-        style={{ fontSize: `${fontSize}px` }}
+        className="music-content cifra-content overflow-x-auto overflow-y-auto"
       >
         {isPdf ? (
           <PdfViewer

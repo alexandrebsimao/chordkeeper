@@ -527,8 +527,8 @@ const SetlistManager = () => {
                       <div
                         key={song.id}
                         className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted transition-colors group"
-                        style={{ cursor: canEdit ? 'pointer' : 'default' }}
-                        onClick={() => canEdit && handleAddSong(song)}
+                        style={{ cursor: canEdit() ? 'pointer' : 'default' }}
+                        onClick={() => canEdit() && handleAddSong(song)}
                       >
                         <div className="flex-1">
                           <h3 className="font-medium text-sm">{song.title}</h3>
@@ -588,14 +588,14 @@ const SetlistManager = () => {
                     <div
                       key={song.id}
                       data-song-index={index}
-                      draggable={canEdit}
-                      onDragStart={() => canEdit && handleDragStart(index)}
-                      onDragEnter={() => canEdit && handleDragEnter(index)}
-                      onDragEnd={canEdit ? handleDragEnd : undefined}
-                      onDragOver={(e) => canEdit && e.preventDefault()}
-                      onTouchStart={(e) => canEdit && handleTouchStart(index, e.nativeEvent)}
-                      onTouchMove={(e) => canEdit && handleTouchMove(e.nativeEvent)}
-                      onTouchEnd={canEdit ? handleTouchEnd : undefined}
+                      draggable={canEdit()}
+                      onDragStart={() => canEdit() && handleDragStart(index)}
+                      onDragEnter={() => canEdit() && handleDragEnter(index)}
+                      onDragEnd={canEdit() ? handleDragEnd : undefined}
+                      onDragOver={(e) => canEdit() && e.preventDefault()}
+                      onTouchStart={(e) => canEdit() && handleTouchStart(index, e.nativeEvent)}
+                      onTouchMove={(e) => canEdit() && handleTouchMove(e.nativeEvent)}
+                      onTouchEnd={canEdit() ? handleTouchEnd : undefined}
                       className={`flex items-center gap-3 p-4 border rounded-lg transition-all group ${
                         draggedIndex === index 
                           ? 'opacity-50 scale-95' 

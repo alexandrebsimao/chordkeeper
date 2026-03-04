@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_02_092853) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_03_192046) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -290,6 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_02_092853) do
     t.datetime "created_at", null: false
     t.string "genre"
     t.bigint "library_id", null: false
+    t.jsonb "lyrics"
     t.string "original_key"
     t.string "title"
     t.string "transpose_key"
