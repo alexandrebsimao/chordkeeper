@@ -5,8 +5,9 @@ module Songs
     end
 
     def call
-      content = @song.transpose_key.present? ? transpose : @song.content
-      formatter(content)
+      # Se lyrics (JSON) estiver disponível, usa ele. Senão, usa content (texto)
+      lyrics_to_process = @song.transpose_key.present? ? transpose_lyrics : (@song.lyrics || @song.content)
+      formatter(lyrics_to_process)
     end
 
     private
@@ -15,7 +16,7 @@ module Songs
       Songs::SongFormatterService.call(content)
     end
 
-    def transpose
+    def transpose_lyrics
       Songs::ChordTransposerService.call(@song)
     end
   end

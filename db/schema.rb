@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_25_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_03_192046) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -126,6 +126,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_25_220000) do
     t.datetime "updated_at", null: false
     t.index ["setlist_id"], name: "index_setlist_songs_on_setlist_id"
     t.index ["song_id"], name: "index_setlist_songs_on_song_id"
+  end
+
+  create_table "setlist_users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "role", default: "read_only", null: false
+    t.bigint "setlist_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["setlist_id"], name: "index_setlist_users_on_setlist_id"
+    t.index ["user_id", "setlist_id"], name: "index_setlist_users_on_user_id_and_setlist_id", unique: true
+    t.index ["user_id"], name: "index_setlist_users_on_user_id"
   end
 
   create_table "setlists", force: :cascade do |t|
@@ -279,6 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_25_220000) do
     t.datetime "created_at", null: false
     t.string "genre"
     t.bigint "library_id", null: false
+    t.jsonb "lyrics"
     t.string "original_key"
     t.string "title"
     t.string "transpose_key"
@@ -331,6 +343,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_25_220000) do
   add_foreign_key "public_setlists", "setlists"
   add_foreign_key "setlist_songs", "setlists"
   add_foreign_key "setlist_songs", "songs"
+  add_foreign_key "setlist_users", "setlists"
+  add_foreign_key "setlist_users", "users"
   add_foreign_key "setlists", "libraries"
   add_foreign_key "setlists", "users", column: "owner_id"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

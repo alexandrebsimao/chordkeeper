@@ -35,6 +35,7 @@ type ApiSong = {
   original_key?: string | null;
   transpose_key?: string | null;
   content?: string | null;
+  content_format?: string | null;
   attachment_url?: string | null;
   media_references?: MediaRef[];
 };
@@ -371,36 +372,29 @@ const CifraView = () => {
         </div>
 
         <Card className="overflow-hidden">
-          <CardHeader className="bg-muted/50 py-2 px-3 sm:py-4 sm:px-6">
-            <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                Use fonte monoespaçada para melhor visualização
-              </span>
-            </div>
-          </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-8">
             {!cifra?.content && !cifra?.content_format && cifra?.attachment_url ? (
               <SimplePdfViewer url={cifra.attachment_url} />
             ) : (
-              <div 
-                className="cifra-content font-mono text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed overflow-x-auto"
-                dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
-              />
+              <>
+                <style>{`
+                  .cifra-content .chord-line {
+                    font-family: 'Courier New', monospace !important;
+                    font-size: 14px !important;
+                    line-height: 1.4 !important;
+                  }
+                  .cifra-content .lyrics-line {
+                    font-family: 'Courier New', monospace !important;
+                    font-size: 14px !important;
+                    line-height: 1.4 !important;
+                  }
+                `}</style>
+                <div 
+                  className="cifra-content"
+                  dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
+                />
+              </>
             )}
-
-            <style>{`
-              .cifra-content .chord-line, .chord {
-                color: #2563eb;
-                font-weight: bold;
-                padding: 0;
-                margin: 0;
-              }
-
-              .cifra-content .notation {
-                color: #d97706;
-                font-style: italic;
-              }
-            `}</style>
           </CardContent>
         </Card>
 

@@ -16,17 +16,66 @@ module Songs
 
     def call
       semitones = calculate_interval(@song.original_key, @song.key)
-      return @song.content unless semitones != 0
-      transposed_lines = @song.content.lines.map do |line|
-        if is_tablature_line?(line.strip)
-          transpose_tablature_line(line, semitones)
-        elsif chord_line?(line)
-          transpose_chord_line(line, semitones)
-        else
-          line
+      return @song.lyrics if semitones == 0 || @song.lyrics.blank?
+      
+      transpose_lyrics_json(@song.lyrics, semitones)
+    end
+
+    # Transpõe o formato JSON de lyrics
+    # @param [Array] lyrics_array Array de linhas, onde cada linha é um array de segmentos
+    # @param [Integer] semitones Número de semitons para transpor
+    # @return [Array] O array de lyrics transposto
+    def transpose_lyrics_json(lyrics_array, semitones)
+      return lyrics_array if lyrics_array.blank?
+      
+      lyrics_array.map do |line|
+        line.map do |segment|
+          transposed_segment = segment.dup
+          
+          # Transpõe o acorde se existir
+          if segment["chord"].present? || segment[:chord].present?
+            chord = segment["chord"] || segment[:chord]
+            transposed_chord = transpose_single_chord(chord, semitones)
+            
+            # Mantém o formato da chave (string ou symbol)
+            if segment.key?("chord")
+              transposed_segment["chord"] = transposed_chord
+            elsif segment.key?(:chord)
+              transposed_segment[:chord] = transposed_chord
+            end
+          end
+          
+          transposed_segment
         end
       end
-      transposed_lines.join
+    end
+
+    # Transpõe um único acorde (incluindo inversões)
+    # @param [String] chord O acorde a ser transposto
+    # @param [Integer] semitones Número de semitons para transpor
+    # @return [String] O acorde transposto
+    def transpose_single_chord(chord, semitones)
+      return chord if chord.blank?
+      
+      # Regex para capturar: nota base + modificadores + inversão opcional
+      chord_regex = /^([A-G][#b]?)([0-9()\-#bMmajdisugn]*)(?:\/([A-G][#b]?))?$/
+      
+      match = chord.match(chord_regex)
+      return chord unless match
+      
+      base_note = match[1]
+      modifiers = match[2] || ""
+      bass_note = match[3]
+      
+      transposed_base = transpose_base_note(base_note, semitones)
+      result = transposed_base + modifiers
+      
+      if bass_note.present?
+        transposed_bass = transpose_base_note(bass_note, semitones)
+        result += '/' + transposed_bass
+      end
+      
+      result
     end
 
     private
