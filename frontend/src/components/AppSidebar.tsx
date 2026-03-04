@@ -44,12 +44,12 @@ export function AppSidebar() {
 
   const { canEdit } = usePermissions();
 
-  const filteredMenuItems = menuItems.filter(item => {
-    if (item.url === "/songs/create") {
-      return canEdit();
-    }
-    return true;
-  });
+  // const filteredMenuItems = menuItems.filter(item => {
+  //   if (item.url === "/songs/create") {
+  //     return canEdit();
+  //   }
+  //   return true;
+  // });
 
   useEffect(() => {
     if (apiCurrentLibraryId) {
@@ -116,7 +116,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {filteredMenuItems.map((item) => (
+                {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink
