@@ -21,6 +21,7 @@ class Song < ApplicationRecord
   before_save :set_original_key_if_missing
   before_save :pdf_to_text!, if: -> { convert_pdf? }
   before_save :capo_to_nil_if_zero
+  before_save :content_to_chordpro
   after_commit :enqueue_cache_job, on: [:create, :update]
 
   def set_original_key_if_missing
@@ -29,6 +30,58 @@ class Song < ApplicationRecord
       detected_key = detector.detect
       self.original_key = detected_key unless detected_key.start_with?("Não foi possível")
     end
+  end
+
+  # Converte linhas de acordes acima das letras para formato ChordPro
+  def convert_chords_above_to_chordpro(text)
+    ChordproConverterService.convert(text)
+  end
+
+  def content_to_chordpro
+    return content if content.blank?
+
+    # Primeiro converte linhas de acordes acima das letras para ChordPro
+    # chordpro_text = convert_chords_above_to_chordpro(content)
+    lines = content.split("\n")
+    chordpro_lines = lines.map do |line|
+      parse_chordpro_line_with_position(line).map do |part|
+        part
+      end
+    end
+
+    self.lyrics = chordpro_lines
+    # self.content = chordpro_text
+  end
+
+  def parse_chordpro_line_with_position(line)
+    result = []
+    regex = /\[([^\]]+)\]/
+    last_index = 0
+
+    line.scan(regex) do |match|
+      chord = match[0]
+      chord_start = Regexp.last_match.begin(0)
+      chord_end = Regexp.last_match.end(0)
+      # Texto antes do acorde
+      if chord_start > last_index
+        text = line[last_index...chord_start]
+        position = text&.length || 2
+        result << { chord: nil, text: text, pos: position } unless text.empty?
+      end
+      # Texto após o acorde
+      next_chord_start = line.index('[', chord_end) || line.length
+      text = line[chord_end...next_chord_start]
+      position = text&.length || 2
+      result << { chord: chord, text: text, pos: position } unless text.empty?
+      last_index = chord_end + text.length
+    end
+    # Texto final sem acorde
+    if last_index < line.length
+      text = line[last_index..-1]
+      position = text&.length || 2
+      result << { chord: nil, text: text, pos: position } unless text.empty?
+    end
+    result
   end
 
   def key

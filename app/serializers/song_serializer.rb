@@ -22,6 +22,6 @@ class SongSerializer
   end
 
   attribute :content_format do |object|
-    Songs::ChordProcessorService.call(object).html_safe
+    Songs::ChordProcessorService.call(object)
   end
 end
