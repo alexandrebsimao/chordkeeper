@@ -30,69 +30,71 @@ export function useLibraries() {
       if (response.ok) {
         const data = await response.json();
         setCurrentUser(data.data?.attributes || data);
+        setLibraries(data.data?.attributes?.library ? [data.data.attributes.library] : []);
+
       }
     } catch (err) {
       console.error("Erro ao carregar usuário:", err);
     }
   };
 
-  const loadLibraries = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchWithAuth("/api/libraries");
-      if (response.ok) {
-        const data = await response.json();
-        const loadedLibraries = data.data || [];
-        setLibraries(loadedLibraries);
+  // const loadLibraries = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await fetchWithAuth("/api/libraries");
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       const loadedLibraries = data.data || [];
+  //       setLibraries(loadedLibraries);
         
-        // Salva o ID da biblioteca atual no localStorage
-        const currentLib = loadedLibraries.find((lib: Library) => lib.is_current);
-        if (currentLib) {
-          localStorage.setItem(CURRENT_LIBRARY_KEY, currentLib.id.toString());
-        }
-      } else {
-        setError("Erro ao carregar bibliotecas");
-      }
-    } catch (err) {
-      console.error("Erro ao carregar bibliotecas:", err);
-      setError("Erro ao carregar bibliotecas");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //       // Salva o ID da biblioteca atual no localStorage
+  //       const currentLib = loadedLibraries.find((lib: Library) => lib.is_current);
+  //       if (currentLib) {
+  //         localStorage.setItem(CURRENT_LIBRARY_KEY, currentLib.id.toString());
+  //       }
+  //     } else {
+  //       setError("Erro ao carregar bibliotecas");
+  //     }
+  //   } catch (err) {
+  //     console.error("Erro ao carregar bibliotecas:", err);
+  //     setError("Erro ao carregar bibliotecas");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const switchLibrary = async (libraryId: number) => {
-    try {
-      const response = await fetchWithAuth(`/api/libraries/${libraryId}/define_scope`, {
-        method: "GET",
-      });
+  // const switchLibrary = async (libraryId: number) => {
+  //   try {
+  //     const response = await fetchWithAuth(`/api/libraries/${libraryId}/define_scope`, {
+  //       method: "GET",
+  //     });
       
-      if (response.ok) {
-        // Salva no localStorage imediatamente
-        localStorage.setItem(CURRENT_LIBRARY_KEY, libraryId.toString());
+  //     if (response.ok) {
+  //       // Salva no localStorage imediatamente
+  //       localStorage.setItem(CURRENT_LIBRARY_KEY, libraryId.toString());
         
-        // Atualiza o estado local
-        setLibraries(prev => 
-          prev.map(lib => ({
-            ...lib,
-            is_current: lib.id === libraryId
-          }))
-        );
+  //       // Atualiza o estado local
+  //       setLibraries(prev => 
+  //         prev.map(lib => ({
+  //           ...lib,
+  //           is_current: lib.id === libraryId
+  //         }))
+  //       );
         
-        // Recarrega as bibliotecas para ter os dados atualizados do backend
-        await loadLibraries();
-      }
+  //       // Recarrega as bibliotecas para ter os dados atualizados do backend
+  //       await loadLibraries();
+  //     }
       
-      return response.ok;
-    } catch (err) {
-      console.error("Erro ao trocar biblioteca:", err);
-      return false;
-    }
-  };
+  //     return response.ok;
+  //   } catch (err) {
+  //     console.error("Erro ao trocar biblioteca:", err);
+  //     return false;
+  //   }
+  // };
 
   useEffect(() => {
     loadUser();
-    loadLibraries();
+    // loadLibraries();
   }, []);
 
   return {
@@ -100,8 +102,8 @@ export function useLibraries() {
     currentUser,
     loading,
     error,
-    loadLibraries,
-    switchLibrary,
-    currentLibraryId: libraries.find(lib => lib.is_current)?.id || null,
+    // loadLibraries,
+    // switchLibrary,
+    currentLibrary: currentUser?.library || null,
   };
 }

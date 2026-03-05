@@ -9,39 +9,22 @@ export type Role = "owner" | "admin" | "editor" | "read_only";
  * Baseado na mesma lógica do backend (PermissionService)
  */
 export function usePermissions() {
-  const { libraries } = useLibraries();
-  const currentLibrary = useMemo(
-    () => libraries.find((lib) => lib.is_current),
-    [libraries]
-  );
+  const { currentLibrary } = useLibraries();
 
   /**
    * Verifica se o usuário tem uma permissão específica
    * Alinhado com o PermissionService do backend
    */
-  const can = (permission: Permission): boolean => {
-    if (!currentLibrary?.permission) return false;
-
-    const role = currentLibrary.permission as Role;
-
-    // Matriz de permissões (mesma do backend)
-    const permissionMatrix: Record<Permission, Role[]> = {
-      read: ["owner", "admin", "editor", "read_only"],
-      edit: ["owner", "admin", "editor"],
-      admin: ["owner", "admin"],
-      owner: ["owner"],
-      share: ["owner", "admin", "editor"],
-    };
-
-    return permissionMatrix[permission]?.includes(role) || false;
+  const can = (permission: Permission, objectLibraryId?: number): boolean => {
+    return currentLibrary?.id === objectLibraryId;
   };
 
   // Métodos auxiliares para facilitar o uso
-  const canRead = () => can("read");
-  const canEdit = () => can("edit");
-  const canAdmin = () => can("admin");
-  const isOwner = () => can("owner");
-  const canShare = () => can("share");
+  const canRead = (objectLibraryId?: number) => can("read", objectLibraryId);
+  const canEdit = (objectLibraryId?: number) => can("edit", objectLibraryId);
+  const canAdmin = (objectLibraryId?: number) => can("admin", objectLibraryId);
+  const isOwner = (objectLibraryId?: number) => can("owner", objectLibraryId);
+  const canShare = (objectLibraryId?: number) => can("share", objectLibraryId);
 
   // Retorna o role atual
   const role = (): Role | null => {

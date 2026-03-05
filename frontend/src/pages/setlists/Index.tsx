@@ -49,6 +49,7 @@ type ApiSetlist = {
     uuid: string;
     url: string;
   };
+  library_id?: number;
 };
 
 const Setlists = () => {
@@ -67,7 +68,7 @@ const Setlists = () => {
   const perPage = 6;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { currentUser } = useCurrentUser();
-  const { canEdit, canShare } = usePermissions();
+  const { canEdit, canShare, currentLibrary } = usePermissions();
   const { printSetlist, printing: printingPdf } = usePrintSetlist();
   useRequireAuth();
 
@@ -270,7 +271,7 @@ const Setlists = () => {
         <PageHeader
           title="Setlists"
           description="Gerencie suas listas de músicas"
-          action={canEdit() && (
+          action={canEdit(currentLibrary?.id) && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -388,7 +389,7 @@ const Setlists = () => {
                           size="icon"
                         />
                       )}
-                      {setlist.owner_id === currentUser?.id && canShare() && (
+                      {setlist.owner_id === currentUser?.id && canShare(setlist.library_id) && (
                         <ShareSetlistDialog
                           setlistId={setlist.id}
                           setlistTitle={setlist.title}
@@ -408,7 +409,7 @@ const Setlists = () => {
                       >
                         <Printer className="h-4 w-4" />
                       </Button>
-                      {setlist.owner_id === currentUser?.id && canEdit(setlist.id) && (
+                      {canEdit(setlist.library_id) && (
                         <Button
                           variant="ghost"
                           size="icon"

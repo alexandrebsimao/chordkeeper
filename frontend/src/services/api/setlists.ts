@@ -9,6 +9,7 @@ export interface Setlist {
     uuid: string;
     url: string;
   };
+  library_id?: number;
 }
 
 export interface SetlistSong {

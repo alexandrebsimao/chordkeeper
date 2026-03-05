@@ -9,6 +9,7 @@ export interface Song {
   content?: string;
   attachment_url?: string;
   media_references?: MediaReference[];
+  library_id?: number;
 }
 
 export interface MediaReference {

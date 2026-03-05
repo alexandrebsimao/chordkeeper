@@ -50,6 +50,7 @@ type Setlist = {
     uuid: string;
     url: string;
   };
+  library_id?: number;
 };
 
 const SetlistManager = () => {
@@ -477,7 +478,7 @@ const SetlistManager = () => {
                 size="icon"
               />
             )}
-            {canShare() && (
+            {canShare(setlist.library_id) && (
               <ShareSetlistDialog
                 setlistId={setlist.id}
                 setlistTitle={setlist.title}
@@ -527,8 +528,8 @@ const SetlistManager = () => {
                       <div
                         key={song.id}
                         className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted transition-colors group"
-                        style={{ cursor: canEdit() ? 'pointer' : 'default' }}
-                        onClick={() => canEdit() && handleAddSong(song)}
+                        style={{ cursor: canEdit(setlist.library_id) ? 'pointer' : 'default' }}
+                        onClick={() => canEdit(setlist.library_id) && handleAddSong(song)}
                       >
                         <div className="flex-1">
                           <h3 className="font-medium text-sm">{song.title}</h3>
@@ -542,7 +543,7 @@ const SetlistManager = () => {
                               {song.original_key}
                             </Badge>
                           )}
-                          {canEdit() && (
+                          {canEdit(setlist.library_id) && (
                             <Button
                               size="icon"
                               variant="ghost"
@@ -588,14 +589,14 @@ const SetlistManager = () => {
                     <div
                       key={song.id}
                       data-song-index={index}
-                      draggable={canEdit()}
-                      onDragStart={() => canEdit() && handleDragStart(index)}
-                      onDragEnter={() => canEdit() && handleDragEnter(index)}
-                      onDragEnd={canEdit() ? handleDragEnd : undefined}
-                      onDragOver={(e) => canEdit() && e.preventDefault()}
-                      onTouchStart={(e) => canEdit() && handleTouchStart(index, e.nativeEvent)}
-                      onTouchMove={(e) => canEdit() && handleTouchMove(e.nativeEvent)}
-                      onTouchEnd={canEdit() ? handleTouchEnd : undefined}
+                      draggable={canEdit(setlist.library_id)}
+                      onDragStart={() => canEdit(setlist.library_id) && handleDragStart(index)}
+                      onDragEnter={() => canEdit(setlist.library_id) && handleDragEnter(index)}
+                      onDragEnd={canEdit(setlist.library_id) ? handleDragEnd : undefined}
+                      onDragOver={(e) => canEdit(setlist.library_id) && e.preventDefault()}
+                      onTouchStart={(e) => canEdit(setlist.library_id) && handleTouchStart(index, e.nativeEvent)}
+                      onTouchMove={(e) => canEdit(setlist.library_id) && handleTouchMove(e.nativeEvent)}
+                      onTouchEnd={canEdit(setlist.library_id) ? handleTouchEnd : undefined}
                       className={`flex items-center gap-3 p-4 border rounded-lg transition-all group ${
                         draggedIndex === index 
                           ? 'opacity-50 scale-95' 
@@ -603,9 +604,9 @@ const SetlistManager = () => {
                           ? 'border-primary bg-primary/5 scale-[1.02]' 
                           : 'hover:bg-muted/50'
                       }`}
-                      style={{ cursor: canEdit() ? 'grab' : 'default' }}
+                      style={{ cursor: canEdit(setlist.library_id) ? 'grab' : 'default' }}
                     >
-                      {canEdit() && (
+                      {canEdit(setlist.library_id) && (
                         <div className="cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
                           <GripVertical className="h-5 w-5 text-muted-foreground" />
                         </div>
@@ -627,7 +628,7 @@ const SetlistManager = () => {
                           {song.original_key}
                         </Badge>
                       )}
-                      {canEdit() && (
+                      {canEdit(setlist.library_id) && (
                         <Button
                           variant="ghost"
                           size="icon"

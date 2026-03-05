@@ -29,7 +29,8 @@ class User < ApplicationRecord
   # Retorna a biblioteca com escopo atual
   def current_library
     # Busca pela library_users com is_current_scope = true
-    library_users.find_by(is_current_scope: true)&.library || owned_libraries.first || shared_libraries.first
+    # library_users.find_by(is_current_scope: true)&.library || owned_libraries.first || shared_libraries.first
+    owned_libraries.first
   end
 
   # Define o escopo atual

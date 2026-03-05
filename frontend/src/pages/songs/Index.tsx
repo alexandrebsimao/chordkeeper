@@ -19,6 +19,7 @@ type ApiSong = {
   artist?: string;
   original_key?: string | null;
   transpose_key?: string | null;
+  library_id?: number;
 };
 
 const Index = () => {
@@ -33,7 +34,7 @@ const Index = () => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { libraries } = useLibraries();
-  const { canEdit } = usePermissions();
+  const { canEdit, currentLibrary } = usePermissions();
   useRequireAuth();
 
   useEffect(() => {
@@ -129,7 +130,7 @@ const Index = () => {
         <PageHeader
           title="Minhas Cifras"
           description="Gerencie e acesse suas cifras favoritas"
-          action={canEdit() && (
+          action={canEdit(currentLibrary?.id) && (
             <Button onClick={() => navigate("/songs/create")}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Cifra
