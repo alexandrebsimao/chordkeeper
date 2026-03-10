@@ -44,11 +44,13 @@ const Register = () => {
     setLoading(true);
 
     try {
+      // ✅ SEGURANÇA: credentials: 'include' para permitir cookies HttpOnly
       const response = await fetch(`${API_BASE_URL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Receber e enviar cookies HttpOnly
         body: JSON.stringify({
           user: {
             name,
@@ -78,19 +80,8 @@ const Register = () => {
         return;
       }
 
-      // Extrair tokens da resposta
-      const accessToken = (data.access_token || data.token || 
-                          response.headers.get("authorization") || 
-                          response.headers.get("Authorization"))?.replace("Bearer ", "");
-      const refreshToken = data.refresh_token;
-      
-      if (accessToken) {
-        localStorage.setItem("authToken", accessToken);
-      }
-      
-      if (refreshToken) {
-        localStorage.setItem("refreshToken", refreshToken);
-      }
+      // ✅ Backend agora gerencia tokens via cookies HttpOnly
+      // Não precisamos mais salvar no localStorage
 
       toast({
         title: "Conta criada",

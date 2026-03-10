@@ -50,9 +50,10 @@ class Api::LibraryUsersController < ApplicationController
   private
 
   def set_library
-    @library = Library.find(params[:library_id])
+    # IDOR Fix: Validar que o usuário tem acesso à biblioteca
+    @library = current_user.accessible_libraries.find(params[:library_id])
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Biblioteca não encontrada' }, status: :not_found
+    render json: { error: 'Biblioteca não encontrada ou você não tem acesso' }, status: :not_found
   end
 
   def set_library_user

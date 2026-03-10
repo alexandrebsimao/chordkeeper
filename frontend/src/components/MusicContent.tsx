@@ -1,4 +1,5 @@
 import PdfViewer from "@/components/PdfViewer";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface Song {
   content?: string;
@@ -61,11 +62,12 @@ export default function MusicContent({
         ) : (
           <div
             dangerouslySetInnerHTML={{
-              __html:
+              __html: sanitizeHtml(
                 song?.content_format ||
                 song?.formatted_content ||
                 song?.content ||
-                "Sem conteúdo disponível.",
+                "Sem conteúdo disponível."
+              ),
             }}
           />
         )}

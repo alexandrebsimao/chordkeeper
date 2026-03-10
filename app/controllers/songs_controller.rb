@@ -80,7 +80,13 @@ class SongsController < ApplicationController
   end
 
   def generate_pdf
+    # IDOR Fix: Validar acesso ao recurso antes de gerar PDF
     @song = Song.find(params[:id])
+    
+    unless @song.library_id == current_library&.id
+      redirect_to songs_path, alert: "Você não tem acesso a esta música."
+      return
+    end
 
     pdf = Songs::GeneratePdfService.call(@song)
   
@@ -91,7 +97,14 @@ class SongsController < ApplicationController
   end
 
   def transpose
+    # IDOR Fix: Validar acesso ao recurso antes de transpor
     song = Song.find(params[:id])
+    
+    unless song.library_id == current_library&.id
+      redirect_to songs_path, alert: "Você não tem acesso a esta música."
+      return
+    end
+    
     to_key = params[:transpose_key]
 
     song.transpose_key = song.original_key == to_key ? nil : to_key

@@ -2,7 +2,7 @@ module Api
   class SongsController < Api::ApiController
   before_action :set_song, only: %i[ show edit update destroy transpose generate_pdf ]
   before_action :authorize_action!, only: %i[ new create edit update destroy ]
-  before_action :authorize_song_owner!, only: %i[ edit update destroy transpose ]
+  before_action :authorize_song_owner!, only: %i[ edit update destroy transpose generate_pdf ]
 
   # GET /songs or /songs.json
   def index
@@ -71,8 +71,8 @@ module Api
   end
 
   def generate_pdf
-    @song = Song.find(params[:id])
-
+    # IDOR Fix: Validar acesso ao recurso antes de gerar PDF
+    # Usar set_song que já faz a validação de ownership
     font_size = params[:font_size]&.to_i || 16
     pdf = Songs::GeneratePdfService.call(@song, font_size)
 

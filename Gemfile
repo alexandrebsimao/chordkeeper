@@ -89,3 +89,5 @@ gem "rqrcode", "~> 3.1"
 gem 'pdf-reader'
 
 gem 'will_paginate', '~> 4.0'
+
+gem 'resend'

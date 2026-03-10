@@ -34,11 +34,13 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // ✅ SEGURANÇA: credentials: 'include' para permitir cookies HttpOnly
       const response = await fetch(`${API_BASE_URL}/users/sign_in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Receber e enviar cookies HttpOnly
         body: JSON.stringify({
           user: {
             email,
@@ -66,22 +68,9 @@ const Login = () => {
         throw new Error(data.error || "Login falhou");
       }
 
-      const data = await response.json();
+      // ✅ Backend agora gerencia tokens via cookies HttpOnly
+      // Não precisamos mais salvar no localStorage
       
-      // Extrair tokens da resposta
-      const accessToken = (data.access_token || data.token || 
-                          response.headers.get("authorization") || 
-                          response.headers.get("Authorization"))?.replace("Bearer ", "");
-      const refreshToken = data.refresh_token;
-      
-      if (accessToken) {
-        localStorage.setItem("authToken", accessToken);
-      }
-      
-      if (refreshToken) {
-        localStorage.setItem("refreshToken", refreshToken);
-      }
-
       toast({
         title: "Login realizado",
         description: "Bem-vindo de volta!",

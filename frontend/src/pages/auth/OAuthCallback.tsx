@@ -9,7 +9,8 @@ const OAuthCallback = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    // ✅ SEGURANÇA: Backend agora usa cookies HttpOnly - não recebemos mais token na URL
+    const success = searchParams.get("success");
     const email = searchParams.get("email");
     const error = searchParams.get("error");
 
@@ -23,10 +24,8 @@ const OAuthCallback = () => {
       return;
     }
 
-    if (token && email) {
-      // Store the JWT token
-      localStorage.setItem("authToken", token);
-
+    // ✅ Token está em cookie HttpOnly - apenas verificar se login foi bem sucedido
+    if (success === "true" && email) {
       toast({
         title: "Login realizado com sucesso!",
         description: `Bem-vindo, ${email}`,
@@ -36,7 +35,7 @@ const OAuthCallback = () => {
     } else {
       toast({
         title: "Erro no login",
-        description: "Token não recebido do servidor",
+        description: "Falha na autenticação com Google",
         variant: "destructive",
       });
       navigate("/login");

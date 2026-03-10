@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchWithAuth, isAuthenticated } from "@/lib/auth";
+import { sanitizeHtml } from "@/lib/sanitize";
 import PrintOptionsDialog from "@/components/PrintOptionsDialog";
 import SimplePdfViewer from "@/components/SimplePdfViewer";
 import { useLibraries } from "@/hooks/use-libraries";
@@ -392,7 +393,7 @@ const CifraView = () => {
                 `}</style>
                 <div 
                   className="cifra-content"
-                  dangerouslySetInnerHTML={{ __html: cifra.content_format || 'Nenhum conteúdo disponível.' }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(cifra.content_format || 'Nenhum conteúdo disponível.') }}
                 />
               </>
             )}

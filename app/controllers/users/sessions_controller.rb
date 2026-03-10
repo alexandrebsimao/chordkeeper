@@ -17,28 +17,53 @@ class Users::SessionsController < Devise::SessionsController
     access_token = generate_access_token(resource)
     refresh_token = generate_refresh_token(resource)
     
+    # ✅ SEGURANÇA: Usar HttpOnly cookies em vez de retornar no body
+    # Protege contra XSS - JavaScript não consegue acessar os cookies
+    cookies.signed[:auth_token] = {
+      value: access_token,
+      httponly: true,
+      secure: Rails.env.production?, # Apenas HTTPS em produção
+      same_site: :strict, # Proteção CSRF
+      expires: 15.minutes.from_now
+    }
+    
+    cookies.signed[:refresh_token] = {
+      value: refresh_token,
+      httponly: true,
+      secure: Rails.env.production?,
+      same_site: :strict,
+      expires: 14.days.from_now # Reduzido de 30 para 14 dias
+    }
+    
+    # Ainda enviar no header para compatibilidade com apps móveis
     response.set_header('Authorization', "Bearer #{access_token}")
     
     render json: {
       message: 'Logged in successfully.',
-      access_token: "Bearer #{access_token}",
-      refresh_token: refresh_token,
-      expires_in: 15.minutes.to_i,
       user: {
         id: resource.id,
         email: resource.email
-      }
+      },
+      # ⚠️ Não enviar tokens no body em produção
+      # Tokens estão nos cookies HttpOnly
+      uses_cookies: true
     }, status: :ok
   end
 
   # Endpoint para renovar o access token usando refresh token
   def refresh
-    refresh_token = params[:refresh_token]
+    # ✅ SEGURANÇA: Ler refresh token do cookie HttpOnly
+    refresh_token = cookies.signed[:refresh_token] || params[:refresh_token]
+    
+    if refresh_token.blank?
+      render json: { error: 'Refresh token não fornecido' }, status: :unauthorized
+      return
+    end
     
     begin
       decoded = JWT.decode(
         refresh_token,
-        ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+        ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
         true,
         { verify_expiration: true, algorithm: 'HS256' }
       ).first
@@ -58,14 +83,30 @@ class Users::SessionsController < Devise::SessionsController
       user = User.find(decoded['sub'])
       new_access_token = generate_access_token(user)
       
+      # ✅ SEGURANÇA: Atualizar cookie com novo access token
+      cookies.signed[:auth_token] = {
+        value: new_access_token,
+        httponly: true,
+        secure: Rails.env.production?,
+        same_site: :strict,
+        expires: 15.minutes.from_now
+      }
+      
+      # Header para compatibilidade mobile
+      response.set_header('Authorization', "Bearer #{new_access_token}")
+      
       render json: {
-        access_token: "Bearer #{new_access_token}",
-        expires_in: 15.minutes.to_i
+        message: 'Token renovado com sucesso',
+        uses_cookies: true
       }, status: :ok
       
     rescue JWT::ExpiredSignature
+      # ✅ Limpar cookies expirados
+      cookies.delete(:auth_token)
+      cookies.delete(:refresh_token)
       render json: { error: 'Refresh token expirado. Faça login novamente.' }, status: :unauthorized
-    rescue JWT::DecodeError, ActiveRecord::RecordNotFound
+    rescue JWT::DecodeError, ActiveRecord::RecordNotFound => e
+      Rails.logger.error "Refresh token error: #{e.message}"
       render json: { error: 'Token inválido' }, status: :unauthorized
     end
   end
@@ -83,7 +124,7 @@ class Users::SessionsController < Devise::SessionsController
         exp: 15.minutes.from_now.to_i,
         jti: SecureRandom.uuid
       },
-      ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+      ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
       'HS256'
     )
   end
@@ -96,10 +137,10 @@ class Users::SessionsController < Devise::SessionsController
         type: 'refresh',
         aud: nil,
         iat: Time.now.to_i,
-        exp: 30.days.from_now.to_i,
+        exp: 14.days.from_now.to_i, # Reduzido de 30 para 14 dias
         jti: SecureRandom.uuid
       },
-      ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+      ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
       'HS256'
     )
   end
@@ -115,9 +156,15 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   def respond_to_on_destroy
+    # ✅ SEGURANÇA: Limpar cookies ao fazer logout
+    cookies.delete(:auth_token)
+    cookies.delete(:refresh_token)
+    
     if request.headers['Authorization'].present?
-      jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, 
-                                ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d')).first
+      jwt_payload = JWT.decode(
+        request.headers['Authorization'].split(' ').last, 
+        ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' }
+      ).first
       current_user = User.find(jwt_payload['sub'])
     end
     
@@ -130,7 +177,8 @@ class Users::SessionsController < Devise::SessionsController
         message: 'No active session.'
       }, status: :unauthorized
     end
-  rescue JWT::DecodeError
+  rescue JWT::DecodeError => e
+    Rails.logger.error "Logout token decode error: #{e.message}"
     render json: {
       message: 'Invalid token.'
     }, status: :unauthorized

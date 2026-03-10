@@ -1,53 +1,45 @@
-// Helper para fazer requisições autenticadas com JWT
+// ✅ SEGURANÇA: Helper para requisições autenticadas com JWT via HttpOnly cookies
+// Migrado de localStorage para cookies HttpOnly para proteção contra XSS
 
 import { API_BASE_URL } from "@/config/api";
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshSubscribers: (() => void)[] = [];
 
-function onRefreshed(token: string) {
-  refreshSubscribers.forEach((callback) => callback(token));
+function onRefreshed() {
+  refreshSubscribers.forEach((callback) => callback());
   refreshSubscribers = [];
 }
 
-function addRefreshSubscriber(callback: (token: string) => void) {
+function addRefreshSubscriber(callback: () => void) {
   refreshSubscribers.push(callback);
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) return null;
-
+async function refreshAccessToken(): Promise<boolean> {
   try {
+    // ✅ Cookies são enviados automaticamente com credentials: 'include'
     const response = await fetch(`${API_BASE_URL}/users/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      credentials: "include", // Enviar cookies automaticamente
     });
 
     if (!response.ok) {
-      // Se refresh falhar, limpar tokens e forçar novo login
-      removeAuthToken();
-      removeRefreshToken();
-      return null;
+      // Se refresh falhar, redirecionar para login
+      return false;
     }
 
-    const data = await response.json();
-    const newAccessToken = data.access_token.replace("Bearer ", "");
-    setAuthToken(newAccessToken);
-    return newAccessToken;
+    // Backend atualiza o cookie automaticamente
+    return true;
   } catch (error) {
     console.error("Failed to refresh token:", error);
-    removeAuthToken();
-    removeRefreshToken();
-    return null;
+    return false;
   }
 }
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem("authToken");
+  // ✅ Não precisamos gerenciar tokens manualmente - cookies HttpOnly são enviados automaticamente
   
-  // Não definir Content-Type se o body for FormData (o navegador define automaticamente com boundary)
   const headers: HeadersInit = {
     ...(options.headers || {}),
   };
@@ -57,32 +49,28 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     (headers as Record<string, string>)["Content-Type"] = "application/json";
   }
 
-  if (token) {
-    // Adicionar "Bearer " antes do token conforme padrão JWT
-    const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-    (headers as Record<string, string>)["Authorization"] = authToken;
-  }
-
+  // ✅ SEGURANÇA: Sempre incluir credentials para enviar/receber cookies HttpOnly
   let response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers,
+    credentials: "include", // Enviar cookies automaticamente
   });
 
   // Se receber 401, tentar renovar o token
   if (response.status === 401 && !url.includes("/users/refresh")) {
     if (!isRefreshing) {
       isRefreshing = true;
-      const newToken = await refreshAccessToken();
+      const refreshSuccess = await refreshAccessToken();
       isRefreshing = false;
 
-      if (newToken) {
-        onRefreshed(newToken);
+      if (refreshSuccess) {
+        onRefreshed();
         
-        // Tentar novamente com o novo token
-        (headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`;
+        // Tentar novamente com o novo token (já no cookie)
         response = await fetch(`${API_BASE_URL}${url}`, {
           ...options,
           headers,
+          credentials: "include",
         });
       } else {
         // Refresh falhou, redirecionar para login
@@ -90,17 +78,17 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
       }
     } else {
       // Aguardar o refresh em andamento
-      const newToken = await new Promise<string>((resolve) => {
-        addRefreshSubscriber((token: string) => {
-          resolve(token);
+      await new Promise<void>((resolve) => {
+        addRefreshSubscriber(() => {
+          resolve();
         });
       });
 
-      // Tentar novamente com o token renovado
-      (headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`;
+      // Tentar novamente com o token renovado (já no cookie)
       response = await fetch(`${API_BASE_URL}${url}`, {
         ...options,
         headers,
+        credentials: "include",
       });
     }
   }
@@ -108,16 +96,26 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   return response;
 };
 
-export const getAuthToken = () => localStorage.getItem("authToken");
+// ✅ Funções de autenticação simplificadas - não usamos mais localStorage
+// Os tokens estão em cookies HttpOnly gerenciados pelo backend
 
-export const setAuthToken = (token: string) => localStorage.setItem("authToken", token);
+export const isAuthenticated = async (): Promise<boolean> => {
+  // Verificar autenticação fazendo uma requisição leve ao backend
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user`, {
+      method: "GET",
+      credentials: "include",
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
 
-export const removeAuthToken = () => localStorage.removeItem("authToken");
-
-export const getRefreshToken = () => localStorage.getItem("refreshToken");
-
-export const setRefreshToken = (token: string) => localStorage.setItem("refreshToken", token);
-
-export const removeRefreshToken = () => localStorage.removeItem("refreshToken");
-
-export const isAuthenticated = () => !!localStorage.getItem("authToken");
+// ✅ Compatibilidade com código existente - mas tokens não estão mais no localStorage
+export const getAuthToken = () => null; // Tokens estão em cookies HttpOnly (não acessíveis via JS)
+export const setAuthToken = () => {}; // Não necessário - backend gerencia cookies
+export const removeAuthToken = () => {}; // Logout via API limpa os cookies
+export const getRefreshToken = () => null; // Não acessível via JS
+export const setRefreshToken = () => {}; // Backend gerencia
+export const removeRefreshToken = () => {}; // Logout via API limpa

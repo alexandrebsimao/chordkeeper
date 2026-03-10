@@ -106,6 +106,8 @@ class Song < ApplicationRecord
 
   def enqueue_cache_job
     SongCacheJob.perform_later(self.id)
+  rescue RedisClient::CannotConnectError, Redis::CannotConnectError => e
+    Rails.logger.warn "Redis not available, skipping cache job: #{e.message}"
   end
 
   def capo_to_nil_if_zero

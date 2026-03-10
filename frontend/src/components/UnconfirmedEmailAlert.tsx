@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AlertCircle, Mail, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { API_BASE_URL } from "@/config/api";
+import { fetchWithAuth } from "@/lib/auth";
 
 export const UnconfirmedEmailAlert = () => {
   const navigate = useNavigate();
@@ -25,18 +25,10 @@ export const UnconfirmedEmailAlert = () => {
         return;
       }
 
-      const authToken = localStorage.getItem("authToken");
-      if (!authToken) {
-        return;
-      }
-
       try {
-        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+        // ✅ SEGURANÇA: Usar fetchWithAuth com cookies HttpOnly
+        const response = await fetchWithAuth("/api/users/me", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
         });
 
         if (response.ok) {

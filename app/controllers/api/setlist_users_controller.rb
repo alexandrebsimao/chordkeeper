@@ -50,9 +50,16 @@ class Api::SetlistUsersController < ApplicationController
   private
 
   def set_setlist
-    @setlist = Setlist.find(params[:setlist_id])
+    # IDOR Fix: Validar que o usuário tem acesso ao setlist
+    # Buscar apenas setlists da biblioteca atual ou compartilhados com o usuário
+    @setlist = Setlist.where(library_id: current_library.id, id: params[:setlist_id]).first
+    @setlist ||= Setlist.joins(:setlist_users).where(setlist_users: { user_id: current_user.id }, id: params[:setlist_id]).first
+    
+    if @setlist.nil?
+      render json: { error: 'Setlist não encontrado ou você não tem acesso' }, status: :not_found
+    end
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Setlist não encontrado' }, status: :not_found
+    render json: { error: 'Setlist não encontrado ou você não tem acesso' }, status: :not_found
   end
 
   def set_setlist_user
