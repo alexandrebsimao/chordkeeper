@@ -18,6 +18,7 @@ module Api
             email: current_user.email,
             name: current_user.name || "#{current_user.email.split('@').first}",
             library: current_user.current_library,
+            confirmed: current_user.confirmed?,
             created_at: current_user.created_at
           }
         }

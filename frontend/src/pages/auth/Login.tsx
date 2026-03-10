@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { Music2 } from "lucide-react";
+import { Music2, AlertCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE_URL } from "@/config/api";
 
@@ -15,6 +16,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showUnconfirmedAlert, setShowUnconfirmedAlert] = useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState("");
 
   // Check for OAuth error in URL
   const oauthError = searchParams.get("error");
@@ -46,6 +49,20 @@ const Login = () => {
 
       if (!response.ok) {
         const data = await response.json();
+        
+        // Check if user needs to confirm email
+        if (data.unconfirmed) {
+          setShowUnconfirmedAlert(true);
+          setUnconfirmedEmail(email);
+          toast({
+            title: "Email não confirmado",
+            description: data.error || "Você precisa confirmar seu email antes de fazer login. Verifique sua caixa de entrada.",
+            variant: "destructive",
+            duration: 7000,
+          });
+          throw new Error(data.error);
+        }
+        
         throw new Error(data.error || "Login falhou");
       }
 
@@ -103,6 +120,26 @@ const Login = () => {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {showUnconfirmedAlert && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Email não confirmado</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>Você precisa confirmar seu email antes de fazer login.</p>
+                  <p className="text-sm">Uma mensagem de confirmação foi enviada para <strong>{unconfirmedEmail}</strong>.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 w-full"
+                    onClick={() => navigate('/auth/resend-confirmation')}
+                    type="button"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Reenviar email de confirmação
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -135,6 +172,12 @@ const Login = () => {
                 className="text-primary hover:underline"
               >
                 Esqueceu a senha?
+              </Link>
+              <Link 
+                to="/auth/resend-confirmation" 
+                className="text-primary hover:underline"
+              >
+                Reenviar confirmação
               </Link>
             </div>
           </CardContent>

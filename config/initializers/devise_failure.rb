@@ -11,7 +11,24 @@ class CustomDeviseFailure < Devise::FailureApp
   def json_failure
     self.status = 401
     self.content_type = 'application/json'
-    self.response_body = { error: 'Invalid email or password' }.to_json
+    
+    # Check if the failure is due to unconfirmed email
+    email = request.params.dig('user', 'email')
+    error_message = 'Invalid email or password'
+    
+    if email.present?
+      user = User.find_by(email: email)
+      if user && !user.confirmed?
+        error_message = 'You need to confirm your email before logging in. Please check your inbox.'
+        self.response_body = { 
+          error: error_message,
+          unconfirmed: true 
+        }.to_json
+        return
+      end
+    end
+    
+    self.response_body = { error: error_message }.to_json
   end
 
   # Override to prevent redirect for unauthenticated JSON requests

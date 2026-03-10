@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Music2 } from "lucide-react";
+import { Music2, CheckCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE_URL } from "@/config/api";
 
@@ -16,6 +17,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showConfirmationAlert, setShowConfirmationAlert] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +65,18 @@ const Register = () => {
       }
 
       const data = await response.json();
+
+      // Check if account needs confirmation
+      if (data.message && data.message.includes('confirmation')) {
+        setShowConfirmationAlert(true);
+        setRegisteredEmail(email);
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Por favor, verifique seu email para confirmar sua conta antes de fazer login.",
+          duration: 7000,
+        });
+        return;
+      }
 
       // Extrair tokens da resposta
       const accessToken = (data.access_token || data.token || 
@@ -114,6 +129,41 @@ const Register = () => {
             Preencha os dados abaixo para criar sua conta
           </CardDescription>
         </CardHeader>
+        
+        {showConfirmationAlert ? (
+          <CardContent className="space-y-4">
+            <Alert className="border-green-500 bg-green-50 text-green-900">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertTitle>Conta criada com sucesso!</AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p>Um email de confirmação foi enviado para:</p>
+                <p className="font-semibold">{registeredEmail}</p>
+                <p className="text-sm mt-2">Por favor, verifique sua caixa de entrada e siga as instruções para ativar sua conta.</p>
+                <div className="flex flex-col gap-2 mt-4">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate('/auth/login')}
+                    type="button"
+                  >
+                    Ir para o Login
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate('/auth/resend-confirmation')}
+                    type="button"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Não recebeu? Reenviar email
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        ) : (
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -233,6 +283,7 @@ const Register = () => {
             </div>
           </CardFooter>
         </form>
+        )}
       </Card>
     </div>
   );

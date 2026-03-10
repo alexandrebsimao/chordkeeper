@@ -3,6 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
+         :confirmable,
          :jwt_authenticatable, :omniauthable,
          jwt_revocation_strategy: JwtDenylist,
          omniauth_providers: [:google_oauth2]

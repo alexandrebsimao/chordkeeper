@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNav } from "@/components/MobileNav";
+import { UnconfirmedEmailAlert } from "@/components/UnconfirmedEmailAlert";
 import Index from "./pages/songs/Index";
 import AddCifra from "./pages/songs/Create";
 import EditSong from "./pages/songs/Edit";
@@ -20,6 +21,8 @@ import Logout from "./pages/Logout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ConfirmEmail from "./pages/auth/ConfirmEmail";
+import ResendConfirmation from "./pages/auth/ResendConfirmation";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +40,8 @@ const App = () => (
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
+          <Route path="/auth/resend-confirmation" element={<ResendConfirmation />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           
           {/* Public routes without sidebar */}
@@ -53,6 +58,7 @@ const App = () => (
                     <SidebarTrigger className="mr-2" />
                     <h1 className="font-semibold text-lg">chorfy</h1>
                   </header>
+                  <UnconfirmedEmailAlert />
                   <main className="flex-1 flex flex-col">
                     <Routes>
                       <Route path="/songs/" element={<Index />} />  
