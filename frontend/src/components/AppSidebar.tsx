@@ -75,8 +75,12 @@ export function AppSidebar() {
     <Sidebar className="border-r border-sidebar-border">
       <SidebarContent className="flex flex-col justify-between">
         <div>
-          <div className="px-6 py-4">
-            <h2 className="text-xl font-bold text-sidebar-foreground">chorfy</h2>
+          <div className="px-6 py-4 flex items-center">
+            <img 
+              src="/logo-bg-blue.png" 
+              alt="Chord Keeper Logo" 
+              className="h-10 w-auto"
+            />
           </div>
 
           {/* <SidebarGroup>

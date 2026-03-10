@@ -22,6 +22,11 @@ services:
       - redis_data:/data
     networks:
       - chordkeeper_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
   web:
     stdin_open: true
     tty: true
@@ -41,11 +46,14 @@ services:
   sidekiq:
     build: .
     command: bundle exec sidekiq
+    restart: always
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - chordkeeper_net
     volumes:
