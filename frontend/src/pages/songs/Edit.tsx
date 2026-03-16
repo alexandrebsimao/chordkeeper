@@ -17,25 +17,24 @@ const EditSong = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<Partial<SongFormData> | null>(null);
-  const { libraries, loading: librariesLoading } = useLibraries();
+  const { currentLibrary, loading: librariesLoading } = useLibraries();
   const { canEdit } = usePermissions();
   
   useRequireAuth();
 
   useEffect(() => {
-    // Só verifica permissão após carregar as libraries completamente
+    // Só verifica permissão após carregar completamente
     if (librariesLoading) {
       return;
     }
     
     // Se não há biblioteca atual após o loading, algo está errado
-    const currentLibrary = libraries.find(lib => lib.is_current);
     if (!currentLibrary) {
       console.log('No current library found after loading');
       return;
     }
     
-    // Verifica a permissão DIRETAMENTE da currentLibrary, não do hook
+    // Verifica a permissão DIRETAMENTE da currentLibrary
     const hasEditPermission = ['owner', 'admin', 'editor'].includes(currentLibrary.permission || '');
     
     if (!hasEditPermission) {
@@ -98,7 +97,7 @@ const EditSong = () => {
     };
 
     fetchSong();
-  }, [id, navigate, libraries, librariesLoading]);
+  }, [id, navigate, currentLibrary, librariesLoading]);
 
   const handleSubmit = async (formData: SongFormData) => {
     setLoading(true);

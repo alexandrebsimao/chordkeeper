@@ -31,10 +31,11 @@ export function useLibraries() {
         const data = await response.json();
         setCurrentUser(data.data?.attributes || data);
         setLibraries(data.data?.attributes?.library ? [data.data.attributes.library] : []);
-
       }
     } catch (err) {
       console.error("Erro ao carregar usuário:", err);
+    } finally {
+      setLoading(false);
     }
   };
 

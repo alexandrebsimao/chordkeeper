@@ -102,7 +102,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 export const isAuthenticated = async (): Promise<boolean> => {
   // Verificar autenticação fazendo uma requisição leve ao backend
   try {
-    const response = await fetch(`${API_BASE_URL}/api/user`, {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
       method: "GET",
       credentials: "include",
     });

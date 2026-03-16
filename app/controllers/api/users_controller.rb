@@ -9,6 +9,19 @@ module Api
         return
       end
       
+      current_lib = current_user.current_library
+      library_data = nil
+      
+      if current_lib
+        library_data = {
+          id: current_lib.id,
+          name: current_lib.name,
+          description: current_lib.description,
+          owner_id: current_lib.owner_id,
+          permission: current_lib.permission_for(current_user)
+        }
+      end
+      
       render json: {
         data: {
           id: current_user.id,
@@ -17,7 +30,7 @@ module Api
             id: current_user.id,
             email: current_user.email,
             name: current_user.name || "#{current_user.email.split('@').first}",
-            library: current_user.current_library,
+            library: library_data,
             confirmed: current_user.confirmed?,
             created_at: current_user.created_at
           }
