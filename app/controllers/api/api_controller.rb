@@ -91,28 +91,17 @@ module Api
       token = extract_token_from_request
       return render_unauthorized('Token não fornecido') if token.blank?
 
-      begin
-        payload = JWT.decode(
-          token,
-          ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
-          true,
-          { algorithm: 'HS256' }
-        ).first
+      authentication_service = Authorizarion::AuthenticationService.new(token: token)
+      result = authentication_service.call
 
-        return render_unauthorized('Token revogado') if JwtDenylist.exists?(jti: payload['jti'])
-
-        @current_user = User.find(payload['sub'])
-      rescue JWT::ExpiredSignature
-        render_unauthorized('Token expirado')
-      rescue JWT::DecodeError
-        render_unauthorized('Token inválido')
-      rescue ActiveRecord::RecordNotFound
-        render_unauthorized('Usuário não encontrado')
+      if result[:user]
+        @current_user = result[:user]
+      else
+        render_unauthorized(result[:message])
       end
     end
 
     def extract_token_from_request
-      # Priorizar cookie HttpOnly sobre header Authorization
       if request.cookie_jar.signed[:auth_token].present?
         request.cookie_jar.signed[:auth_token]
       elsif request.headers['Authorization'].present? && request.headers['Authorization'].start_with?('Bearer ')
