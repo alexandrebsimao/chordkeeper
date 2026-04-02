@@ -1,4 +1,4 @@
-class Api::LibraryUsersController < ApplicationController
+class Api::LibraryUsersController < Api::ApiController
   skip_before_action :verify_authenticity_token
   before_action :authenticate_user!
   before_action :set_library

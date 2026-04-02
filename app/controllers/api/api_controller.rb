@@ -1,8 +1,9 @@
 module Api
   class ApiController < ActionController::API
-    before_action :authenticate_user!
-    before_action :check_is_current_library, unless: :devise_controller?
-    helper_method :current_library, :permission_service
+    include Devise::Controllers::Helpers
+    
+    before_action :authenticate_user_from_jwt!
+    helper_method :current_library, :permission_service, :current_user
 
     # Handle parameter parsing errors
     rescue_from ActionDispatch::Http::Parameters::ParseError do |exception|
@@ -12,14 +13,6 @@ module Api
     # Handle permission errors
     rescue_from PermissionService::PermissionError do |exception|
       render json: { error: exception.message }, status: :forbidden
-    end
-
-    def current_library
-      current_user&.current_library
-    end
-
-    def permission_service
-      @permission_service ||= PermissionService.new(current_library, current_user)
     end
 
     # Mapeamento de actions para permissões
@@ -56,6 +49,18 @@ module Api
       delete_library: :owner
     }.freeze
 
+    def current_user
+      @current_user
+    end
+
+    def current_library
+      current_user&.current_library
+    end
+
+    def permission_service
+      @permission_service ||= PermissionService.new(current_library, current_user)
+    end
+
     # Método genérico que valida permissão baseado na action
     def authorize_action!(action = nil)
       action ||= action_name
@@ -80,15 +85,45 @@ module Api
       PermissionService.authorize!(current_library, current_user, :share)
     end
 
-    def check_is_current_library
-      return if current_user.nil?
-      unless current_library.present?
-        ActiveRecord::Base.transaction do
-          library = Library.create(name: "Biblioteca de #{current_user.email}", owner: current_user)
-          LibraryUser.create!(user: current_user, library: library, is_current_scope: true)
-        end
+    private
+
+    def authenticate_user_from_jwt!
+      token = extract_token_from_request
+      return render_unauthorized('Token não fornecido') if token.blank?
+
+      begin
+        payload = JWT.decode(
+          token,
+          ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
+          true,
+          { algorithm: 'HS256' }
+        ).first
+
+        return render_unauthorized('Token revogado') if JwtDenylist.exists?(jti: payload['jti'])
+
+        @current_user = User.find(payload['sub'])
+      rescue JWT::ExpiredSignature
+        render_unauthorized('Token expirado')
+      rescue JWT::DecodeError
+        render_unauthorized('Token inválido')
+      rescue ActiveRecord::RecordNotFound
+        render_unauthorized('Usuário não encontrado')
       end
     end
 
+    def extract_token_from_request
+      # Priorizar cookie HttpOnly sobre header Authorization
+      if request.cookie_jar.signed[:auth_token].present?
+        request.cookie_jar.signed[:auth_token]
+      elsif request.headers['Authorization'].present? && request.headers['Authorization'].start_with?('Bearer ')
+        request.headers['Authorization'].split(' ').last
+      else
+        nil
+      end
+    end
+
+    def render_unauthorized(message = 'Não autorizado')
+      render json: { error: message }, status: :unauthorized
+    end
   end
 end

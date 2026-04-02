@@ -1,103 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-br">
   <head>
-    <title><%= content_for(:title) || "ChordKeeper" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#111827">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-
-    <%= yield :head %>
+    <title></title>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
-    <link rel="manifest" href="/manifest.json">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <!-- Select2 CSS via CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- Sortable.js via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
-
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <style type="text/tailwindcss">
-      @theme {
-        --color-clifford: #da373d;
-      }
-
-      input[type=text], input[type=number], input[type=file], input[type=datetime-local], textarea, select {
-        background-color: white;
-      }
-    </style>
-
   </head>
   <body class="bg-gray-100">
-    <% if user_signed_in? %>
-      <div data-controller="sidebar">
-        <!-- Overlay para dispositivos móveis -->
-        <div data-sidebar-target="overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-20 hidden md:hidden" data-action="click->sidebar#toggle"></div>
-
-        <!-- Botão toggle para dispositivos móveis -->
-        <div class="fixed top-0 left-0 z-30 p-4 md:hidden">
-          <button class="p-2 rounded-md text-gray-400 hover:text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" data-action="sidebar#toggle">
-            <span class="sr-only">Abrir menu</span>
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-        </div>
-
-        <%= render "layouts/sidebar" %>
-        
-        <!-- Conteúdo principal -->
-        <main class="transition-all duration-300 ease-in-out md:ml-64">
-          <div class="min-h-screen p-4">
-            <% if notice %>
-              <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg shadow-sm" role="alert">
-                <p class="text-sm"><%= notice %></p>
-              </div>
-            <% end %>
-
-            <% if alert %>
-              <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-r-lg shadow-sm" role="alert">
-                <p class="text-sm"><%= alert %></p>
-              </div>
-            <% end %>
-
-            <%= yield %>
-          </div>
-        </main>
-      </div>
-    <% else %>
-      <%= yield %>
-    <% end %>
-
-    <!-- Select2 JS via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const dropdownButton = document.getElementById('userDropdownButton');
-        const dropdownMenu = document.getElementById('userDropdownMenu');
-
-        dropdownButton.addEventListener('click', function() {
-          dropdownMenu.classList.toggle('hidden');
-          dropdownMenu.style.bottom = `${dropdownMenu.offsetHeight - 30}px`;
-        });
-      });
-
-        // Initialize Select2
-        $(document).ready(function() {
-          // Inicializar Select2
-          $('.song-select').select2();
-        });
-
-    </script>
+    Você não deveria estar aqui!!
   </body>
 </html>

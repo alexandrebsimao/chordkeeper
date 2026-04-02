@@ -1,5 +1,5 @@
 module Api
-  class UsersController < ApiController
+  class UsersController < Api::ApiController
     # GET /api/users/me
     def me
       Rails.logger.info "UsersController#me called by user: #{current_user&.email}"

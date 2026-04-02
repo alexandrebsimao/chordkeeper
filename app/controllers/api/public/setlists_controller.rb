@@ -1,4 +1,4 @@
-class Api::Public::SetlistsController < ApplicationController
+class Api::Public::SetlistsController < Api::ApiController
   skip_before_action :authenticate_user!, only: [:show, :pdf]
 
   def pdf

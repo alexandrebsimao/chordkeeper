@@ -9,30 +9,7 @@ Rails.application.routes.draw do
   # end
   
   mount Sidekiq::Web => '/sidekiq'
-  
-  resources :setlists do
-    member do
-      get :manage_songs
-      get :print
-      post :save_songs
-      post :add_song
-      delete :remove_song
-      get :public_link_generator
-      delete :public_link_destroyer
-    end
-  end
-  resources :songs do
-    member do
-      get :generate_pdf
-      post :transpose
-    end
-  end
-  resources :libraries do
-    member do
-      get :define_scope
-    end
-    resources :users, controller: 'api/library_users', only: [:index, :create, :update, :destroy]
-  end
+
   # devise_for :users
   devise_for :users, controllers: { 
     sessions: 'users/sessions', 
