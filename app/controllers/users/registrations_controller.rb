@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Users::RegistrationsController < Devise::RegistrationsController
+  include CookieCsrfProtection
+
   protect_from_forgery with: :null_session
   respond_to :json
 
@@ -17,14 +19,29 @@ class Users::RegistrationsController < Devise::RegistrationsController
         # Gerar access token e refresh token
         access_token = generate_access_token(resource)
         refresh_token = generate_refresh_token(resource)
+
+        cookies.signed[:auth_token] = {
+          value: access_token,
+          httponly: true,
+          secure: Rails.env.production?,
+          same_site: :strict,
+          expires: 15.minutes.from_now
+        }
+
+        cookies.signed[:refresh_token] = {
+          value: refresh_token,
+          httponly: true,
+          secure: Rails.env.production?,
+          same_site: :strict,
+          expires: 14.days.from_now
+        }
+        set_csrf_token_cookie
         
         response.set_header('Authorization', "Bearer #{access_token}")
         
         render json: {
           message: 'Signed up successfully.',
-          access_token: "Bearer #{access_token}",
-          refresh_token: refresh_token,
-          expires_in: 15.minutes.to_i,
+          uses_cookies: true,
           user: {
             id: resource.id,
             email: resource.email
@@ -64,7 +81,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
         exp: 15.minutes.from_now.to_i,
         jti: SecureRandom.uuid
       },
-      ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+      ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
       'HS256'
     )
   end
@@ -77,10 +94,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
         type: 'refresh',
         aud: nil,
         iat: Time.now.to_i,
-        exp: 30.days.from_now.to_i,
+        exp: 14.days.from_now.to_i,
         jti: SecureRandom.uuid
       },
-      ENV.fetch('DEVISE_JWT_SECRET_KEY', 'f28f75ec47b06ab533cf379bc8717efea2fa792dfa5d51e27179f8cda32c62b6c03d1e53c6e25b67e8649a452375fe0baaa472c2cc2bb09f8fa735e30f1e657d'),
+      ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
       'HS256'
     )
   end

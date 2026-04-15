@@ -1,13 +1,32 @@
 Rails.application.routes.draw do
   # Sidekiq Web UI - com autenticação básica
   require 'sidekiq/web'
-  
-  # Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-  #   user = User.find_by(email: username)
+  require 'digest'
 
-  #   user.valid_password?(password) && user.role == 'admin' if user
-  # end
-  
+  sidekiq_user = ENV["SIDEKIQ_USERNAME"]
+  sidekiq_pass = ENV["SIDEKIQ_PASSWORD"]
+
+  if Rails.env.production?
+    if sidekiq_user.blank? || sidekiq_pass.blank?
+      raise "SIDEKIQ_USERNAME and SIDEKIQ_PASSWORD are required in production"
+    end
+  end
+
+  if sidekiq_user.present? && sidekiq_pass.present?
+    Sidekiq::Web.use Rack::Auth::Basic do |username, password|
+      username_match = ActiveSupport::SecurityUtils.secure_compare(
+        Digest::SHA256.hexdigest(username),
+        Digest::SHA256.hexdigest(sidekiq_user)
+      )
+      password_match = ActiveSupport::SecurityUtils.secure_compare(
+        Digest::SHA256.hexdigest(password),
+        Digest::SHA256.hexdigest(sidekiq_pass)
+      )
+
+      username_match && password_match
+    end
+  end
+
   mount Sidekiq::Web => '/sidekiq'
 
   # devise_for :users

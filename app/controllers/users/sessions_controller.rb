@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 class Users::SessionsController < Devise::SessionsController
+  include CookieCsrfProtection
+
   protect_from_forgery with: :null_session
   skip_before_action :verify_authenticity_token
+  before_action :verify_csrf_token_for_cookie_auth!, only: [:refresh, :destroy]
   respond_to :json
 
   def create
@@ -34,6 +37,7 @@ class Users::SessionsController < Devise::SessionsController
       same_site: :strict,
       expires: 14.days.from_now # Reduzido de 30 para 14 dias
     }
+    set_csrf_token_cookie
     
     # Ainda enviar no header para compatibilidade com apps móveis
     response.set_header('Authorization', "Bearer #{access_token}")
@@ -91,6 +95,7 @@ class Users::SessionsController < Devise::SessionsController
         same_site: :strict,
         expires: 15.minutes.from_now
       }
+      set_csrf_token_cookie if cookies[:csrf_token].blank?
       
       # Header para compatibilidade mobile
       response.set_header('Authorization', "Bearer #{new_access_token}")
@@ -159,6 +164,7 @@ class Users::SessionsController < Devise::SessionsController
     # ✅ SEGURANÇA: Limpar cookies ao fazer logout
     cookies.delete(:auth_token)
     cookies.delete(:refresh_token)
+    cookies.delete(:csrf_token)
     
     if request.headers['Authorization'].present?
       jwt_payload = JWT.decode(

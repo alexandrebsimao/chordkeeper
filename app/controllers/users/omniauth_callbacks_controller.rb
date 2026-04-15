@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  include CookieCsrfProtection
+
   # Importante: skip CSRF token verification para OmniAuth callbacks
   skip_before_action :verify_authenticity_token
   skip_forgery_protection
@@ -32,6 +34,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         same_site: :strict,
         expires: 14.days.from_now
       }
+      set_csrf_token_cookie
 
       # ✅ Redirecionar SEM token na URL
       redirect_to "#{ENV['FRONTEND_URL']}/auth/callback?success=true&email=#{@user.email}", allow_other_host: true

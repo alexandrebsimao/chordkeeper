@@ -89,8 +89,12 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Redirect to Rails OAuth endpoint
-    window.location.href = `${API_BASE_URL}/users/auth/google_oauth2`;
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = `${API_BASE_URL}/users/auth/google_oauth2`;
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   };
 
   return (

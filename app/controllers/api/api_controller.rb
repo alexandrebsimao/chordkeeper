@@ -1,8 +1,10 @@
 module Api
   class ApiController < ActionController::API
-    include Devise::Controllers::Helpers
+    include CookieCsrfProtection
+    # include Devise::Controllers::Helpers
     
     before_action :authenticate_user_from_jwt!
+    before_action :verify_csrf_token_for_cookie_auth!, if: :state_changing_request?
     helper_method :current_library, :permission_service, :current_user
 
     # Handle parameter parsing errors

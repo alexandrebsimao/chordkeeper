@@ -1,5 +1,13 @@
 class Song < ApplicationRecord
   NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].freeze
+  MAX_PDF_PAGES_TO_PARSE = 120
+  MAX_EXTRACTED_CONTENT_CHARS = 300_000
+  MAX_FILE_SIZE_BY_CONTENT_TYPE = {
+    "application/pdf" => 15.megabytes,
+    "application/msword" => 10.megabytes,
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" => 10.megabytes,
+    "text/plain" => 5.megabytes
+  }.freeze
 
   belongs_to :library
 
@@ -91,15 +99,17 @@ class Song < ApplicationRecord
   def pdf_to_text!
     return nil unless attachment.attached? && attachment.blob.content_type == 'application/pdf'
 
-    pdf_content = ''
     reader = PDF::Reader.new(StringIO.new(attachment.download))
-    reader.pages.each do |page|
-      pdf_content += page.text + "\n"
+    if reader.page_count > MAX_PDF_PAGES_TO_PARSE
+      errors.add(:attachment, "PDF muito grande (máximo de #{MAX_PDF_PAGES_TO_PARSE} páginas para conversão)")
+      throw(:abort)
     end
-    pdf_content.strip
 
-    self.content = pdf_content
-    self.save!
+    extracted_pages = reader.pages.first(MAX_PDF_PAGES_TO_PARSE).map(&:text)
+    self.content = extracted_pages.join("\n").slice(0, MAX_EXTRACTED_CONTENT_CHARS)
+  rescue PDF::Reader::MalformedPDFError, PDF::Reader::UnsupportedFeatureError
+    errors.add(:attachment, "PDF inválido ou não suportado para conversão")
+    throw(:abort)
   end
 
   private
@@ -129,8 +139,11 @@ class Song < ApplicationRecord
       errors.add(:attachment, 'deve ser um arquivo do tipo permitido (PDF, DOC, DOCX, TXT)')
     end
 
-    unless attachment.blob.byte_size <= 100.megabytes
-      errors.add(:attachment, 'deve ser menor que 100MB')
+    max_size = MAX_FILE_SIZE_BY_CONTENT_TYPE[attachment.blob.content_type]
+    return if max_size.nil?
+
+    unless attachment.blob.byte_size <= max_size
+      errors.add(:attachment, "deve ser menor que #{max_size / 1.megabyte}MB")
     end
   end
 end

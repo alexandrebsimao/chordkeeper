@@ -15,12 +15,22 @@ function addRefreshSubscriber(callback: () => void) {
   refreshSubscribers.push(callback);
 }
 
+function getCookie(name: string): string | null {
+  const escapedName = name.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function refreshAccessToken(): Promise<boolean> {
   try {
+    const csrfToken = getCookie("csrf_token");
     // ✅ Cookies são enviados automaticamente com credentials: 'include'
     const response = await fetch(`${API_BASE_URL}/users/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+      },
       credentials: "include", // Enviar cookies automaticamente
     });
 
@@ -47,6 +57,15 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   // Só adicionar Content-Type: application/json se não for FormData
   if (!(options.body instanceof FormData)) {
     (headers as Record<string, string>)["Content-Type"] = "application/json";
+  }
+
+  const method = (options.method || "GET").toUpperCase();
+  const isStateChanging = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+  if (isStateChanging) {
+    const csrfToken = getCookie("csrf_token");
+    if (csrfToken) {
+      (headers as Record<string, string>)["X-CSRF-Token"] = csrfToken;
+    }
   }
 
   // ✅ SEGURANÇA: Sempre incluir credentials para enviar/receber cookies HttpOnly
