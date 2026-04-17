@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_15_120300) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_17_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -345,6 +345,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_120300) do
     t.string "customer_document"
     t.string "customer_name"
     t.string "customer_phone"
+    t.datetime "downgraded_at"
     t.datetime "expires_at"
     t.string "external_subscription_id"
     t.datetime "last_renewed_at"
@@ -353,7 +354,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_120300) do
     t.string "payment_method_token"
     t.string "payment_provider"
     t.bigint "plan_id", null: false
+    t.bigint "previous_plan_id"
     t.string "provider_customer_id"
+    t.integer "renewal_attempts", default: 0
+    t.datetime "renewal_failed_at"
+    t.datetime "renewal_tolerance_ends_at"
     t.datetime "started_at"
     t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
@@ -362,6 +367,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_120300) do
     t.index ["expires_at"], name: "index_user_subscriptions_on_expires_at"
     t.index ["external_subscription_id"], name: "index_user_subscriptions_on_external_subscription_id"
     t.index ["plan_id"], name: "index_user_subscriptions_on_plan_id"
+    t.index ["renewal_failed_at"], name: "index_user_subscriptions_on_renewal_failed_at"
+    t.index ["renewal_tolerance_ends_at"], name: "index_user_subscriptions_on_renewal_tolerance_ends_at"
     t.index ["status"], name: "index_user_subscriptions_on_status"
     t.index ["user_id", "status"], name: "index_user_subscriptions_on_user_id_and_status"
     t.index ["user_id"], name: "index_user_subscriptions_on_user_id"

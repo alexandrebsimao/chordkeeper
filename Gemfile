@@ -91,3 +91,7 @@ gem 'pdf-reader'
 gem 'will_paginate', '~> 4.0'
 
 gem 'resend'
+
+# HTTP client for external API integrations (Asaas, etc)
+gem 'faraday', '~> 2.0'
+gem 'faraday-multipart'

@@ -1,0 +1,23 @@
+# Sidekiq Configuration
+# Production: RAILS_ENV=production bundle exec sidekiq -c 5 -v
+# Development: bundle exec sidekiq -c 5 -v
+
+:concurrency: 5
+:timeout: 25
+:verbose: true
+:pidfile: tmp/pids/sidekiq.pid
+
+:queues:
+  - default
+  - mailers
+  - critical
+
+# Schedule configuration using sidekiq-cron
+:schedule:
+  # Renovação automática de assinaturas
+  # Executa diariamente às 2:00 AM
+  renewal_job:
+    cron: '0 2 * * *'
+    class: SubscriptionRenewalJob
+    queue: default
+    description: 'Renewal JOb - Renova assinaturas expirando'

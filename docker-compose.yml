@@ -8,7 +8,7 @@ services:
     image: postgres:13.15-bullseye
     restart: always
     environment:
-      POSTGRES_PASSWORD: chordkeeper
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-chordkeeper_dev}
     volumes:
       - ./tmp/db:/var/lib/postgresql/data
     networks:

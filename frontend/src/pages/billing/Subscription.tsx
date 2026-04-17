@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { billingService, Plan, Subscription } from "@/services/api/billing";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { PlanComparison } from "@/components/billing/PlanComparison";
+import PaymentForm, { PaymentData, CustomerData } from "@/components/billing/PaymentForm";
 
 const formatBRL = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -24,12 +23,6 @@ const SubscriptionPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
-  const [customerName, setCustomerName] = useState("");
-  const [customerDocument, setCustomerDocument] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [cardToken, setCardToken] = useState("");
-  const [cardBrand, setCardBrand] = useState("visa");
-  const [cardLast4, setCardLast4] = useState("4242");
 
   const activePlans = useMemo(() => plans.filter((plan) => plan.active), [plans]);
 
@@ -64,26 +57,26 @@ const SubscriptionPage = () => {
     }
 
     if (currentUser) {
-      setCustomerName(currentUser.name || "");
       loadData();
     }
   }, [loadingUser, currentUser]);
 
-  const handleSubscribe = async () => {
+  const handlePaymentSubmit = async (paymentData: PaymentData, customerData: CustomerData) => {
     if (!selectedPlanId) return;
 
     setActionLoading(true);
     try {
       const response = await billingService.subscribe({
         plan_id: selectedPlanId,
-        customer: { name: customerName, document: customerDocument, phone: customerPhone },
-        payment: { token: cardToken || "manual_token", brand: cardBrand, last4: cardLast4 },
+        customer_data: customerData,
+        payment_data: paymentData,
       });
 
       setSubscription(response);
-      toast({ title: "Assinatura criada", description: "Seu plano foi ativado com sucesso." });
+      toast({ title: "✅ Assinatura criada", description: "Seu plano foi ativado com sucesso." });
     } catch (error: any) {
       toast({ title: "Erro", description: error.message || "Falha ao assinar", variant: "destructive" });
+      throw error;
     } finally {
       setActionLoading(false);
     }
@@ -104,14 +97,18 @@ const SubscriptionPage = () => {
     }
   };
 
-  const handleUpdatePayment = async () => {
+  const handleUpdatePayment = async (paymentData: PaymentData, customerData: CustomerData) => {
     setActionLoading(true);
     try {
-      const response = await billingService.updatePayment({ token: cardToken || "manual_token", brand: cardBrand, last4: cardLast4 });
+      const response = await billingService.updatePayment({
+        payment_data: paymentData,
+        customer_data: customerData,
+      });
       setSubscription(response);
-      toast({ title: "Pagamento atualizado", description: "Forma de pagamento atualizada com sucesso." });
+      toast({ title: "✅ Pagamento atualizado", description: "Forma de pagamento atualizada com sucesso." });
     } catch (error: any) {
       toast({ title: "Erro", description: error.message || "Falha ao atualizar pagamento", variant: "destructive" });
+      throw error;
     } finally {
       setActionLoading(false);
     }
@@ -186,48 +183,49 @@ const SubscriptionPage = () => {
         loading={actionLoading}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Dados pessoais e de pagamento</CardTitle>
-          <CardDescription>Use estes dados para assinar ou atualizar cobrança.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-3">
-            <div>
-              <Label>Nome</Label>
-              <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
-            </div>
-            <div>
-              <Label>Documento</Label>
-              <Input value={customerDocument} onChange={(e) => setCustomerDocument(e.target.value)} />
-            </div>
-            <div>
-              <Label>Telefone</Label>
-              <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
-            </div>
-          </div>
-          <div className="grid md:grid-cols-3 gap-3">
-            <div>
-              <Label>Token do cartão</Label>
-              <Input value={cardToken} onChange={(e) => setCardToken(e.target.value)} placeholder="tok_xxx" />
-            </div>
-            <div>
-              <Label>Bandeira</Label>
-              <Input value={cardBrand} onChange={(e) => setCardBrand(e.target.value)} />
-            </div>
-            <div>
-              <Label>Últimos 4 dígitos</Label>
-              <Input value={cardLast4} onChange={(e) => setCardLast4(e.target.value)} maxLength={4} />
-            </div>
-          </div>
+      {/* Payment Form Section */}
+      {!subscription && (
+        <PaymentForm
+          onSubmit={handlePaymentSubmit}
+          loading={actionLoading}
+          submitButtonText="Assinar Plano"
+          currentCustomerName={currentUser?.name || ""}
+          showCustomerFields={true}
+        />
+      )}
 
-          <div className="flex gap-2 flex-wrap">
-            {!subscription && <Button onClick={handleSubscribe} disabled={actionLoading || !selectedPlanId}>Assinar plano</Button>}
-            {subscription && <Button onClick={handleChangePlan} disabled={actionLoading || !selectedPlanId}>Trocar plano</Button>}
-            {subscription && <Button variant="outline" onClick={handleUpdatePayment} disabled={actionLoading}>Atualizar pagamento</Button>}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Update Payment Section */}
+      {subscription && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Atualizar Forma de Pagamento</CardTitle>
+              <CardDescription>Ou trocar de plano sem alterar o método de pagamento</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <PaymentForm
+                onSubmit={handleUpdatePayment}
+                loading={actionLoading}
+                submitButtonText="Atualizar Pagamento"
+                currentCustomerName={subscription.customer_name || currentUser?.name || ""}
+                showCustomerFields={true}
+              />
+            </CardContent>
+          </Card>
+
+          {selectedPlanId !== subscription.plan.id && (
+            <Button
+              onClick={handleChangePlan}
+              disabled={actionLoading || selectedPlanId === subscription.plan.id}
+              className="w-full"
+              variant="outline"
+              size="lg"
+            >
+              Trocar Plano (mantém método de pagamento)
+            </Button>
+          )}
+        </div>
+      )}
 
       <Card>
         <CardHeader>

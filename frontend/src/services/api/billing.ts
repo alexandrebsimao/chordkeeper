@@ -1,5 +1,25 @@
 import BaseApiService from "./base";
 
+export type PaymentMethod = "credit_card" | "pix" | "boleto" | "debit_card";
+
+export type PaymentData = {
+  method: PaymentMethod;
+  number?: string;
+  expiryMonth?: string;
+  expiryYear?: string;
+  ccv?: string;
+  holderName?: string;
+  brand?: string;
+  last4?: string;
+  token?: string;
+};
+
+export type CustomerData = {
+  name: string;
+  document: string;
+  phone: string;
+};
+
 export type Plan = {
   id: number;
   name: string;
@@ -29,11 +49,18 @@ export type Subscription = {
   expires_at: string;
   cancelled_at?: string;
   plan: Plan;
-  payment_method: {
+  payment_provider: string;
+  external_subscription_id: string;
+  payment_method_brand?: string;
+  payment_method_last4?: string;
+  customer_name?: string;
+  customer_document?: string;
+  customer_phone?: string;
+  payment_method?: {
     brand?: string;
     last4?: string;
   };
-  customer: {
+  customer?: {
     name?: string;
     document?: string;
     phone?: string;
@@ -51,8 +78,8 @@ class BillingService extends BaseApiService {
 
   subscribe(payload: {
     plan_id: number;
-    customer: { name: string; document?: string; phone?: string };
-    payment: { token: string; brand?: string; last4?: string };
+    customer_data: CustomerData;
+    payment_data: PaymentData;
   }) {
     return this.post<Subscription>("/api/subscription", payload);
   }
@@ -61,8 +88,11 @@ class BillingService extends BaseApiService {
     return this.patch<Subscription>("/api/subscription/change_plan", { plan_id });
   }
 
-  updatePayment(payment: { token: string; brand?: string; last4?: string }) {
-    return this.patch<Subscription>("/api/subscription/update_payment_method", { payment });
+  updatePayment(payload: {
+    payment_data: PaymentData;
+    customer_data?: CustomerData;
+  }) {
+    return this.patch<Subscription>("/api/subscription/update_payment_method", payload);
   }
 
   cancel() {

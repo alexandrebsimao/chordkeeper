@@ -104,11 +104,45 @@ module Api
     end
 
     def customer_data
-      params.fetch(:customer, {}).permit(:name, :document, :phone).to_h.symbolize_keys
+      # Aceita tanto customer_data (novo) quanto customer (antigo) para compatibilidade
+      data = params.fetch(:customer_data, params.fetch(:customer, {}))
+      
+      if data.is_a?(Hash)
+        data.permit(:name, :document, :phone).to_h.symbolize_keys
+      else
+        {}
+      end
     end
 
     def payment_data
-      params.fetch(:payment, {}).permit(:token, :brand, :last4).to_h.symbolize_keys
+      # Aceita tanto payment_data (novo) quanto payment (antigo) para compatibilidade
+      data = params.fetch(:payment_data, params.fetch(:payment, {}))
+      
+      if data.is_a?(Hash)
+        permitted = data.permit(:method, :number, :expiryMonth, :expiry_month, :expiryYear, :expiry_year, 
+                                :ccv, :holderName, :holder_name, :brand, :last4, :token).to_h.symbolize_keys
+        
+        # Normaliza snake_case para camelCase (compatibilidade com Asaas)
+        normalized = {}
+        permitted.each do |key, value|
+          normalized[key] = value
+          # Se vier em camelCase, converte para snake_case internamente
+          case key.to_s
+          when 'expiryMonth'
+            normalized[:expiry_month] = value
+          when 'expiryYear'
+            normalized[:expiry_year] = value
+          when 'holderName'
+            normalized[:holder_name] = value
+          when 'ccv'
+            normalized[:ccv] = value
+          end
+        end
+        
+        normalized
+      else
+        {}
+      end
     end
 
     def serialize_subscription(subscription)
