@@ -139,7 +139,7 @@ module Api
       @setlist.owner = current_user
 
       if @setlist.save
-        render json: SetlistSerializer.new(@setlist).serializable_hash, status: :created, location: @setlist
+        render json: SetlistSerializer.new(@setlist).serializable_hash, status: :created, location: api_setlist_url(@setlist)
       else
         render json: @setlist.errors, status: :unprocessable_entity
       end

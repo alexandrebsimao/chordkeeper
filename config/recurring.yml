@@ -8,3 +8,13 @@
 #     command: "SoftDeletedRecord.due.delete_all"
 #     priority: 2
 #     schedule: at 5am every day
+
+production:
+  subscription_expiry_reminder:
+    class: SubscriptionExpiryReminderJob
+    queue: default
+    schedule: every day at 9am
+  subscription_renewal:
+    class: SubscriptionRenewalJob
+    queue: default
+    schedule: every day at 10am

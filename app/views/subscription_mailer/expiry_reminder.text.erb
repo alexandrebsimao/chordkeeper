@@ -1,0 +1,9 @@
+<%= @notification.title %>
+
+Olá, <%= @user.name || @user.email %>.
+
+<%= @notification.message %>
+Plano atual: <%= @plan.name %>
+Vencimento: <%= l(@subscription.expires_at, format: :long) %>
+
+Acesse seu painel para renovar, trocar plano ou atualizar seu pagamento.

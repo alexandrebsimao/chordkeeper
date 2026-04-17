@@ -30,7 +30,15 @@ module Api
             id: current_user.id,
             email: current_user.email,
             name: current_user.name || "#{current_user.email.split('@').first}",
+            role: current_user.role,
+            admin: current_user.admin?,
             library: library_data,
+            subscription: current_user.current_subscription && {
+              id: current_user.current_subscription.id,
+              status: current_user.current_subscription.status,
+              plan_name: current_user.current_subscription.plan.name,
+              expires_at: current_user.current_subscription.expires_at
+            },
             confirmed: current_user.confirmed?,
             created_at: current_user.created_at
           }

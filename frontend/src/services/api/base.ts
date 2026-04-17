@@ -15,12 +15,22 @@ class BaseApiService {
   }
 
   protected parseJsonApi<T>(data: any): T {
+    if (data == null) {
+      return data as T;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(data, "data") && data.data == null) {
+      return null as T;
+    }
+
     if (data.data) {
       if (Array.isArray(data.data)) {
         return data.data.map((item: any) => ({
-          id: item.id,
-          ...item.attributes,
+          ...(item?.attributes ? { id: item.id, ...item.attributes } : item),
         })) as T;
+      }
+      if (!data.data.attributes) {
+        return data.data as T;
       }
       return {
         id: data.data.id,

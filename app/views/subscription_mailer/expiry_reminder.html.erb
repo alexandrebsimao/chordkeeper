@@ -1,0 +1,6 @@
+<h2><%= @notification.title %></h2>
+<p>Olá, <%= @user.name || @user.email %>.</p>
+<p><%= @notification.message %></p>
+<p>Plano atual: <strong><%= @plan.name %></strong></p>
+<p>Vencimento: <strong><%= l(@subscription.expires_at, format: :long) %></strong></p>
+<p>Acesse seu painel para renovar, trocar plano ou atualizar seu pagamento.</p>

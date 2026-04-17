@@ -88,6 +88,37 @@ Rails.application.routes.draw do
       end
       resources :users, controller: 'setlist_users', only: [:index, :create, :update, :destroy]
     end
+
+    resources :plans, only: [:index]
+
+    resource :subscription, only: [:show, :create], controller: "subscriptions" do
+      patch :update_payment_method
+      patch :change_plan
+      patch :cancel
+      patch :renew
+      get :notifications
+      patch "notifications/:id/read", action: :mark_notification_read
+    end
+
+    namespace :admin do
+      resources :plans do
+        member do
+          patch :activate
+          patch :deactivate
+          patch :update_features
+        end
+      end
+
+      resources :features
+
+      resources :customers, only: [:index, :show] do
+        member do
+          patch :subscription, action: :update_subscription
+        end
+      end
+
+      resources :feature_flags, only: [:index, :update]
+    end
     
     # Public API (sem autenticação)
     namespace :public do

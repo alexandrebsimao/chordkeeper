@@ -5,6 +5,8 @@ export interface CurrentUser {
   id: number;
   email: string;
   name?: string;
+  role?: string;
+  admin?: boolean;
 }
 
 export function useCurrentUser() {
@@ -34,6 +36,8 @@ export function useCurrentUser() {
         let userId: number | null = null;
         let email: string = "";
         let name: string | undefined = "";
+        let role: string | undefined = undefined;
+        let admin = false;
         
         // Formato JSONAPI: { data: { id, attributes: { email, name, ... } } }
         if (data.data) {
@@ -41,12 +45,16 @@ export function useCurrentUser() {
           if (data.data.attributes) {
             email = data.data.attributes.email;
             name = data.data.attributes.name;
+            role = data.data.attributes.role;
+            admin = Boolean(data.data.attributes.admin);
           }
         } else if (data.id) {
           // Formato simples: { id, email, name, ... }
           userId = data.id;
           email = data.email;
           name = data.name;
+          role = data.role;
+          admin = Boolean(data.admin);
         }
         
         if (!userId || !email) {
@@ -59,6 +67,8 @@ export function useCurrentUser() {
           id: userId,
           email,
           name: name || undefined,
+          role,
+          admin,
         };
         
         console.log("[useCurrentUser] Usuário carregado com sucesso:", user);

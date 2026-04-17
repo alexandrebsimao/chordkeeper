@@ -1,10 +1,11 @@
-import { Home, Plus, ListMusic, Settings } from "lucide-react";
+import { Home, Plus, ListMusic, Settings, CreditCard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 
 const navItems = [
   { title: "Minhas Cifras", url: "/songs", icon: Home },
   { title: "Adicionar Cifra", url: "/songs/create", icon: Plus },
   { title: "Setlists", url: "/setlists", icon: ListMusic },
+  { title: "Plano", url: "/billing", icon: CreditCard },
   { title: "Config", url: "/settings", icon: Settings },
 ];
 

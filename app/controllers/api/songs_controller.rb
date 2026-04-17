@@ -43,7 +43,7 @@ module Api
     @song.library = current_library
 
     if @song.save
-      render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash, status: :created, location: @song
+      render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash, status: :created, location: api_songs_url(@song)
     else
       render json: @song.errors, status: :unprocessable_entity
     end
@@ -52,7 +52,7 @@ module Api
   # PATCH/PUT /songs/1 or /songs/1.json
   def update
     if @song.update(song_params)
-      render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash, status: :ok, location: @song
+      render json: SongSerializer.new(@song, { include: [:media_references] }).serializable_hash, status: :ok, location: api_songs_url(@song)
     else
       render json: @song.errors, status: :unprocessable_entity
     end

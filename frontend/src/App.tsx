@@ -25,6 +25,11 @@ import ConfirmEmail from "./pages/auth/ConfirmEmail";
 import ResendConfirmation from "./pages/auth/ResendConfirmation";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import NotFound from "./pages/NotFound";
+import SubscriptionPage from "./pages/billing/Subscription";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminPlans from "./pages/admin/Plans";
+import AdminFeatures from "./pages/admin/Features";
+import CustomersAdmin from "./pages/admin/CustomersAdmin";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +74,11 @@ const App = () => (
                       <Route path="/setlist/:id" element={<SetlistManager />} />
                       <Route path="/setlist/:id/play" element={<MusicPlayer />} />
                       <Route path="/settings" element={<Settings />} />
+                      <Route path="/billing" element={<SubscriptionPage />} />
+                      <Route path="/admin" element={<AdminDashboard />} />
+                      <Route path="/admin/plans" element={<AdminPlans />} />
+                      <Route path="/admin/features" element={<AdminFeatures />} />
+                      <Route path="/admin/customers" element={<CustomersAdmin />} />
                       <Route path="/logout" element={<Logout />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

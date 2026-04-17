@@ -10,8 +10,10 @@
 
 export { songsService } from "./songs";
 export { setlistsService } from "./setlists";
+export { billingService } from "./billing";
 // export { librariesService } from "./libraries";
 
 export type { Song, MediaReference, CreateSongData } from "./songs";
 export type { Setlist, SetlistSong, CreateSetlistData } from "./setlists";
+export type { Plan, Subscription } from "./billing";
 // export type { Library } from "./libraries";

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_06_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_15_120300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,6 +55,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_000000) do
     t.index ["key"], name: "index_feature_flags_on_key", unique: true
   end
 
+  create_table "features", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "key", null: false
+    t.string "label", null: false
+    t.integer "sort_order", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_features_on_key", unique: true
+  end
+
   create_table "jwt_denylists", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "exp"
@@ -94,9 +104,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_000000) do
     t.index ["song_id"], name: "index_media_references_on_song_id"
   end
 
+  create_table "plan_features", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "feature_id", null: false
+    t.bigint "plan_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["feature_id"], name: "index_plan_features_on_feature_id"
+    t.index ["plan_id", "feature_id"], name: "index_plan_features_on_plan_id_and_feature_id", unique: true
+    t.index ["plan_id"], name: "index_plan_features_on_plan_id"
+  end
+
   create_table "plans", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "duration_days", default: 30, null: false
     t.text "features"
     t.string "interval", default: "month", null: false
     t.integer "max_collaborators", default: 1
@@ -298,19 +320,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_000000) do
     t.index ["library_id"], name: "index_songs_on_library_id"
   end
 
+  create_table "subscription_notifications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.text "message", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "read_at"
+    t.datetime "scheduled_for"
+    t.datetime "sent_at"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.bigint "user_subscription_id", null: false
+    t.index ["kind", "scheduled_for"], name: "index_subscription_notifications_on_kind_and_scheduled_for"
+    t.index ["user_id", "read_at"], name: "index_subscription_notifications_on_user_id_and_read_at"
+    t.index ["user_id"], name: "index_subscription_notifications_on_user_id"
+    t.index ["user_subscription_id"], name: "index_subscription_notifications_on_user_subscription_id"
+  end
+
   create_table "user_subscriptions", force: :cascade do |t|
+    t.boolean "auto_renew", default: true, null: false
     t.datetime "cancelled_at"
     t.datetime "created_at", null: false
+    t.string "customer_document"
+    t.string "customer_name"
+    t.string "customer_phone"
     t.datetime "expires_at"
     t.string "external_subscription_id"
+    t.datetime "last_renewed_at"
+    t.string "payment_method_brand"
+    t.string "payment_method_last4"
+    t.string "payment_method_token"
     t.string "payment_provider"
     t.bigint "plan_id", null: false
+    t.string "provider_customer_id"
     t.datetime "started_at"
     t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["auto_renew"], name: "index_user_subscriptions_on_auto_renew"
     t.index ["expires_at"], name: "index_user_subscriptions_on_expires_at"
+    t.index ["external_subscription_id"], name: "index_user_subscriptions_on_external_subscription_id"
     t.index ["plan_id"], name: "index_user_subscriptions_on_plan_id"
+    t.index ["status"], name: "index_user_subscriptions_on_status"
     t.index ["user_id", "status"], name: "index_user_subscriptions_on_user_id_and_status"
     t.index ["user_id"], name: "index_user_subscriptions_on_user_id"
   end
@@ -345,6 +397,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_000000) do
   add_foreign_key "library_users", "libraries"
   add_foreign_key "library_users", "users"
   add_foreign_key "media_references", "songs"
+  add_foreign_key "plan_features", "features"
+  add_foreign_key "plan_features", "plans"
   add_foreign_key "public_setlists", "setlists"
   add_foreign_key "setlist_songs", "setlists"
   add_foreign_key "setlist_songs", "songs"
@@ -360,6 +414,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_000000) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "song_pdf_caches", "songs"
   add_foreign_key "songs", "libraries"
+  add_foreign_key "subscription_notifications", "user_subscriptions"
+  add_foreign_key "subscription_notifications", "users"
   add_foreign_key "user_subscriptions", "plans"
   add_foreign_key "user_subscriptions", "users"
 end

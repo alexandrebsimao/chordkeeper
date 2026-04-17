@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  ROLES = %w[user admin].freeze
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -17,6 +19,10 @@ class User < ApplicationRecord
   has_many :setlist_users, dependent: :destroy
   has_many :shared_setlists, through: :setlist_users, source: :setlist
   has_many :owned_setlists, class_name: "Setlist", foreign_key: "owner_id", dependent: :destroy
+  has_many :user_subscriptions, dependent: :destroy
+  has_many :subscription_notifications, dependent: :destroy
+
+  validates :role, inclusion: { in: ROLES }
   
   after_create :create_library!
 
@@ -79,6 +85,22 @@ class User < ApplicationRecord
     end
     
     user
+  end
+
+  def admin?
+    role == "admin"
+  end
+
+  def current_subscription
+    user_subscriptions.active.order(expires_at: :desc).first
+  end
+
+  def feature_enforcer
+    Features::Enforcer.new(self)
+  end
+
+  def can_use_feature?(feature_name)
+    feature_enforcer.check(feature_name)
   end
 
   private
