@@ -27,14 +27,29 @@ module Myapp
     # Use Sidekiq for Active Job
     config.active_job.queue_adapter = :sidekiq
 
-    # CORS configuration for React frontend
+    # 🔒 SECURITY: Add Rack::Attack for rate limiting (must be before CORS)
+    config.middleware.insert_before 0, Rack::Attack
+
+    # 🔒 SECURITY: Restrictive CORS configuration
+    # Only allow specific domains based on environment
     config.middleware.insert_before 0, Rack::Cors do
+      allowed_origins = CorsConfig.allowed_origins
+      
       allow do
-        origins 'http://localhost:8080'
-        resource '*',
+        origins allowed_origins
+        resource '/api/*',
           headers: :any,
           methods: [:get, :post, :put, :patch, :delete, :options, :head],
-          credentials: true
+          credentials: true,
+          max_age: 3600 # Cache preflight requests for 1 hour
+      end
+
+      # Allow public resources without credentials
+      allow do
+        origins allowed_origins
+        resource '/public/*',
+          headers: :any,
+          methods: [:get, :head, :options]
       end
     end
   end

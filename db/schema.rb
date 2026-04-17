@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_17_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_17_120500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -102,6 +102,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_17_000001) do
     t.datetime "updated_at", null: false
     t.string "url"
     t.index ["song_id"], name: "index_media_references_on_song_id"
+  end
+
+  create_table "payment_audit_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "details", default: {}, null: false
+    t.inet "ip_address"
+    t.datetime "updated_at", null: false
+    t.text "user_agent"
+    t.bigint "user_id", null: false
+    t.bigint "user_subscription_id"
+    t.index ["action", "created_at"], name: "index_audit_logs_action_created_at"
+    t.index ["action"], name: "index_payment_audit_logs_on_action"
+    t.index ["user_id", "created_at"], name: "index_audit_logs_user_created_at"
+    t.index ["user_id"], name: "index_payment_audit_logs_on_user_id"
+    t.index ["user_subscription_id"], name: "index_payment_audit_logs_on_user_subscription_id"
   end
 
   create_table "plan_features", force: :cascade do |t|
@@ -346,12 +362,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_17_000001) do
     t.string "customer_name"
     t.string "customer_phone"
     t.datetime "downgraded_at"
+    t.text "encrypted_payment_method_token"
+    t.text "encrypted_payment_method_token_iv"
     t.datetime "expires_at"
     t.string "external_subscription_id"
     t.datetime "last_renewed_at"
     t.string "payment_method_brand"
     t.string "payment_method_last4"
-    t.string "payment_method_token"
     t.string "payment_provider"
     t.bigint "plan_id", null: false
     t.bigint "previous_plan_id"
@@ -404,6 +421,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_17_000001) do
   add_foreign_key "library_users", "libraries"
   add_foreign_key "library_users", "users"
   add_foreign_key "media_references", "songs"
+  add_foreign_key "payment_audit_logs", "user_subscriptions", on_delete: :nullify
+  add_foreign_key "payment_audit_logs", "users", on_delete: :cascade
   add_foreign_key "plan_features", "features"
   add_foreign_key "plan_features", "plans"
   add_foreign_key "public_setlists", "setlists"

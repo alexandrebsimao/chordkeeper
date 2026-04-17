@@ -127,30 +127,68 @@ module Payments
 
     private
 
-    # === HTTP Helpers ===
+    # === HTTP Helpers with Retry Logic ===
+    # 🔒 Implement exponential backoff for resilience
 
     def post(path, data = {})
-      response = http_client.post(path) do |req|
-        req.body = data.to_json
+      with_retry do
+        response = http_client.post(path) do |req|
+          req.body = data.to_json
+        end
+        JSON.parse(response.body)
       end
-      JSON.parse(response.body)
     end
 
-    def get(path)
-      response = http_client.get(path)
-      JSON.parse(response.body)
+    def get(path, params = {})
+      with_retry do
+        response = http_client.get(path) { |req| req.params = params if params.any? }
+        JSON.parse(response.body)
+      end
     end
 
     def patch(path, data = {})
-      response = http_client.patch(path) do |req|
-        req.body = data.to_json
+      with_retry do
+        response = http_client.patch(path) do |req|
+          req.body = data.to_json
+        end
+        JSON.parse(response.body)
       end
-      JSON.parse(response.body)
     end
 
     def delete(path)
-      response = http_client.delete(path)
-      JSON.parse(response.body)
+      with_retry do
+        response = http_client.delete(path)
+        JSON.parse(response.body)
+      end
+    end
+
+    # 🔒 Retry with exponential backoff (3 attempts max)
+    # Retries on timeout and 5xx errors, not on 4xx (client errors)
+    def with_retry(max_attempts = 3, initial_delay = 1)
+      attempt = 1
+      
+      begin
+        yield
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+        if attempt < max_attempts
+          delay = (initial_delay * (2 ** (attempt - 1))) + rand(0..1)
+          sleep(delay)
+          attempt += 1
+          retry
+        else
+          raise AsaasAPIError, "Falha na conexão com Asaas após #{max_attempts} tentativas"
+        end
+      rescue Faraday::ServerError => e
+        # 5xx errors are retryable
+        if attempt < max_attempts
+          delay = (initial_delay * (2 ** (attempt - 1))) + rand(0..1)
+          sleep(delay)
+          attempt += 1
+          retry
+        else
+          raise AsaasAPIError, parse_error_message(e.response[:body])
+        end
+      end
     end
 
     def http_client

@@ -1,6 +1,8 @@
 module Api
   module Admin
     class CustomersController < BaseController
+      include RequiresAdmin
+
       def index
         users = User.includes(user_subscriptions: :plan).order(:created_at)
 

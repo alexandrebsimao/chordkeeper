@@ -1,6 +1,7 @@
 module Api
   class SubscriptionsController < Api::ApiController
     before_action :set_subscription, only: [:update_payment_method, :change_plan, :cancel, :renew]
+    before_action :capture_request_context # 🔒 Capture IP and user agent for audit logs
 
     def show
       subscription = current_user.current_subscription
@@ -12,6 +13,15 @@ module Api
 
     def create
       plan = Plan.find(params.require(:plan_id))
+
+      # 🔒 Validate customer data before processing
+      validator = CustomerDataValidator.new(customer_data)
+      unless validator.valid?
+        return render json: { 
+          error: "Dados inválidos",
+          details: validator.errors 
+        }, status: :bad_request
+      end
 
       subscription = Subscriptions::CreateService.new(
         user: current_user,
@@ -30,7 +40,11 @@ module Api
     def update_payment_method
       subscription = Subscriptions::UpdatePaymentMethodService.new(
         subscription: @subscription,
-        payment_data: payment_data
+        payment_data: payment_data,
+        request_context: {
+          ip_address: request.remote_ip,
+          user_agent: request.user_agent
+        }
       ).call
 
       render json: { data: serialize_subscription(subscription), message: "Forma de pagamento atualizada" }
@@ -94,6 +108,12 @@ module Api
     end
 
     private
+
+    def capture_request_context
+      # 🔒 Store IP and user agent for audit logging
+      RequestStore.store[:current_request_ip] = request.remote_ip
+      RequestStore.store[:current_user_agent] = request.user_agent
+    end
 
     def set_subscription
       @subscription = current_user.current_subscription

@@ -327,12 +327,12 @@ const PaymentForm = ({
 
           <div>
             <Label htmlFor="paymentMethod">Forma de Pagamento *</Label>
-            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
-              <SelectTrigger id="paymentMethod" disabled={isFormSubmitting}>
+            <Select value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)} disabled>
+              <SelectTrigger id="paymentMethod" disabled>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="credit_card">💳 Cartão de Crédito (Recomendado)</SelectItem>
+                <SelectItem value="credit_card">💳 Cartão de Crédito</SelectItem>
               </SelectContent>
             </Select>
           </div>

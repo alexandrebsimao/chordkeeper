@@ -21,6 +21,7 @@ class User < ApplicationRecord
   has_many :owned_setlists, class_name: "Setlist", foreign_key: "owner_id", dependent: :destroy
   has_many :user_subscriptions, dependent: :destroy
   has_many :subscription_notifications, dependent: :destroy
+  has_many :payment_audit_logs, dependent: :destroy # 🔒 SECURITY: Payment audit trail
 
   validates :role, inclusion: { in: ROLES }
   

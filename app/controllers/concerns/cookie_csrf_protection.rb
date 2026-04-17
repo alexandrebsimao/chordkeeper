@@ -37,7 +37,7 @@ module CookieCsrfProtection
       httponly: false,
       secure: Rails.env.production?,
       same_site: :strict,
-      expires: 14.days.from_now
+      expires: 1.day.from_now # 🔒 SECURITY: Reduced from 14 days to 24 hours
     }
   end
 

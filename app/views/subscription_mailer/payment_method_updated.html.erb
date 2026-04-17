@@ -1,0 +1,28 @@
+<h2>Seu Método de Pagamento foi Atualizado</h2>
+
+<p>Olá <%= @user.name %>,</p>
+
+<p>Detectamos que o método de pagamento associado à sua assinatura de <strong><%= @plan.name %></strong> foi alterado.</p>
+
+<hr>
+
+<h3>Resumo da Alteração:</h3>
+<ul>
+  <li><strong>Data/Hora:</strong> <%= @timestamp %></li>
+  <li><strong>IP de Origem:</strong> <%= @ip_address %></li>
+  <li><strong>Cartão Anterior:</strong> <%= @old_brand.upcase %> terminado em <%= @old_last4 %></li>
+  <li><strong>Novo Cartão:</strong> <%= @new_brand.upcase %> terminado em <%= @new_last4 %></li>
+</ul>
+
+<hr>
+
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+  <strong>⚠️ Segurança:</strong> Se você não fez essa alteração, 
+  <a href="https://chordkeeper.com/account/security">clique aqui para verificar sua conta</a> 
+  ou entre em contato com nosso suporte imediatamente.
+</div>
+
+<p>Sua segurança é importante para nós.</p>
+
+<p>Att,<br>
+equipe ChordKeeper</p>

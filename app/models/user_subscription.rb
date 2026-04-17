@@ -1,4 +1,7 @@
 class UserSubscription < ApplicationRecord
+  # 🔒 SECURITY: Encrypt sensitive payment data
+  attr_encrypted :payment_method_token, key: ENV.fetch('ENCRYPTION_KEY') { SecureRandom.hex(32) }
+
   STATUSES = {
     active: "active",
     cancelled: "cancelled",

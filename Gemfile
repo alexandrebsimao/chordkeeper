@@ -29,6 +29,7 @@ gem "solid_cable"
 
 # Background job processing with Sidekiq
 gem "sidekiq"
+gem "sidekiq-cron"
 gem "redis"
 
 # Reduces boot times through caching; required in config/boot.rb
@@ -95,3 +96,15 @@ gem 'resend'
 # HTTP client for external API integrations (Asaas, etc)
 gem 'faraday', '~> 2.0'
 gem 'faraday-multipart'
+
+# 🔒 SECURITY: Encryption for sensitive fields
+gem 'attr_encrypted', '~> 4.0'
+
+# 🔒 SECURITY: Rate limiting and abuse prevention
+gem 'rack-attack', '~> 6.7'
+
+# 🔒 SECURITY: CPF/CNPJ validation
+gem 'cpf_cnpj', '~> 1.0'
+
+# 🔒 SECURITY: Request-scoped context storage for audit logging
+gem 'request_store', '~> 1.5'
