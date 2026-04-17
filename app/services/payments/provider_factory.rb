@@ -1,7 +1,7 @@
 module Payments
   class ProviderFactory
     def self.build(provider_name = nil)
-      provider = (provider_name || ENV.fetch("PAYMENT_PROVIDER", "asaas")).to_s
+      provider = (provider_name || ENV.fetch("PAYMENT_PROVIDER", "mock")).to_s
 
       case provider
       when "mock"
