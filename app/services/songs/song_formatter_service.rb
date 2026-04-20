@@ -2,7 +2,7 @@ module Songs
   class SongFormatterService < ApplicationService
     def initialize(content, font_size: nil)
       @content = content
-      @font_size = font_size || 16  # Tamanho padrão
+      @font_size = font_size || 14  # Tamanho padrão
     end
 
     def call
