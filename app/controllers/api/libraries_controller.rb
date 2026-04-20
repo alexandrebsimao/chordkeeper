@@ -1,5 +1,4 @@
 class Api::LibrariesController < Api::ApiController
-  skip_before_action :verify_authenticity_token
   before_action :authenticate_user!
   
   # GET /api/libraries

@@ -4,7 +4,6 @@ class Users::SessionsController < Devise::SessionsController
   include CookieCsrfProtection
 
   protect_from_forgery with: :null_session
-  skip_before_action :verify_authenticity_token
   before_action :verify_csrf_token_for_cookie_auth!, only: [:refresh, :destroy]
   respond_to :json
 

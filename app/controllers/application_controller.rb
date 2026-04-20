@@ -7,7 +7,6 @@ class ApplicationController < ActionController::Base
 
   # Allow CORS for API requests from React frontend
   before_action :configure_permitted_parameters, if: :devise_controller?
-  skip_before_action :verify_authenticity_token, if: -> { devise_controller? || json_request? }
 
   def current_library
     current_user&.current_library

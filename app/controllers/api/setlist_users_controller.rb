@@ -1,5 +1,4 @@
 class Api::SetlistUsersController < Api::ApiController
-  skip_before_action :verify_authenticity_token
   before_action :authenticate_user!
   before_action :set_setlist
   before_action :authorize_owner!, only: [:create, :update, :destroy]
