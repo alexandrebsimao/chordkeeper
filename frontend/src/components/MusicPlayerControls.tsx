@@ -21,6 +21,7 @@ interface MusicPlayerControlsProps {
 export default function MusicPlayerControls({
   isScrolling,
   scrollSpeed,
+  fontSize,
   onToggleScroll,
   onScrollSpeedChange,
   onIncreaseFontSize,
@@ -33,15 +34,21 @@ export default function MusicPlayerControls({
         size="icon"
         onClick={onDecreaseFontSize}
         className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+        title={`Diminuir fonte (${fontSize}px)`}
       >
         <ZoomOut className="h-4 w-4 sm:h-5 sm:w-5" />
       </Button>
+
+      <span className="text-xs font-semibold text-muted-foreground min-w-[2.5rem] text-center">
+        {fontSize}px
+      </span>
 
       <Button
         variant="outline"
         size="icon"
         onClick={onIncreaseFontSize}
         className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+        title={`Aumentar fonte (${fontSize}px)`}
       >
         <ZoomIn className="h-4 w-4 sm:h-5 sm:w-5" />
       </Button>

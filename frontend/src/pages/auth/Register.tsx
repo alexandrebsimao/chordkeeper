@@ -68,27 +68,18 @@ const Register = () => {
 
       const data = await response.json();
 
-      // Check if account needs confirmation
-      if (data.message && data.message.includes('confirmation')) {
-        setShowConfirmationAlert(true);
-        setRegisteredEmail(email);
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Por favor, verifique seu email para confirmar sua conta antes de fazer login.",
-          duration: 7000,
-        });
-        return;
-      }
 
       // ✅ Backend agora gerencia tokens via cookies HttpOnly
       // Não precisamos mais salvar no localStorage
+
+      setShowConfirmationAlert(true);
 
       toast({
         title: "Conta criada",
         description: "Sua conta foi criada com sucesso!",
       });
 
-      navigate("/songs");
+      navigate("/auth/register");
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { AlertCircle, Mail } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +20,16 @@ const Login = () => {
   const [unconfirmedEmail, setUnconfirmedEmail] = useState("");
 
   // Check for OAuth error in URL
-  const oauthError = searchParams.get("error");
-  if (oauthError) {
-    toast({
-      title: "Erro no login com Google",
-      description: decodeURIComponent(oauthError),
-      variant: "destructive",
-    });
-  }
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    if (oauthError) {
+      toast({
+        title: "Erro no login com Google",
+        description: decodeURIComponent(oauthError),
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

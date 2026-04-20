@@ -40,6 +40,11 @@ export default function MusicContent({
           font-size: ${fontSize}px !important;
           line-height: 1.4 !important;
         }
+        
+        /* Sobrescreve estilos inline do HTML vindo do backend */
+        .cifra-content div[style*="white-space: pre"] {
+          font-size: ${fontSize}px !important;
+        }
 
         .music-content {
           -webkit-overflow-scrolling: touch;
