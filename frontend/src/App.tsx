@@ -56,7 +56,7 @@ const App = () => (
                 <div className="flex-1 flex flex-col">
                   <header className="h-14 border-b bg-background flex items-center px-4 sticky top-0 z-10">
                     <SidebarTrigger className="mr-2" />
-                    <h1 className="font-semibold text-lg">chorfy</h1>
+                    <h1 className="font-semibold text-lg">Cifrary</h1>
                   </header>
                   <UnconfirmedEmailAlert />
                   <main className="flex-1 flex flex-col">

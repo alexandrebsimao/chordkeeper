@@ -2,15 +2,17 @@
   <head>
     <meta charset="UTF-8">
     <style>
+      /* Fonte monospace padrão para acordes e letras */
       @font-face {
         font-family: 'DejaVu Sans Mono';
         src: url('https://cdn.jsdelivr.net/npm/@fontsource/dejavu-sans-mono@4.5.4/files/dejavu-sans-mono-latin-400-normal.woff2') format('woff2');
       }
-      
+
       body {
         margin: 30px;
         background: white;
         font-family: 'DejaVu Sans Mono', monospace;
+
       }
 
       .header {
@@ -21,21 +23,23 @@
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 5px;
-        font-family: Arial, sans-serif;
+        font-family: 'DejaVu Sans Mono', monospace;
+
       }
 
       .subtitle {
         font-size: 16px;
         color: #666;
         margin-bottom: 5px;
-        font-family: Arial, sans-serif;
+        font-family: 'DejaVu Sans Mono', monospace;
+
       }
 
       .metadata {
-        font-size: 14px;
         color: #888;
         margin-bottom: 20px;
-        font-family: Arial, sans-serif;
+        font-family: 'DejaVu Sans Mono', monospace;
+
       }
 
       .content {
@@ -47,27 +51,6 @@
 
       .content > div {
         margin-bottom: 2px;
-      }
-
-      /* Garante fonte monospace consistente para acordes */
-      .chord-line {
-        font-family: 'Courier New', monospace !important;
-        font-size: 14px !important;
-        color: #ec4899;
-        font-weight: bold;
-        line-height: 1.4 !important;
-      }
-
-      .lyrics-line {
-        font-family: 'Courier New', monospace !important;
-        font-size: 14px !important;
-        color: #1e293b;
-        line-height: 1.4 !important;
-      }
-
-      /* Preserva espaçamento e formatação monospace onde necessário */
-      .content div[style*="white-space: pre"] {
-        font-family: 'Courier New', monospace;
       }
 
       /* Estilos para acordes */
