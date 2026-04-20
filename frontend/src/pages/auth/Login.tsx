@@ -99,7 +99,7 @@ const Login = () => {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src="/logo-bg-white.png" 
+              src="/logo-cifrary.png" 
               alt="Chord Keeper Logo" 
               className="h-20 w-auto"
             />

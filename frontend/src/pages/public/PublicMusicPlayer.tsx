@@ -171,7 +171,7 @@ const PublicMusicPlayer = () => {
         <div className="max-w-4xl mx-auto space-y-2 sm:space-y-3">
           {/* Branding */}
           <div>
-            <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground">chorfy</h2>
+            <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground">Cifrary</h2>
           </div>
 
           {/* Header */}

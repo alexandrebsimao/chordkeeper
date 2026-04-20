@@ -77,9 +77,9 @@ export function AppSidebar() {
         <div>
           <div className="px-6 py-4 flex items-center">
             <img 
-              src="/logo-bg-blue.png" 
-              alt="Chord Keeper Logo" 
-              className="h-10 w-auto"
+              src="/logo-cifrary.png" 
+              alt="Cifrary Logo" 
+              className="h-20 w-auto"
             />
           </div>
 

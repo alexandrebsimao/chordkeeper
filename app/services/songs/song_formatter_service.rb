@@ -1,7 +1,8 @@
 module Songs
   class SongFormatterService < ApplicationService
-    def initialize(content)
+    def initialize(content, font_size: nil)
       @content = content
+      @font_size = font_size || 16  # Tamanho padrão
     end
 
     def call
@@ -119,9 +120,9 @@ module Songs
         
         section_html << %{
           <div style="margin: 12px 0 6px 0;">
-            <span style="display: inline-block; padding: 3px 12px; border-radius: 20px; 
+            <span class="line" style="display: inline-block; padding: 3px 12px; border-radius: 20px; 
                          background: #{colors[:bg]}; border: 1px solid #{colors[:border]};
-                         font-size: 11px; font-family: 'Courier New', monospace; font-weight: 600; 
+                         font-size: 11px; font-weight: 600; 
                          letter-spacing: 0.08em; text-transform: uppercase; color: #{colors[:text]};">
               #{ERB::Util.html_escape(label)}
             </span>
@@ -166,7 +167,7 @@ module Songs
       
       # Se não tem acordes, retorna texto simples
       if segments.empty? || segments.all? { |s| s[:chord].nil? }
-        return "<div style='font-family: Georgia, serif; font-size: 16px; color: #1e293b; line-height: 1.8; margin-bottom: 4px;'>#{ERB::Util.html_escape(line)}</div>"
+        return "<div style='font-family: DejaVu Sans Mono, monospace; font-size: #{@font_size}px; color: #1e293b; line-height: 1.4; margin-bottom: 4px;'>#{ERB::Util.html_escape(line)}</div>"
       end
       
       # Monta duas linhas: acordes e letra
@@ -218,12 +219,12 @@ module Songs
       
       # Linha de acordes (em rosa, monospace)
       if chords_line.strip.present?
-        html += "<div style='font-family: \"Courier New\", monospace; font-size: 13px; font-weight: bold; color: #ec4899; line-height: 1.3; white-space: pre; margin-bottom: 0;'>#{ERB::Util.html_escape(chords_line.rstrip)}</div>"
+        html += "<div class='line' style='font-family: DejaVu Sans Mono, monospace; font-size: #{@font_size}px; font-weight: bold; color: #ec4899; line-height: 1.4; white-space: pre; margin-bottom: 0;'>#{ERB::Util.html_escape(chords_line.rstrip)}</div>"
       end
       
-      # Linha de letras (em serifada)
+      # Linha de letras (em monospace)
       if lyrics_line.strip.present?
-        html += "<div style='font-family: Georgia, serif; font-size: 16px; color: #1e293b; line-height: 1.3; white-space: pre; margin-top: 0;'>#{ERB::Util.html_escape(lyrics_line.rstrip)}</div>"
+        html += "<div class='line' style='font-family: DejaVu Sans Mono, monospace; font-size: #{@font_size}px; color: #1e293b; line-height: 1.4; white-space: pre; margin-top: 0;'>#{ERB::Util.html_escape(lyrics_line.rstrip)}</div>"
       end
       
       html += "</div>"

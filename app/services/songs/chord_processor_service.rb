@@ -1,7 +1,8 @@
 module Songs
   class ChordProcessorService < ApplicationService
-    def initialize(song)
+    def initialize(song, font_size: nil)
       @song = song
+      @font_size = font_size
     end
 
     def call
@@ -13,7 +14,7 @@ module Songs
     private
 
     def formatter(content)
-      Songs::SongFormatterService.call(content)
+      Songs::SongFormatterService.call(content, font_size: @font_size)
     end
 
     def transpose_lyrics
