@@ -7,8 +7,8 @@ module Songs
 
     def call
       # Verifica se existe cache no banco de dados
-      cached_pdf = @song.song_pdf_caches.find_by(font_size: @font_size)
-      return cached_pdf.pdf_binary if cached_pdf
+      # cached_pdf = @song.song_pdf_caches.find_by(font_size: @font_size)
+      # return cached_pdf.pdf_binary if cached_pdf
       
       # Gera PDF se não existir cache
       html_content = render_template('songs/pdf', layout: 'pdf', locals: { song: @song, font_size: @font_size })
