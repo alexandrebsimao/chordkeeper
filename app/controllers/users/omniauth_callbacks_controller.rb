@@ -4,6 +4,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   include CookieCsrfProtection
 
   # Importante: skip CSRF token verification para OmniAuth callbacks
+  skip_before_action :verify_authenticity_token
   skip_forgery_protection
 
   def google_oauth2
