@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,16 +26,25 @@ import ConfirmEmail from "./pages/auth/ConfirmEmail";
 import ResendConfirmation from "./pages/auth/ResendConfirmation";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import NotFound from "./pages/NotFound";
+import { startSessionAutoRefresh, stopSessionAutoRefresh } from "@/lib/auth";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+const App = () => {
+  useEffect(() => {
+    startSessionAutoRefresh();
+    return () => {
+      stopSessionAutoRefresh();
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           {/* Auth routes without sidebar */}
           <Route path="/" element={<Login />} />
           <Route path="/auth/login" element={<Login />} />
@@ -78,10 +88,11 @@ const App = () => (
               </div>
             </SidebarProvider>
           } />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

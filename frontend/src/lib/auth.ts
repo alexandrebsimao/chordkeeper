@@ -5,6 +5,8 @@ import { API_BASE_URL } from "@/config/api";
 
 let isRefreshing = false;
 let refreshSubscribers: (() => void)[] = [];
+let refreshIntervalId: number | null = null;
+const REFRESH_INTERVAL_MS = 14 * 60 * 1000;
 
 function onRefreshed() {
   refreshSubscribers.forEach((callback) => callback());
@@ -47,6 +49,46 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
+async function refreshAccessTokenWithLock(): Promise<boolean> {
+  if (isRefreshing) {
+    return new Promise<boolean>((resolve) => {
+      addRefreshSubscriber(async () => {
+        const authOk = await isAuthenticated();
+        resolve(authOk);
+      });
+    });
+  }
+
+  isRefreshing = true;
+  const refreshSuccess = await refreshAccessToken();
+  isRefreshing = false;
+
+  if (refreshSuccess) {
+    onRefreshed();
+    return true;
+  }
+
+  refreshSubscribers = [];
+  return false;
+}
+
+export function startSessionAutoRefresh() {
+  if (refreshIntervalId !== null) return;
+
+  refreshIntervalId = window.setInterval(async () => {
+    const authOk = await isAuthenticated();
+    if (!authOk) return;
+
+    await refreshAccessTokenWithLock();
+  }, REFRESH_INTERVAL_MS);
+}
+
+export function stopSessionAutoRefresh() {
+  if (refreshIntervalId === null) return;
+  window.clearInterval(refreshIntervalId);
+  refreshIntervalId = null;
+}
+
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   // ✅ Não precisamos gerenciar tokens manualmente - cookies HttpOnly são enviados automaticamente
   
@@ -77,38 +119,18 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
   // Se receber 401, tentar renovar o token
   if (response.status === 401 && !url.includes("/users/refresh")) {
-    if (!isRefreshing) {
-      isRefreshing = true;
-      const refreshSuccess = await refreshAccessToken();
-      isRefreshing = false;
+    const refreshSuccess = await refreshAccessTokenWithLock();
 
-      if (refreshSuccess) {
-        onRefreshed();
-        
-        // Tentar novamente com o novo token (já no cookie)
-        response = await fetch(`${API_BASE_URL}${url}`, {
-          ...options,
-          headers,
-          credentials: "include",
-        });
-      } else {
-        // Refresh falhou, redirecionar para login
-        window.location.href = "/auth/login";
-      }
-    } else {
-      // Aguardar o refresh em andamento
-      await new Promise<void>((resolve) => {
-        addRefreshSubscriber(() => {
-          resolve();
-        });
-      });
-
-      // Tentar novamente com o token renovado (já no cookie)
+    if (refreshSuccess) {
+      // Tentar novamente com o novo token (já no cookie)
       response = await fetch(`${API_BASE_URL}${url}`, {
         ...options,
         headers,
         credentials: "include",
       });
+    } else {
+      // Refresh falhou, redirecionar para login
+      window.location.href = "/auth/login";
     }
   }
 
