@@ -139,7 +139,7 @@ module Api
       @setlist.owner = current_user
 
       if @setlist.save
-        render json: SetlistSerializer.new(@setlist).serializable_hash, status: :created, location: @setlist
+        render json: SetlistSerializer.new(@setlist).serializable_hash, status: :created, location: api_setlist_path(@setlist)
       else
         render json: @setlist.errors, status: :unprocessable_entity
       end
@@ -150,7 +150,7 @@ module Api
       respond_to do |format|
         if @setlist.update(setlist_params)
           format.html { redirect_to @setlist, notice: "Setlist atualizado com sucesso." }
-          format.json { render :show, status: :ok, location: @setlist }
+          format.json { render :show, status: :ok, location: api_setlist_path(@setlist) }
         else
           format.html { render :edit, status: :unprocessable_entity }
           format.json { render json: @setlist.errors, status: :unprocessable_entity }
