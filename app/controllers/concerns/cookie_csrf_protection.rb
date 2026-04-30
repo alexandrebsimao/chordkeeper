@@ -38,6 +38,7 @@ module CookieCsrfProtection
       secure: cookie_secure?,
       same_site: cookie_same_site,
       domain: cookie_domain,
+      path: "/",
       expires: 14.days.from_now
     }.compact
   end
@@ -57,8 +58,22 @@ module CookieCsrfProtection
       secure: cookie_secure?,
       same_site: cookie_same_site,
       domain: cookie_domain,
+      path: "/",
       expires: expires
     }.compact
+  end
+
+  def delete_auth_cookies
+    delete_options = {
+      secure: cookie_secure?,
+      same_site: cookie_same_site,
+      domain: cookie_domain,
+      path: "/"
+    }.compact
+
+    request.cookie_jar.delete(:auth_token, delete_options)
+    request.cookie_jar.delete(:refresh_token, delete_options)
+    request.cookie_jar.delete(:csrf_token, delete_options)
   end
 
   def cookie_same_site

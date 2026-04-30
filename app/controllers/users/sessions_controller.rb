@@ -5,15 +5,18 @@ class Users::SessionsController < Devise::SessionsController
 
   protect_from_forgery with: :null_session
   skip_before_action :verify_authenticity_token
-  before_action :verify_csrf_token_for_cookie_auth!, only: [:refresh, :destroy]
+  skip_before_action :require_no_authentication, only: :create
+  before_action :verify_csrf_token_for_cookie_auth!, only: :refresh
   respond_to :json
 
   def create
     Rails.logger.info "Login attempt for: #{params[:user]&.[](:email)}"
-    
-    self.resource = warden.authenticate!(auth_options)
+
+    self.resource = authenticate_with_password!
+    return if performed?
+
     set_flash_message!(:notice, :signed_in)
-    sign_in(resource_name, resource)
+    sign_in(resource_name, resource, store: false)
     yield resource if block_given?
     
     # Gerar access token e refresh token
@@ -98,8 +101,7 @@ class Users::SessionsController < Devise::SessionsController
       
     rescue JWT::ExpiredSignature
       # ✅ Limpar cookies expirados
-      cookies.delete(:auth_token)
-      cookies.delete(:refresh_token)
+      delete_auth_cookies
       render json: { error: 'Refresh token expirado. Faça login novamente.' }, status: :unauthorized
     rescue JWT::DecodeError, ActiveRecord::RecordNotFound => e
       Rails.logger.error "Refresh token error: #{e.message}"
@@ -108,6 +110,39 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   private
+
+  def authenticate_with_password!
+    raw_user_params = params[:user]
+    user_params = raw_user_params.respond_to?(:permit) ? raw_user_params.permit(:email, :password) : {}
+    email = user_params[:email].to_s.strip.downcase
+    password = user_params[:password].to_s
+    user = resource_class.find_for_database_authentication(email: email)
+
+    unless user&.valid_password?(password)
+      delete_auth_cookies
+      render json: { error: "Email ou senha inválidos" }, status: :unauthorized
+      return
+    end
+
+    unless user.active_for_authentication?
+      delete_auth_cookies
+      render json: {
+        error: inactive_message_for(user),
+        unconfirmed: user.inactive_message == :unconfirmed
+      }, status: :unauthorized
+      return
+    end
+
+    user
+  end
+
+  def inactive_message_for(user)
+    if user.inactive_message == :unconfirmed
+      "Você precisa confirmar seu email antes de fazer login."
+    else
+      "Sua conta não está ativa."
+    end
+  end
 
   def generate_access_token(user)
     JWT.encode(
@@ -152,32 +187,43 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   def respond_to_on_destroy
+    access_token = cookies.signed[:auth_token] || bearer_token
+    refresh_token = cookies.signed[:refresh_token]
+
+    revoke_token(access_token)
+    revoke_token(refresh_token)
+
     # ✅ SEGURANÇA: Limpar cookies ao fazer logout
-    cookies.delete(:auth_token)
-    cookies.delete(:refresh_token)
-    cookies.delete(:csrf_token)
-    
-    if request.headers['Authorization'].present?
-      jwt_payload = JWT.decode(
-        request.headers['Authorization'].split(' ').last, 
-        ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' }
-      ).first
-      current_user = User.find(jwt_payload['sub'])
-    end
-    
-    if current_user
-      render json: {
-        message: 'Logged out successfully.'
-      }, status: :ok
-    else
-      render json: {
-        message: 'No active session.'
-      }, status: :unauthorized
+    delete_auth_cookies
+
+    render json: {
+      message: 'Logged out successfully.'
+    }, status: :ok
+  end
+
+  def bearer_token
+    auth_header = request.headers['Authorization'].to_s
+    return unless auth_header.start_with?('Bearer ')
+
+    auth_header.split(' ').last
+  end
+
+  def revoke_token(token)
+    return if token.blank?
+
+    payload = JWT.decode(
+      token,
+      ENV.fetch('DEVISE_JWT_SECRET_KEY') { raise 'DEVISE_JWT_SECRET_KEY required!' },
+      true,
+      { verify_expiration: false, algorithm: 'HS256' }
+    ).first
+
+    return if payload['jti'].blank? || payload['exp'].blank?
+
+    JwtDenylist.find_or_create_by!(jti: payload['jti']) do |denylisted_token|
+      denylisted_token.exp = Time.zone.at(payload['exp'])
     end
   rescue JWT::DecodeError => e
-    Rails.logger.error "Logout token decode error: #{e.message}"
-    render json: {
-      message: 'Invalid token.'
-    }, status: :unauthorized
+    Rails.logger.info "Logout token revoke skipped: #{e.message}"
   end
 end
