@@ -19,20 +19,14 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       # ✅ SEGURANÇA: Usar HttpOnly cookie em vez de expor token na URL
       cookies.signed[:auth_token] = {
         value: token,
-        httponly: true,
-        secure: Rails.env.production?,
-        same_site: :strict,
-        expires: 15.minutes.from_now
+        **auth_cookie_options(expires: 15.minutes.from_now)
       }
       
       # Gerar refresh token também
       refresh_token = generate_refresh_token(@user)
       cookies.signed[:refresh_token] = {
         value: refresh_token,
-        httponly: true,
-        secure: Rails.env.production?,
-        same_site: :strict,
-        expires: 14.days.from_now
+        **auth_cookie_options(expires: 14.days.from_now)
       }
       set_csrf_token_cookie
 

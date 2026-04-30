@@ -22,18 +22,12 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
         cookies.signed[:auth_token] = {
           value: access_token,
-          httponly: true,
-          secure: Rails.env.production?,
-          same_site: :strict,
-          expires: 15.minutes.from_now
+          **auth_cookie_options(expires: 15.minutes.from_now)
         }
 
         cookies.signed[:refresh_token] = {
           value: refresh_token,
-          httponly: true,
-          secure: Rails.env.production?,
-          same_site: :strict,
-          expires: 14.days.from_now
+          **auth_cookie_options(expires: 14.days.from_now)
         }
         set_csrf_token_cookie
         

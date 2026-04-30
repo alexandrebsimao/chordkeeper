@@ -35,10 +35,11 @@ module CookieCsrfProtection
     request.cookie_jar[:csrf_token] = {
       value: SecureRandom.hex(32),
       httponly: false,
-      secure: Rails.env.production?,
-      same_site: :strict,
+      secure: cookie_secure?,
+      same_site: cookie_same_site,
+      domain: cookie_domain,
       expires: 14.days.from_now
-    }
+    }.compact
   end
 
   def state_changing_request?
@@ -48,5 +49,37 @@ module CookieCsrfProtection
   def bearer_token_request?
     auth_header = request.headers["Authorization"].to_s
     auth_header.start_with?("Bearer ")
+  end
+
+  def auth_cookie_options(expires:)
+    {
+      httponly: true,
+      secure: cookie_secure?,
+      same_site: cookie_same_site,
+      domain: cookie_domain,
+      expires: expires
+    }.compact
+  end
+
+  def cookie_same_site
+    raw_value = ENV.fetch("COOKIE_SAME_SITE", Rails.env.production? ? "none" : "lax")
+    normalized = raw_value.to_s.strip.downcase
+
+    case normalized
+    when "strict", "lax", "none"
+      normalized.to_sym
+    else
+      :lax
+    end
+  end
+
+  def cookie_domain
+    ENV["COOKIE_DOMAIN"].presence
+  end
+
+  def cookie_secure?
+    return true if Rails.env.production?
+
+    ActiveModel::Type::Boolean.new.cast(ENV.fetch("COOKIE_SECURE", false))
   end
 end

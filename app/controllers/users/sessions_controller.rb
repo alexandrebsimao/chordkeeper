@@ -24,18 +24,12 @@ class Users::SessionsController < Devise::SessionsController
     # Protege contra XSS - JavaScript não consegue acessar os cookies
     cookies.signed[:auth_token] = {
       value: access_token,
-      httponly: true,
-      secure: Rails.env.production?, # Apenas HTTPS em produção
-      same_site: :strict, # Proteção CSRF
-      expires: 15.minutes.from_now
+      **auth_cookie_options(expires: 15.minutes.from_now)
     }
     
     cookies.signed[:refresh_token] = {
       value: refresh_token,
-      httponly: true,
-      secure: Rails.env.production?,
-      same_site: :strict,
-      expires: 14.days.from_now # Reduzido de 30 para 14 dias
+      **auth_cookie_options(expires: 14.days.from_now) # Reduzido de 30 para 14 dias
     }
     set_csrf_token_cookie
     
@@ -90,10 +84,7 @@ class Users::SessionsController < Devise::SessionsController
       # ✅ SEGURANÇA: Atualizar cookie com novo access token
       cookies.signed[:auth_token] = {
         value: new_access_token,
-        httponly: true,
-        secure: Rails.env.production?,
-        same_site: :strict,
-        expires: 15.minutes.from_now
+        **auth_cookie_options(expires: 15.minutes.from_now)
       }
       set_csrf_token_cookie if cookies[:csrf_token].blank?
       
