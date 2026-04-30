@@ -10,19 +10,23 @@ This repository combines a Rails API/backend with a React frontend.
 - `frontend/public/`: static frontend assets.
 
 ## Build, Test, and Development Commands
-Backend (repo root):
-- `bin/setup`: install gems, prepare DB, clear temp/logs, then start server.
-- `bin/dev`: run Rails server locally.
-- `bin/rails db:prepare`: create/migrate DB for current environment.
-- `bin/rails test test:system`: run Minitest + system tests.
-- `bin/rubocop -f github`: run Ruby linting.
-- `bin/brakeman --no-pager`: run Rails security scan.
+This project runs in Docker. Prefer `docker compose` from the repo root instead of running Rails or Node directly on the host.
 
-Frontend (`frontend/`):
-- `npm run dev`: start Vite dev server.
-- `npm run build`: production build.
-- `npm run lint`: run ESLint for TS/React.
-- `npm run preview`: preview built frontend.
+Full stack (repo root):
+- `docker compose up --build`: build and start Rails, PostgreSQL, Redis, Sidekiq, and the Vite frontend.
+- `docker compose up`: start the existing Docker services.
+- `docker compose down`: stop and remove the local containers.
+- `docker compose exec web bin/rails db:prepare`: create/migrate DB for the Docker environment.
+- `docker compose exec web bin/rails test test:system`: run Minitest + system tests.
+- `docker compose exec web bundle exec rspec`: run RSpec suites.
+- `docker compose exec web bin/rubocop -f github`: run Ruby linting.
+- `docker compose exec web bin/brakeman --no-pager`: run Rails security scan.
+
+Frontend:
+- `docker compose exec frontend npm run dev -- --host 0.0.0.0`: start Vite dev server in the frontend container if it is not already running.
+- `docker compose exec frontend npm run build`: production build.
+- `docker compose exec frontend npm run lint`: run ESLint for TS/React.
+- `docker compose exec frontend npm run preview -- --host 0.0.0.0`: preview built frontend.
 
 ## Coding Style & Naming Conventions
 - Ruby style follows `rubocop-rails-omakase` (`.rubocop.yml`); run RuboCop before PRs.
@@ -31,7 +35,7 @@ Frontend (`frontend/`):
 - Keep service/repository files namespaced by feature (example: `app/services/songs/...`).
 
 ## Testing Guidelines
-- Primary CI test command: `bin/rails db:test:prepare test test:system`.
+- Primary local test command: `docker compose exec web bin/rails db:test:prepare test test:system`.
 - Add/maintain Minitest for request/model/system behavior in `test/`.
 - Add/maintain RSpec for service/domain behavior in `spec/` (use `spec/factories`).
 - Name tests by behavior and target class (example: `spec/services/permission_service_spec.rb`).
