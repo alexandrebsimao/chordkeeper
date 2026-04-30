@@ -1,13 +1,50 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html class="h-full" lang="pt-BR">
   <head>
-    <title></title>
+    <title><%= content_for(:title) || "ChordKeeper" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "sidebar", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "responsive", "data-turbo-track": "reload" %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <%= javascript_importmap_tags %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
   </head>
-  <body class="bg-gray-100">
-    Você não deveria estar aqui!!
+  <body class="h-full">
+    <% if notice.present? %>
+      <div class="fixed right-4 top-4 z-50 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <%= notice %>
+      </div>
+    <% end %>
+
+    <% if alert.present? %>
+      <div class="fixed right-4 top-4 z-50 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <%= alert %>
+      </div>
+    <% end %>
+
+    <% if user_signed_in? %>
+      <div class="min-h-screen md:pl-64" data-controller="sidebar">
+        <button type="button" data-action="sidebar#toggle" class="fixed left-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow md:hidden" aria-label="Abrir menu">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <%= render "layouts/sidebar" %>
+        <main class="min-h-screen">
+          <%= yield %>
+        </main>
+      </div>
+    <% else %>
+      <main class="min-h-screen">
+        <%= yield %>
+      </main>
+    <% end %>
   </body>
 </html>

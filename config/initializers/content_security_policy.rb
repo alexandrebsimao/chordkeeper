@@ -15,13 +15,9 @@ Rails.application.configure do
     # Allow scripts from self and https sources
     policy.script_src  :self, :https
     
-    # Use nonce for inline styles instead of unsafe_inline in production
-    # In development, we allow unsafe_inline for easier debugging
-    if Rails.env.production?
-      policy.style_src :self, :https
-    else
-      policy.style_src :self, :https, :unsafe_inline
-    end
+    # Tailwind CDN runtime injects inline <style> tags; allow inline styles.
+    # TODO: remove :unsafe_inline after migrating to compiled local Tailwind CSS.
+    policy.style_src :self, :https, :unsafe_inline
     
     # Allow API connections to configured origins
     allowed_connect_origins = [

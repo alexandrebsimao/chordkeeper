@@ -8,3 +8,32 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+:root {
+  --background: 220 23% 97%;
+  --foreground: 222 47% 11%;
+  --muted-foreground: 220 9% 46%;
+  --border: 220 13% 91%;
+  --radius: 0.75rem;
+
+  --sidebar-background: 222 47% 11%;
+  --sidebar-foreground: 220 17% 93%;
+  --sidebar-primary: 221 83% 53%;
+  --sidebar-accent: 222 43% 18%;
+  --sidebar-border: 222 43% 18%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.bg-sidebar { background-color: hsl(var(--sidebar-background)); }
+.text-sidebar-foreground { color: hsl(var(--sidebar-foreground)); }
+.text-muted-foreground { color: hsl(var(--muted-foreground)); }
+.border-sidebar-border { border-color: hsl(var(--sidebar-border)); }
+.bg-sidebar-accent { background-color: hsl(var(--sidebar-accent)); }
+.text-sidebar-primary { color: hsl(var(--sidebar-primary)); }
+.hover\:bg-sidebar-accent\/60:hover { background-color: hsla(var(--sidebar-accent), 0.6); }
+.hover\:bg-sidebar-accent\/80:hover { background-color: hsla(var(--sidebar-accent), 0.8); }
+.rounded-xl { border-radius: var(--radius); }

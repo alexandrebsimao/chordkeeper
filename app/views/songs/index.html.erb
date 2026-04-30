@@ -1,0 +1,44 @@
+<div class="flex-1 p-6 pb-20 md:pb-6">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-foreground">Minhas Cifras</h1>
+        <p class="text-muted-foreground">Gerencie e acesse suas cifras favoritas</p>
+      </div>
+      <% if can_edit_library? %>
+        <%= link_to "Nova Cifra", new_song_path, class: "inline-flex items-center rounded-md bg-primary px-4 py-2 text-primary-foreground hover:opacity-90" %>
+      <% end %>
+    </div>
+
+    <%= form_with url: songs_path, method: :get, local: true, class: "w-full" do %>
+      <%= text_field_tag :search, params[:search], placeholder: "Buscar por título ou artista...", class: "w-full rounded-md border border-input bg-background px-3 py-2 text-sm" %>
+    <% end %>
+
+    <% if @songs.any? %>
+      <div class="grid gap-4">
+        <% @songs.each do |song| %>
+          <%= link_to song_path(song), class: "block rounded-lg border border-border bg-card p-4 hover:bg-muted/40 transition-colors" do %>
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h2 class="font-semibold"><%= song.title %></h2>
+                <p class="text-sm text-muted-foreground"><%= song.artist.presence || "—" %></p>
+              </div>
+              <div class="flex gap-2">
+                <span class="rounded border border-border px-2 py-1 text-xs font-mono">Tom: <%= song.key.presence || "—" %></span>
+                <span class="rounded border border-border px-2 py-1 text-xs font-mono">Capo: <%= song.capo.present? ? "#{song.capo}ª" : "—" %></span>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="pt-4">
+        <%= paginate(@songs) %>
+      </div>
+    <% else %>
+      <div class="rounded-lg border border-dashed border-border p-10 text-center">
+        <p class="text-muted-foreground">Nenhuma cifra encontrada.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

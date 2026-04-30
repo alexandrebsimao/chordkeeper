@@ -1,152 +1,74 @@
-<div data-sidebar-target="sidebar" class="fixed left-0 top-0 bottom-0 flex flex-col w-64 h-full text-gray-400 bg-gray-900 transform transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 z-30">
-  <!-- Header -->
-  <div class="flex items-center justify-between w-full px-3 h-16 flex-shrink-0 border-b border-gray-800">
-    <a class="flex items-center" href="">
-      <%
-=begin%>
-      <%= image_tag "logo-sidebar.png", class: "h-8 w-auto", alt: "Planapê" %> 
-      <%
-=end%>
-    </a>
-    <button class="p-2 rounded-md hover:bg-gray-700 md:hidden" data-action="sidebar#toggle">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    </button>
-  </div>
+<div data-sidebar-target="overlay" data-action="click->sidebar#toggle" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden"></div>
 
-  <!-- Scrollable content -->
-  <div class="flex-1 overflow-y-auto">
-    <div class="flex flex-col items-center w-full mt-3 border-t border-gray-700">      
-      <div class="w-full px-3 mt-2" data-controller="library-selector">
-        <div class="flex items-center justify-between mb-1">
-          <h3 class="text-sm font-medium text-gray-400">Biblioteca</h3>
-          <div class="flex items-center space-x-1">
-            <%= link_to new_library_path, class: "p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-gray-300" do %>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-              </svg>
-            <% end %>
+<aside data-sidebar-target="sidebar" class="fixed inset-y-0 left-0 z-40 flex h-svh w-64 -translate-x-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-200 ease-linear md:translate-x-0">
+  <div class="border-b border-sidebar-border px-6 py-4">
+    <div class="flex items-center justify-between">
+      <%= link_to songs_path, class: "flex items-center" do %>
+        <%= image_tag "logo-cifrary.png", alt: "ChordKeeper", class: "h-16 w-auto" %>
+      <% end %>
 
-            <% if current_library %>
-              <div class="relative" data-library-selector-target="actions">
-                <button type="button"
-                        data-action="library-selector#toggleActions"
-                        class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-gray-300"
-                        title="Opções da biblioteca">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                  </svg>
-                </button>
-                <div data-library-selector-target="actionMenu" 
-                     class="absolute right-0 mt-1 w-48 py-1 bg-gray-800 rounded shadow-lg hidden border border-gray-700 z-20">
-                  <%= link_to edit_library_path(current_library), 
-                        class: "flex items-center px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-gray-300" do %>
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    <span>Editar biblioteca</span>
-                  <% end %>
-                  
-                  <button data-action="click->library-selector#deleteLibrary" 
-                          data-library-id="<%= current_library.id %>"
-                          class="flex items-center w-full px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-gray-300">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    <span>Excluir biblioteca</span>
-                  </button>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        </div>
-
-        <% if current_user.libraries.count > 1 %>
-          <div class="relative" data-library-selector-target="container">
-            <button type="button" 
-                    data-action="library-selector#toggleDropdown"
-                    class="w-full flex items-center justify-between px-3 py-2 text-sm rounded bg-gray-700 text-gray-300 hover:bg-gray-600">
-              <span class="flex-1 text-left">
-                <%= current_library ? [current_library.name[0..20], '...'].join : "Selecione uma biblioteca" %>
-              </span> 
-              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </button>
-
-            <div data-library-selector-target="dropdown" 
-                class="absolute w-full mt-1 py-1 bg-gray-800 rounded shadow-lg hidden border border-gray-700 z-10">
-              <% current_user.libraries.each do |library| %>
-                <%= link_to define_scope_library_path(library), 
-                    class: "flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-700 #{params[:library_id].to_i == library.id ? 'text-gray-300' : 'text-gray-400'}" do %>
-                  <span class="flex-1"><%= library.name %></span>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-
-      <a class="flex items-center w-full h-12 px-3 mt-2 rounded hover:bg-gray-700 hover:text-gray-300" href="<%= songs_path %>">
-        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
-        </svg>
-        <span class="ml-2 text-sm font-medium">Músicas</span>
-      </a>
-
-      <a class="flex items-center w-full h-12 px-3 mt-2 rounded hover:bg-gray-700 hover:text-gray-300" href="<%= setlists_path %>">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M20 12v-2a2 2 0 00-2-2h-2M6 12h.01M6 16h.01M13 12h4"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18a2 2 0 100-4 2 2 0 000 4z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 16V8"/>
-        </svg>
-        <span class="ml-2 text-sm font-medium">Setlists</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- User section - fixed at bottom -->
-  <div class="flex-shrink-0 border-t border-gray-800" data-controller="dropdown">
-    <div class="relative">
-      <button class="flex items-center w-full px-3 py-3 hover:bg-gray-800 transition-colors duration-200" 
-              data-action="dropdown#toggle"
-              aria-expanded="false">
-        <div class="flex items-center flex-1 min-w-0">
-          <svg class="w-8 h-8 rounded-full text-gray-300 bg-gray-700 p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 0112 15a4 4 0 016.879 2.804M12 7a4 4 0 110-8 4 4 0 010 8z" />
-          </svg>
-          <div class="ml-2 flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-300 truncate">
-              <%= current_user&.email %>
-            </p>
-          </div>
-        </div>
-        <svg class="w-5 h-5 ml-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      <button type="button" data-action="sidebar#toggle" class="inline-flex h-8 w-8 items-center justify-center rounded-xl hover:bg-sidebar-accent md:hidden" aria-label="Fechar menu">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
-
-      <div class="hidden absolute bottom-full left-0 w-full mb-1 bg-gray-800 rounded-t-lg shadow-lg border border-gray-700 z-50" 
-           data-dropdown-target="menu">
-        <%= link_to edit_user_registration_path, 
-              class: "flex items-center px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-gray-200" do %>
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Configurações
-        <% end %>
-
-        <%= button_to destroy_user_session_path, 
-              method: :delete,
-              class: "flex items-center w-full px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-gray-200" do %>
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Logout
-        <% end %>
-      </div>
     </div>
   </div>
-</div>
+
+  <div class="flex-1 overflow-y-auto px-3 py-4">
+    <nav class="space-y-1">
+      <%= link_to songs_path, class: "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent/80 #{current_page?(songs_path) ? 'bg-sidebar-accent text-sidebar-primary' : ''}" do %>
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+        </svg>
+        <span>Minhas Cifras</span>
+      <% end %>
+
+      <% if can_edit_library? %>
+        <%= link_to new_song_path, class: "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent/80 #{current_page?(new_song_path) ? 'bg-sidebar-accent text-sidebar-primary' : ''}" do %>
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>Adicionar Cifra</span>
+        <% end %>
+      <% end %>
+
+      <a href="/setlists" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent/80">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11h8M8 15h6"/>
+        </svg>
+        <span>Setlists</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="border-t border-sidebar-border px-3 py-4">
+    <div class="mb-3 flex items-center gap-3 px-1">
+      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-primary">
+        <%= (current_user&.name.presence || current_user&.email.to_s).first&.upcase %>
+      </div>
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold"><%= current_user&.name.presence || current_user&.email %></p>
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <%= link_to edit_user_registration_path, class: "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent/60" do %>
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span>Configurações</span>
+      <% end %>
+
+      <%= button_to destroy_user_session_path, method: :delete, class: "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent/60" do %>
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        <span>Sair</span>
+      <% end %>
+    </div>
+  </div>
+</aside>

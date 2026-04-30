@@ -1,0 +1,162 @@
+<div data-controller="song-editor nested-form" data-song-editor-fallback="root">
+  <%= form_with model: song, class: "space-y-6" do |f| %>
+    <% if song.errors.any? %>
+      <div class="rounded-xl border border-red-300 bg-red-50 p-4 text-red-700">
+        <p class="mb-2 font-semibold">Não foi possível salvar:</p>
+        <ul class="list-disc pl-5 text-sm">
+          <% song.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+      <h2 class="text-lg font-semibold">Informações Básicas</h2>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <%= f.label :title, "Título *", class: "mb-1 block text-sm" %>
+          <%= f.text_field :title, required: true, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+        </div>
+
+        <div class="sm:col-span-2">
+          <%= f.label :artist, "Artista *", class: "mb-1 block text-sm" %>
+          <%= f.text_field :artist, required: true, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+        </div>
+
+        <div>
+          <%= f.label :genre, "Gênero", class: "mb-1 block text-sm" %>
+          <%= f.text_field :genre, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+        </div>
+
+        <div>
+          <%= f.label :original_key, "Tom Original *", class: "mb-1 block text-sm" %>
+          <%= f.select :original_key, options_for_select(["", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], song.original_key), {}, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+        </div>
+
+        <div>
+          <%= f.label :bpm, "BPM", class: "mb-1 block text-sm" %>
+          <%= f.number_field :bpm, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+        </div>
+
+        <div>
+          <%= f.label :capo, "Capotraste", class: "mb-1 block text-sm" %>
+          <%= f.number_field :capo, min: 0, max: 12, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+      <h2 class="text-lg font-semibold">Conteúdo da Cifra</h2>
+
+      <div class="inline-flex rounded-xl border border-gray-200 p-1">
+        <button type="button" data-song-editor-target="tabText" data-song-editor-fallback="tab-text" data-action="song-editor#showText" class="rounded-lg px-3 py-1.5 text-sm">Texto</button>
+        <button type="button" data-song-editor-target="tabFile" data-song-editor-fallback="tab-file" data-action="song-editor#showFile" class="rounded-lg px-3 py-1.5 text-sm">Arquivo</button>
+      </div>
+
+      <div data-song-editor-target="textPanel" data-song-editor-fallback="text-panel" class="space-y-3">
+        <div class="flex flex-wrap gap-2">
+          <button type="button" data-action="song-editor#insertSnippet" data-song-editor-fallback="insert-snippet" data-snippet="{start_of_verse: Verso 1}\n\n{end_of_verse}" class="rounded-lg border border-gray-200 px-3 py-1 text-xs">Verso</button>
+          <button type="button" data-action="song-editor#insertSnippet" data-song-editor-fallback="insert-snippet" data-snippet="{start_of_chorus: Refrão}\n\n{end_of_chorus}" class="rounded-lg border border-gray-200 px-3 py-1 text-xs">Refrão</button>
+          <button type="button" data-action="song-editor#insertSnippet" data-song-editor-fallback="insert-snippet" data-snippet="{start_of_bridge: Ponte}\n\n{end_of_bridge}" class="rounded-lg border border-gray-200 px-3 py-1 text-xs">Ponte</button>
+          <button type="button" data-action="song-editor#insertSnippet" data-song-editor-fallback="insert-snippet" data-snippet="[C]" class="rounded-lg border border-gray-200 px-3 py-1 text-xs">[Acorde]</button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div>
+            <%= f.label :content, "Editor (ChordPro)", class: "mb-1 block text-sm" %>
+            <%= f.text_area :content, rows: 20, data: { song_editor_target: "content", action: "input->song-editor#renderPreview", song_editor_fallback: "content" }, class: "w-full rounded-xl border border-gray-200 px-3 py-2 font-mono text-sm leading-6" %>
+          </div>
+          <div>
+            <p class="mb-1 block text-sm">Pré-visualização</p>
+            <div data-song-editor-target="preview" data-song-editor-fallback="preview" class="cifra-content h-96 overflow-auto rounded-xl border border-gray-200 bg-gray-50 p-3 font-mono text-sm text-gray-900">
+              <% song.content.to_s.split("\n").each do |line| %>
+                <div class="lyrics-line leading-7 whitespace-pre"><%= line.presence || "&nbsp;".html_safe %></div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-song-editor-target="filePanel" data-song-editor-fallback="file-panel" class="hidden space-y-3">
+        <div>
+          <%= f.label :attachment, "Arquivo (PDF/DOC/DOCX/TXT)", class: "mb-1 block text-sm" %>
+          <%= f.file_field :attachment, class: "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm" %>
+        </div>
+        <label class="inline-flex items-center gap-2 text-sm">
+          <%= f.check_box :convert_pdf %>
+          Converter PDF para conteúdo automaticamente
+        </label>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Referências de Mídia</h2>
+        <button type="button" data-action="nested-form#add" class="rounded-lg border border-gray-200 px-3 py-2 text-sm">Adicionar referência</button>
+      </div>
+
+      <template data-nested-form-target="template">
+        <div class="nested-fields rounded-xl border border-gray-200 p-4" data-new-record="true">
+          <input type="hidden" name="song[media_references_attributes][NEW_RECORD][_destroy]" value="0">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div>
+              <label class="mb-1 block text-sm">Tipo</label>
+              <select name="song[media_references_attributes][NEW_RECORD][media_type]" class="w-full rounded-xl border border-gray-200 px-3 py-2">
+                <option value="url">URL</option>
+                <option value="file">Arquivo</option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-1 block text-sm">URL</label>
+              <input type="text" name="song[media_references_attributes][NEW_RECORD][url]" class="w-full rounded-xl border border-gray-200 px-3 py-2">
+            </div>
+            <div>
+              <label class="mb-1 block text-sm">Arquivo</label>
+              <input type="file" name="song[media_references_attributes][NEW_RECORD][attachment]" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm">
+            </div>
+            <div class="md:col-span-3">
+              <label class="mb-1 block text-sm">Descrição</label>
+              <input type="text" name="song[media_references_attributes][NEW_RECORD][description]" class="w-full rounded-xl border border-gray-200 px-3 py-2">
+            </div>
+          </div>
+          <button type="button" data-action="nested-form#remove" class="mt-3 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700">Remover</button>
+        </div>
+      </template>
+
+      <div data-nested-form-target="target" class="space-y-3">
+        <%= f.fields_for :media_references do |mf| %>
+          <div class="nested-fields rounded-xl border border-gray-200 p-4" data-new-record="false">
+            <%= mf.hidden_field :id %>
+            <%= mf.hidden_field :_destroy, value: 0 %>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div>
+                <%= mf.label :media_type, "Tipo", class: "mb-1 block text-sm" %>
+                <%= mf.select :media_type, options_for_select([["URL", "url"], ["Arquivo", "file"]], mf.object.media_type), {}, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+              </div>
+              <div>
+                <%= mf.label :url, "URL", class: "mb-1 block text-sm" %>
+                <%= mf.text_field :url, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+              </div>
+              <div>
+                <%= mf.label :attachment, "Arquivo", class: "mb-1 block text-sm" %>
+                <%= mf.file_field :attachment, class: "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm" %>
+              </div>
+              <div class="md:col-span-3">
+                <%= mf.label :description, "Descrição", class: "mb-1 block text-sm" %>
+                <%= mf.text_field :description, class: "w-full rounded-xl border border-gray-200 px-3 py-2" %>
+              </div>
+            </div>
+            <button type="button" data-action="nested-form#remove" class="mt-3 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700">Remover</button>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <div class="flex gap-3">
+      <%= f.submit (song.persisted? ? "Salvar Alterações" : "Criar Música"), class: "rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" %>
+      <%= link_to "Cancelar", song.persisted? ? song_path(song) : songs_path, class: "rounded-xl border border-gray-200 px-4 py-2" %>
+    </div>
+  <% end %>
+</div>

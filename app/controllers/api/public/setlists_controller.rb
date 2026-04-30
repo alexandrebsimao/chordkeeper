@@ -1,5 +1,5 @@
 class Api::Public::SetlistsController < Api::ApiController
-  skip_before_action :authenticate_user_from_jwt!, only: [:show, :pdf]
+  skip_before_action :authenticate_user!, only: [:show, :pdf]
 
   def pdf
     @setlist = Setlist.joins(:public_setlist).where(public_setlist: { uuid: params[:public_token] }).first

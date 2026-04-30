@@ -1,0 +1,60 @@
+<div class="flex-1 p-6 pb-20 md:pb-6">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-foreground"><%= @song.title %></h1>
+        <p class="text-muted-foreground"><%= @song.artist.presence || "—" %></p>
+      </div>
+      <div class="flex gap-2">
+        <%= link_to "PDF", generate_pdf_song_path(@song), target: "_blank", class: "rounded-md border border-border px-3 py-2 text-sm" %>
+        <% if @song.library_id == current_library.id %>
+          <%= link_to "Editar", edit_song_path(@song), class: "rounded-md border border-border px-3 py-2 text-sm" %>
+          <%= button_to "Excluir", song_path(@song), method: :delete, data: { turbo_confirm: "Tem certeza que deseja excluir esta música?" }, class: "rounded-md border border-red-300 px-3 py-2 text-sm text-red-600" %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex gap-2 flex-wrap items-center">
+      <span class="rounded border border-border px-2 py-1 text-xs font-mono">Tom Original: <%= @song.original_key.presence || "—" %></span>
+      <span class="rounded border border-border px-2 py-1 text-xs font-mono">Tom Atual: <%= @song.key.presence || "—" %></span>
+      <span class="rounded border border-border px-2 py-1 text-xs font-mono">Capotraste: <%= @song.capo.present? ? "#{@song.capo}ª casa" : "—" %></span>
+
+      <% if @song.library_id == current_library.id && @song.original_key.present? %>
+        <%= form_with url: transpose_song_path(@song), method: :patch, class: "flex items-center gap-2" do %>
+          <%= label_tag :transpose_key, "Transpor para", class: "text-sm text-muted-foreground" %>
+          <%= select_tag :transpose_key, options_for_select(@musical_keys, @song.key), class: "rounded-md border border-input px-2 py-1 text-sm font-mono" %>
+          <%= submit_tag "Aplicar", class: "rounded-md border border-border px-3 py-1 text-sm" %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="rounded-lg border border-border bg-card p-6">
+      <% if @song.content.present? %>
+        <div class="cifra-content"><%= format_song_content(@song) %></div>
+      <% elsif @song.attachment.attached? %>
+        <p class="text-muted-foreground">Esta música possui anexo. Use o botão PDF para visualizar.</p>
+      <% else %>
+        <p class="text-muted-foreground">Nenhum conteúdo disponível.</p>
+      <% end %>
+    </div>
+
+    <% if @song.media_references.any? %>
+      <div class="rounded-lg border border-border p-4 space-y-3">
+        <h2 class="font-semibold">Mídia</h2>
+        <% @song.media_references.each do |media| %>
+          <div class="rounded border border-border p-3 text-sm">
+            <p class="font-medium"><%= media.description.presence || media.media_type.to_s.upcase %></p>
+            <% if media.url.present? %>
+              <a href="<%= media.url %>" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all"><%= media.url %></a>
+            <% end %>
+            <% if media.attachment.attached? %>
+              <div class="mt-1">
+                <%= link_to media.attachment.filename.to_s, rails_blob_path(media.attachment, disposition: "attachment"), class: "text-blue-600 hover:underline" %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
