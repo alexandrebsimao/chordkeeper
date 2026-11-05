@@ -91,7 +91,7 @@ Para habilitar login com Google:
   - [ ] Dev: `http://localhost:3000/users/auth/google_oauth2/callback`
   - [ ] Prod: `https://api.chordkeeper.com/users/auth/google_oauth2/callback`
 
-📚 **Documentação:** [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)
+📚 **Documentação:** [GOOGLE_OAUTH_SETUP.md](../auth/GOOGLE_OAUTH_SETUP.md)
 
 ### Stripe Payments (Opcional)
 
@@ -286,8 +286,8 @@ Este script vai:
 ### Documentação Relacionada
 
 - 📘 [ENV_VARIABLES_GUIDE.md](./ENV_VARIABLES_GUIDE.md) - Guia completo de variáveis
-- 🔐 [SECURITY_REPORT.md](./SECURITY_REPORT.md) - Relatório de segurança
-- 🔑 [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) - Setup Google OAuth
+- 🔐 [SECURITY_REPORT.md](../security/SECURITY_REPORT.md) - Relatório de segurança
+- 🔑 [GOOGLE_OAUTH_SETUP.md](../auth/GOOGLE_OAUTH_SETUP.md) - Setup Google OAuth
 - 💳 [PAYMENT_INTEGRATION.md](./PAYMENT_INTEGRATION.md) - Integração Stripe
 - 🔄 [RECURRING_BILLING.md](./RECURRING_BILLING.md) - Billing recorrente
 

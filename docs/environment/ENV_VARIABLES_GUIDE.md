@@ -80,7 +80,7 @@ Para ativar login com Google, configure:
 
 | Variável | Onde Obter | Documentação |
 |----------|-----------|--------------|
-| `GOOGLE_CLIENT_ID` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) | [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) |
+| `GOOGLE_CLIENT_ID` | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) | [GOOGLE_OAUTH_SETUP.md](../auth/GOOGLE_OAUTH_SETUP.md) |
 | `GOOGLE_CLIENT_SECRET` | Google Cloud Console | Mesmo link acima |
 
 **Passo a passo:**
@@ -389,8 +389,8 @@ cd frontend && npm run dev
 ## 📞 Suporte
 
 Para questões sobre configuração:
-1. Consulte `SECURITY_REPORT.md` para recomendações de segurança
-2. Veja `GOOGLE_OAUTH_SETUP.md` para configuração OAuth
+1. Consulte [`SECURITY_REPORT.md`](../security/SECURITY_REPORT.md) para recomendações de segurança
+2. Veja [`GOOGLE_OAUTH_SETUP.md`](../auth/GOOGLE_OAUTH_SETUP.md) para configuração OAuth
 3. Leia `PAYMENT_INTEGRATION.md` para setup do Stripe
 
 **Próxima revisão:** Sempre que adicionar novas funcionalidades que requerem secrets!

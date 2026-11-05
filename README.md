@@ -46,3 +46,18 @@ O ChordKeeper é um sistema de gestão de cifras, onde você pode salvar as cifr
 - [ ] Adicionar dicionario de acordes (???)
 - [ ] Fazer testes
 
+---
+
+### 📚 Documentação
+
+A documentação detalhada do projeto está centralizada no diretório [`docs/`](./docs/README.md):
+
+- [Índice Geral de Documentação](./docs/README.md)
+- [Guia de Variáveis de Ambiente](./docs/environment/ENV_VARIABLES_GUIDE.md) e [Checklist](./docs/environment/ENV_SETUP_CHECKLIST.md)
+- [Autenticação Google OAuth](./docs/auth/GOOGLE_OAUTH_SETUP.md)
+- [Relatório de Segurança](./docs/security/SECURITY_REPORT.md)
+- [Otimização e Setup de PDFs](./docs/pdf/PDF_OPTIMIZATION_GUIDE.md)
+- [Arquitetura e Refatorações do Frontend](./docs/frontend/REFACTORING.md)
+- [Levantamento Funcional](./docs/levantamento-funcional.md)
+
+
